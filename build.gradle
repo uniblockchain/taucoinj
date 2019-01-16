@@ -1,0 +1,34 @@
+wrapper.gradleVersion = '2.2.1'
+
+allprojects {
+    apply plugin: 'eclipse'
+    if (JavaVersion.current().isJava8Compatible()) {
+        //Disable lint of javadoc until someone fixes all the html
+        tasks.withType(Javadoc) {
+          options.addStringOption('Xdoclint:none', '-quiet')
+      }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    def config = new ConfigSlurper().parse(new File("$projectDir/src/main/resources/version.properties").toURI().toURL())
+
+    group = 'org.ethereum'
+
+    if (config.modifier?.trim())
+        version = config.versionNumber + "-" + config.modifier
+    else
+        version = config.versionNumber
+
+
+    compileJava.options.encoding = 'UTF-8'
+    compileJava.options.compilerArgs << '-XDignore.symbol.file'
+
+    compileTestJava.options.encoding = 'UTF-8'
+
+    repositories {
+        jcenter()
+    }
+}
