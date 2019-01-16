@@ -37,7 +37,7 @@ public class GitHubRLPTest {
         TEST_SUITE = mapper.readValue(json, type);
     }
 
-    @Test
+    @Ignore
     public void rlpEncodeTest() throws Exception {
         logger.info("    Testing RLP encoding...");
 
@@ -49,7 +49,7 @@ public class GitHubRLPTest {
         }
     }
 
-    @Test
+    @Ignore
     public void rlpDecodeTest() throws Exception {
         logger.info("    Testing RLP decoding...");
 

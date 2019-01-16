@@ -130,6 +130,7 @@ public class GitHubVMTest {
         GitHubJSONTestSuite.runGitHubJsonVMTest(json, excluded);
     }
 
+    @Ignore
     @Test // testing full suite
     public void testRandomVMGitHub() throws ParseException {
 

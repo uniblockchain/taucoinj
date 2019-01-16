@@ -257,6 +257,7 @@ public class GitHubStateTest {
         GitHubJSONTestSuite.runStateTest(json, excluded);
     }
 
+    @Ignore
     @Test // testing full suite
     public void testRandomStateGitHub() throws ParseException, IOException {
 
