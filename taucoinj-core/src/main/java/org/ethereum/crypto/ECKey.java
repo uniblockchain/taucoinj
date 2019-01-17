@@ -49,6 +49,8 @@ import java.util.Arrays;
 
 import javax.annotation.Nullable;
 
+import io.taucoin.core.*;
+import io.taucoin.config.*;
 import static org.ethereum.util.ByteUtil.bigIntegerToBytes;
 
 /**
@@ -300,6 +302,15 @@ public class ECKey implements Serializable {
         }
         return pubKeyHash;
     }
+     /*
+     *Gets the sha256sha160 form of the public key(compressed as seen in taucoin net)
+      **/
+     public byte[] getAddressBindAccount(){
+         if (pubKeyHash == null){
+             pubKeyHash = Utils.sha256hash160(this.pub.getEncoded(true));
+         }
+                return pubKeyHash;
+     }
 
     /**
      * Generates the NodeID based on this key, that is the public key without first format byte
@@ -311,6 +322,9 @@ public class ECKey implements Serializable {
             System.arraycopy(nodeIdWithFormat, 1, nodeId, 0, nodeId.length);
         }
         return nodeId;
+    }
+    public Address getAccountAddress(){
+        return new Address(MainNetParams.get(), getAddressBindAccount());
     }
 
     /**
