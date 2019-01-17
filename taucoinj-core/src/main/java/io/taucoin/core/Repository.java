@@ -1,6 +1,6 @@
 package io.taucoin.core;
 
-import org.ethereum.db.ByteArrayWrapper;
+import io.taucoin.db.ByteArrayWrapper;
 
 import java.math.BigInteger;
 
@@ -106,6 +106,7 @@ public interface Repository {
     Repository startTracking();
 
     void flush();
+
     void flushNoReconnect();
 
 
