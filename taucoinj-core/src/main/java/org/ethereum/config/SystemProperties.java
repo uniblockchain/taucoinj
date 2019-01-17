@@ -4,6 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigRenderOptions;
+import io.taucoin.net.rlpx.NodeType;
 import org.ethereum.core.Genesis;
 import org.ethereum.core.genesis.GenesisLoader;
 import org.ethereum.crypto.ECKey;
@@ -284,6 +285,7 @@ public class SystemProperties {
             if (configObject.get("url") != null) {
                 String url = configObject.toConfig().getString("url");
                 n = new Node(url.startsWith("enode://") ? url : "enode://" + url);
+                n.setType(NodeType.SUPER);
             } else if (configObject.get("ip") != null) {
                 String ip = configObject.toConfig().getString("ip");
                 int port = configObject.toConfig().getInt("port");
@@ -302,7 +304,7 @@ public class SystemProperties {
                         throw new RuntimeException("Either nodeId or nodeName should be specified: " + configObject);
                     }
                 }
-                n = new Node(nodeId, ip, port);
+                n = new Node(nodeId, ip, port, NodeType.SUPER);
             } else {
                 throw new RuntimeException("Unexpected element within 'peer.active' config list: " + configObject);
             }
@@ -619,6 +621,12 @@ public class SystemProperties {
 
     @ValidateMe
     public boolean isPublicHomeNode() { return config.getBoolean("peer.discovery.public.home.node");}
+
+    @ValidateMe
+    public NodeType getHomeNodeType() {
+        String homeNodeType = config.getString("peer.discovery.home.node.type");
+        return "super".equals(homeNodeType) ? NodeType.SUPER : NodeType.MOBILE;
+    }
 
     @ValidateMe
     public boolean isStorageDictionaryEnabled() { return config.getBoolean("vm.structured.storage.dictionary.enabled");}

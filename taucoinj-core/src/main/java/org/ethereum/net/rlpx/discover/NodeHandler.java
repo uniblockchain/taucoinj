@@ -1,5 +1,6 @@
 package org.ethereum.net.rlpx.discover;
 
+import io.taucoin.net.rlpx.NodeType;
 import org.ethereum.net.rlpx.*;
 import org.ethereum.net.swarm.Util;
 import org.slf4j.LoggerFactory;
@@ -172,6 +173,10 @@ public class NodeHandler {
     void handlePing(PingMessage msg) {
         logger.debug(" ===> [PING] " + this);
         getNodeStatistics().discoverInPing.add();
+        // FixMe: update is necessary or not?
+        if (node.getType() == NodeType.UNKNOWN) {
+            node.setType(msg.getFromType());
+        }
         if (!nodeManager.table.getNode().equals(node)) {
             sendPong(msg.getMdc());
         }
@@ -223,8 +228,7 @@ public class NodeHandler {
         }
         logger.debug("<===  [PING] " + this);
 
-        Message ping = PingMessage.create(nodeManager.table.getNode().getHost(),
-                nodeManager.table.getNode().getPort(), nodeManager.key);
+        Message ping = PingMessage.create(nodeManager.table.getNode(), node, nodeManager.key);
         waitForPong = true;
         pingSent = Util.curTime();
         sendMessage(ping);

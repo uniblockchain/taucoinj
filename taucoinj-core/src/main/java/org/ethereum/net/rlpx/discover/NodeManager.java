@@ -92,6 +92,8 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
 
         key = config.getMyKey();
         homeNode = new Node(config.nodeId(), config.externalIp(), config.listenPort());
+        homeNode.setType(config.getHomeNodeType());
+        logger.info("Home node type:" + config.getHomeNodeType().toString());
         table = new NodeTable(homeNode, config.isPublicHomeNode());
 
         Timer timer = new Timer();
