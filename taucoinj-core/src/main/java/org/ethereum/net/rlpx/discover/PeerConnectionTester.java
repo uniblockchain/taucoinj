@@ -100,12 +100,16 @@ public class PeerConnectionTester {
     }
 
     public void nodeStatusChanged(final NodeHandler nodeHandler) {
-        if (!connectedCandidates.containsKey(nodeHandler)) {
+        if (peerConnectionPool.isShutdown()) return;
+        if (connectedCandidates.size() < NodeManager.MAX_NODES
+                && !connectedCandidates.containsKey(nodeHandler)
+                && !nodeHandler.getNode().isDiscoveryNode()) {
             logger.debug("Submitting node for RLPx connection : " + nodeHandler);
             connectedCandidates.put(nodeHandler, null);
             peerConnectionPool.execute(new ConnectTask(nodeHandler));
         }
     }
+
 
     /**
      * The same as PriorityBlockQueue but with assumption that elements are mutable

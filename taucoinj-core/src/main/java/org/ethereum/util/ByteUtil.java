@@ -555,4 +555,21 @@ public class ByteUtil {
         }
     }
 
+    /**
+     * Converts 4 bytes IPv4 IP to String representation
+     */
+    public static String bytesToIp(byte[] bytesIp) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(bytesIp[0] & 0xFF);
+        sb.append(".");
+        sb.append(bytesIp[1] & 0xFF);
+        sb.append(".");
+        sb.append(bytesIp[2] & 0xFF);
+        sb.append(".");
+        sb.append(bytesIp[3] & 0xFF);
+
+        String ip = sb.toString();
+        return ip;
+    }
 }

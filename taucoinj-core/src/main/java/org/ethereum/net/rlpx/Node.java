@@ -1,5 +1,7 @@
 package org.ethereum.net.rlpx;
 
+import io.taucoin.net.rlpx.NodeType;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.datasource.mapdb.Serializers;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.util.RLP;
@@ -14,6 +16,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static org.ethereum.crypto.HashUtil.sha3;
 import static org.ethereum.util.ByteUtil.byteArrayToInt;
 
 public class Node implements Serializable {
@@ -47,6 +50,31 @@ public class Node implements Serializable {
     byte[] id;
     String host;
     int port;
+    NodeType type;
+    // discovery endpoint doesn't have real nodeId for example
+    private boolean isFakeNodeId = false;
+
+    /**
+     *  - create Node instance from enode if passed,
+     *  - otherwise fallback to random nodeId, if supplied with only "address:port"
+     * NOTE: validation is absent as method is not heavily used
+     */
+    public static Node instanceOf(String addressOrEnode) {
+        try {
+            URI uri = new URI(addressOrEnode);
+            if (uri.getScheme().equals("enode")) {
+                return new Node(addressOrEnode);
+            }
+        } catch (URISyntaxException e) {
+            // continue
+        }
+
+        final ECKey generatedNodeKey = ECKey.fromPrivate(sha3(addressOrEnode.getBytes()));
+        final String generatedNodeId = Hex.toHexString(generatedNodeKey.getNodeId());
+        final Node node = new Node("enode://" + generatedNodeId + "@" + addressOrEnode);
+        node.isFakeNodeId = true;
+        return node;
+    }
 
     public Node(String enodeURL) {
         try {
@@ -57,15 +85,21 @@ public class Node implements Serializable {
             this.id = Hex.decode(uri.getUserInfo());
             this.host = uri.getHost();
             this.port = uri.getPort();
+            this.type = NodeType.UNKNOWN;
         } catch (URISyntaxException e) {
             throw new RuntimeException("expecting URL in the format enode://PUBKEY@HOST:PORT", e);
         }
     }
 
-    public Node(byte[] id, String host, int port) {
+    public Node(byte[] id, String host, int port, NodeType type) {
         this.id = id;
         this.host = host;
         this.port = port;
+        this.type = type;
+    }
+
+    public Node(byte[] id, String host, int port) {
+        this(id, host, port, NodeType.UNKNOWN);
     }
 
     public Node(byte[] rlp) {
@@ -76,11 +110,14 @@ public class Node implements Serializable {
         byte[] hostB = nodeRLP.get(0).getRLPData();
         byte[] portB = nodeRLP.get(1).getRLPData();
         byte[] idB;
+        byte[] typeB;
 
         if (nodeRLP.size() > 3) {
             idB = nodeRLP.get(3).getRLPData();
+            typeB = nodeRLP.get(4).getRLPData();
         } else {
             idB = nodeRLP.get(2).getRLPData();
+            typeB = nodeRLP.get(3).getRLPData();
         }
 
         StringBuilder sb = new StringBuilder();
@@ -99,6 +136,7 @@ public class Node implements Serializable {
         this.host = host;
         this.port = port;
         this.id = idB;
+        this.type = NodeType.fromCode((int) typeB[0]);
     }
 
 
@@ -134,16 +172,58 @@ public class Node implements Serializable {
         this.port = port;
     }
 
+    public NodeType getType() {
+        return type;
+    }
+
+    public void setType(NodeType type) {
+        this.type = type;
+    }
+
+    /**
+     * @return true if this node is endpoint for discovery loaded from config
+     */
+    public boolean isDiscoveryNode() {
+        return isFakeNodeId;
+    }
+
+    public void setDiscoveryNode(boolean isDiscoveryNode) {
+        isFakeNodeId = isDiscoveryNode;
+    }
+
+    /**
+     * Full RLP
+     * [host, udpPort, tcpPort, nodeId, nodeType]
+     * @return RLP-encoded node data
+     */
     public byte[] getRLP() {
 
         byte[] rlphost = RLP.encodeElement(host.getBytes(StandardCharsets.UTF_8));
         byte[] rlpTCPPort = RLP.encodeInt(port);
         byte[] rlpUDPPort = RLP.encodeInt(port);
         byte[] rlpId = RLP.encodeElement(id);
+        byte[] rlpNodeType = RLP.encodeElement(new byte[]{type.getCode()});
 
-        byte[] data = RLP.encodeList(rlphost, rlpUDPPort, rlpTCPPort, rlpId);
+        byte[] data = RLP.encodeList(rlphost, rlpUDPPort, rlpTCPPort, rlpId, rlpNodeType);
         return data;
     }
+
+    /**
+     * RLP without nodeId
+     * [host, udpPort, tcpPort, nodeType]
+     * @return RLP-encoded node data
+     */
+    public byte[] getBriefRLP() {
+
+        byte[] rlphost = RLP.encodeElement(host.getBytes(StandardCharsets.UTF_8));
+        byte[] rlpTCPPort = RLP.encodeInt(port);
+        byte[] rlpUDPPort = RLP.encodeInt(port);
+        byte[] rlpNodeType = RLP.encodeElement(new byte[]{type.getCode()});
+
+        byte[] data = RLP.encodeList(rlphost, rlpUDPPort, rlpTCPPort, rlpNodeType);
+        return data;
+    }
+
 
     @Override
     public String toString() {
@@ -151,6 +231,7 @@ public class Node implements Serializable {
                 " host='" + host + '\'' +
                 ", port=" + port +
                 ", id=" + Hex.toHexString(id) +
+                ", type=" + type.toString() +
                 '}';
     }
 

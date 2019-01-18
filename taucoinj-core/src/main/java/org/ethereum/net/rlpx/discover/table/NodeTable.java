@@ -1,5 +1,6 @@
 package org.ethereum.net.rlpx.discover.table;
 
+import io.taucoin.net.rlpx.NodeType;
 import org.ethereum.net.rlpx.Node;
 
 import java.util.*;
@@ -121,8 +122,30 @@ public class NodeTable {
         return nodes;
     }
 
+    public synchronized List<NodeEntry> getAllSuperNodes()
+    {
+        List<NodeEntry> nodes = new ArrayList<>();
+
+        for (NodeBucket b : buckets)
+        {
+//            nodes.addAll(b.getNodes());
+            for (NodeEntry e : b.getNodes())
+            {
+                if (!e.getNode().equals(node) && e.getNode().getType() == NodeType.SUPER) {
+                    nodes.add(e);
+                }
+            }
+        }
+
+//        boolean res = nodes.remove(node);
+        return nodes;
+    }
+
+    /*
+     * Get closest super nodes
+     */
     public synchronized List<Node> getClosestNodes(byte[] targetId) {
-        List<NodeEntry> closestEntries = getAllNodes();
+        List<NodeEntry> closestEntries = getAllSuperNodes();
         List<Node> closestNodes = new ArrayList<>();
         Collections.sort(closestEntries, new DistanceComparator(targetId));
         if (closestEntries.size() > KademliaOptions.BUCKET_SIZE) {
@@ -130,7 +153,9 @@ public class NodeTable {
         }
 
         for (NodeEntry e : closestEntries) {
-            closestNodes.add(e.getNode());
+            if (!e.getNode().isDiscoveryNode()) {
+                closestNodes.add(e.getNode());
+            }
         }
         return closestNodes;
     }

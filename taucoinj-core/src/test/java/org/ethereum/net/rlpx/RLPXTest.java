@@ -21,6 +21,7 @@ public class RLPXTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger("test");
 
+    /*
     @Ignore
     @Test // ping test
     public void test1() {
@@ -41,6 +42,7 @@ public class RLPXTest {
         String key2 = ping2.getKey().toString();
         assertEquals(key.toString(), key2.toString());
     }
+    */
 
     @Ignore
     @Test // pong test
@@ -195,6 +197,7 @@ public class RLPXTest {
         Assert.assertEquals(Hex.toHexString(msg1.getTarget()), Hex.toHexString(msg3.getTarget()));
     }
 
+    /*
     @Ignore //TODO #POC9
     @Test  // Ping parse data
     public void test9() {
@@ -230,6 +233,7 @@ public class RLPXTest {
         PongMessage msg3 = (PongMessage) Message.decode(msg2.getPacket());
         assertEquals(Hex.toHexString(msg1.getToken()), Hex.toHexString(msg3.getToken()));
     }
+    */
 }
 
 

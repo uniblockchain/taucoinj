@@ -1,5 +1,6 @@
 package org.ethereum.net.rlpx.discover;
 
+import io.taucoin.net.rlpx.NodeType;
 import org.ethereum.net.rlpx.*;
 import org.ethereum.net.swarm.Util;
 import org.slf4j.LoggerFactory;
@@ -117,42 +118,45 @@ public class NodeHandler {
             // will wait for Pong to assume this alive
             sendPing();
         }
-        if (newState == State.Alive) {
-            Node evictCandidate = nodeManager.table.addNode(this.node);
-            if (evictCandidate == null) {
-                newState = State.Active;
-            } else {
-                NodeHandler evictHandler = nodeManager.getNodeHandler(evictCandidate);
-                if (evictHandler.state == State.EvictCandidate) {
-                    // already challenging for eviction
-                    // adding to alive for later challenges
-                    aliveNodes.add(this);
+
+        if (!node.isDiscoveryNode()) {
+            if (newState == State.Alive) {
+                Node evictCandidate = nodeManager.table.addNode(this.node);
+                if (evictCandidate == null) {
+                    newState = State.Active;
                 } else {
-                    evictHandler.challengeWith(this);
+                    NodeHandler evictHandler = nodeManager.getNodeHandler(evictCandidate);
+                    if (evictHandler.state == State.EvictCandidate) {
+                        // already challenging for eviction
+                        // adding to alive for later challenges
+                        aliveNodes.add(this);
+                    } else {
+                        evictHandler.challengeWith(this);
+                    }
                 }
             }
-        }
-        if (newState == State.Active) {
-            if (oldState == State.Alive) {
-                // new node won the challenge
-                nodeManager.table.addNode(node);
-            } else if (oldState == State.EvictCandidate) {
-                // nothing to do here the node is already in the table
-            } else {
-                // wrong state transition
+            if (newState == State.Active) {
+                if (oldState == State.Alive) {
+                    // new node won the challenge
+                    nodeManager.table.addNode(node);
+                } else if (oldState == State.EvictCandidate) {
+                    // nothing to do here the node is already in the table
+                } else {
+                    // wrong state transition
+                }
             }
-        }
-        if (newState == State.NonActive) {
-            if (oldState == State.EvictCandidate) {
-                // lost the challenge
-                // Removing ourselves from the table
-                nodeManager.table.dropNode(node);
-                // Congratulate the winner
-                replaceCandidate.changeState(State.Active);
-            } else if (oldState == State.Alive) {
-                // ok the old node was better, nothing to do here
-            } else {
-                // wrong state transition
+            if (newState == State.NonActive) {
+                if (oldState == State.EvictCandidate) {
+                    // lost the challenge
+                    // Removing ourselves from the table
+                    nodeManager.table.dropNode(node);
+                    // Congratulate the winner
+                    replaceCandidate.changeState(State.Active);
+                } else if (oldState == State.Alive) {
+                    // ok the old node was better, nothing to do here
+                } else {
+                    // wrong state transition
+                }
             }
         }
 
@@ -172,6 +176,10 @@ public class NodeHandler {
     void handlePing(PingMessage msg) {
         logger.debug(" ===> [PING] " + this);
         getNodeStatistics().discoverInPing.add();
+        // FixMe: update is necessary or not?
+        if (node.getType() == NodeType.UNKNOWN) {
+            node.setType(msg.getFromType());
+        }
         if (!nodeManager.table.getNode().equals(node)) {
             sendPong(msg.getMdc());
         }
@@ -223,8 +231,7 @@ public class NodeHandler {
         }
         logger.debug("<===  [PING] " + this);
 
-        Message ping = PingMessage.create(nodeManager.table.getNode().getHost(),
-                nodeManager.table.getNode().getPort(), nodeManager.key);
+        Message ping = PingMessage.create(nodeManager.table.getNode(), node, nodeManager.key);
         waitForPong = true;
         pingSent = Util.curTime();
         sendMessage(ping);

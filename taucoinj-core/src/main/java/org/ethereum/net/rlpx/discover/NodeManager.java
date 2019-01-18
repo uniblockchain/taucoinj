@@ -44,6 +44,7 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
     private static final long LISTENER_REFRESH_RATE = 1000;
     private static final long DB_COMMIT_RATE = 1 * 60 * 1000;
     private static final int DB_MAX_LOAD_NODES = 100;
+    static final int MAX_NODES = 2000;
 
     @Autowired
     PeerConnectionTester peerConnectionManager;
@@ -92,6 +93,8 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
 
         key = config.getMyKey();
         homeNode = new Node(config.nodeId(), config.externalIp(), config.listenPort());
+        homeNode.setType(config.getHomeNodeType());
+        logger.info("Home node type:" + config.getHomeNodeType().toString());
         table = new NodeTable(homeNode, config.isPublicHomeNode());
 
         Timer timer = new Timer();
@@ -206,17 +209,29 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
         return (addr == null ? address.getHostString() : addr.getHostAddress()) + ":" + address.getPort();
     }
 
-    synchronized  NodeHandler getNodeHandler(Node n) {
+    public synchronized NodeHandler getNodeHandler(Node n) {
         String key = getKey(n);
         NodeHandler ret = nodeHandlerMap.get(key);
         if (ret == null) {
             ret = new NodeHandler(n ,this);
             nodeHandlerMap.put(key, ret);
-            logger.debug(" +++ New node: " + ret);
-            ethereumListener.onNodeDiscovered(ret.getNode());
+            logger.debug(" +++ New node: " + ret + " " + n);
+            if (!n.isDiscoveryNode() && !n.getHexId().equals(homeNode.getHexId())) {
+                ethereumListener.onNodeDiscovered(ret.getNode());
+            }
+        } else if (ret.getNode().isDiscoveryNode() && !n.isDiscoveryNode()) {
+            // we found discovery node with same host:port,
+            // replace node with correct nodeId
+            ret.node = n;
+            if (!n.getHexId().equals(homeNode.getHexId())) {
+                ethereumListener.onNodeDiscovered(ret.getNode());
+            }
+            logger.debug(" +++ Found real nodeId for discovery endpoint {}", n);
         }
+
         return ret;
     }
+
 
     boolean hasNodeHandler(Node n) {
         return nodeHandlerMap.containsKey(getKey(n));
