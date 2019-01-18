@@ -77,11 +77,16 @@ public class UDPListener {
 
         final List<Node> bootNodes = new ArrayList<>();
 
+        String localAddress = config.bindIp();
+        String externalAddress = config.externalIp();
         // FIXME: setting nodes from ip.list and attaching node nodeId [f35cc8] constantly
         for (String boot: args) {
             Node n = Node.instanceOf(boot);
-            n.setType(NodeType.SUPER);
-            bootNodes.add(n);
+            if (!localAddress.equals(n.getHost())
+                && !externalAddress.equals(n.getHost())) {
+                n.setType(NodeType.SUPER);
+                bootNodes.add(n);
+            }
         }
 
         nodeManager.setBootNodes(bootNodes);
