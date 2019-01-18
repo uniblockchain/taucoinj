@@ -21,6 +21,8 @@ import java.util.Arrays;
 
 import static org.apache.commons.lang3.ArrayUtils.getLength;
 import static org.ethereum.util.ByteUtil.*;
+import static org.ethereum.util.BIUtil.toBI;
+import static io.taucoin.util.TimeUtils.timeNows;
 
 /**
  * A transaction (formally, T) is a single cryptographically
@@ -61,6 +63,10 @@ public class Transaction {
     private byte[] sendAddress;
     
     private byte[] hash;
+
+    public static final int TTIME = 43200;
+    public static final int HASH_LENGTH = 32;
+    public static final int ADDRESS_LENGTH = 20;
 
     /* Tx in encoded form */
     protected byte[] rlpEncoded;
@@ -108,6 +114,27 @@ public class Transaction {
         return fee;
     }
 
+    public synchronized boolean verify() {
+
+        rlpParse();
+
+        if(!validate()){
+            return false;
+        }
+
+        return true;
+    }  
+
+    //NowTime - TransactionTime < 1440s;
+    public synchronized boolean checkTime() {
+        //get current unix time
+        long diffTime = timeNows()- toBI(timeStamp).longValue();
+        if(diffTime> TTIME){
+            return false;
+		}
+        return true;
+    }  
+
     public void rlpParse() {
 
         RLPList decodedTxList = RLP.decode2(rlpEncoded);
@@ -132,6 +159,22 @@ public class Transaction {
         this.hash = getHash();
     }
 
+    private boolean validate() {
+        if (toAddress != null && toAddress.length != 0 && toAddress.length != ADDRESS_LENGTH)
+            return false;
+
+        if (getSignature() != null) {
+            if (BigIntegers.asUnsignedByteArray(signature.r).length > HASH_LENGTH)
+                return false;
+            if (BigIntegers.asUnsignedByteArray(signature.s).length > HASH_LENGTH)
+                return false;
+            if (getSender() != null && getSender().length != ADDRESS_LENGTH)
+                return false;
+        }
+
+        return true;
+    }
+
     public boolean isParsed() {
         return parsed;
     }
@@ -148,7 +191,6 @@ public class Transaction {
         byte[] plainMsg = this.getEncodedRaw();
         return HashUtil.sha3(plainMsg);
     }
-
 
     public byte[] getTime() {
         if (!parsed) rlpParse();
