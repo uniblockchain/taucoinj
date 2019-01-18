@@ -153,7 +153,9 @@ public class NodeTable {
         }
 
         for (NodeEntry e : closestEntries) {
-            closestNodes.add(e.getNode());
+            if (!e.getNode().isDiscoveryNode()) {
+                closestNodes.add(e.getNode());
+            }
         }
         return closestNodes;
     }

@@ -1,6 +1,7 @@
 package org.ethereum.net.rlpx;
 
 import io.taucoin.net.rlpx.NodeType;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.datasource.mapdb.Serializers;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.util.RLP;
@@ -15,6 +16,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static org.ethereum.crypto.HashUtil.sha3;
 import static org.ethereum.util.ByteUtil.byteArrayToInt;
 
 public class Node implements Serializable {
@@ -49,6 +51,30 @@ public class Node implements Serializable {
     String host;
     int port;
     NodeType type;
+    // discovery endpoint doesn't have real nodeId for example
+    private boolean isFakeNodeId = false;
+
+    /**
+     *  - create Node instance from enode if passed,
+     *  - otherwise fallback to random nodeId, if supplied with only "address:port"
+     * NOTE: validation is absent as method is not heavily used
+     */
+    public static Node instanceOf(String addressOrEnode) {
+        try {
+            URI uri = new URI(addressOrEnode);
+            if (uri.getScheme().equals("enode")) {
+                return new Node(addressOrEnode);
+            }
+        } catch (URISyntaxException e) {
+            // continue
+        }
+
+        final ECKey generatedNodeKey = ECKey.fromPrivate(sha3(addressOrEnode.getBytes()));
+        final String generatedNodeId = Hex.toHexString(generatedNodeKey.getNodeId());
+        final Node node = new Node("enode://" + generatedNodeId + "@" + addressOrEnode);
+        node.isFakeNodeId = true;
+        return node;
+    }
 
     public Node(String enodeURL) {
         try {
@@ -152,6 +178,17 @@ public class Node implements Serializable {
 
     public void setType(NodeType type) {
         this.type = type;
+    }
+
+    /**
+     * @return true if this node is endpoint for discovery loaded from config
+     */
+    public boolean isDiscoveryNode() {
+        return isFakeNodeId;
+    }
+
+    public void setDiscoveryNode(boolean isDiscoveryNode) {
+        isFakeNodeId = isDiscoveryNode;
     }
 
     /**
