@@ -248,6 +248,8 @@ public class SyncManager {
             onSyncDone();
 
             logger.debug("NEW block.number [{}] imported", wrapper.getNumber());
+            // put this block into broadcasting queue.
+            channelManager.onNewForeignBlock(wrapper);
         } else if (logger.isInfoEnabled()) {
             logger.debug(
                     "NEW block.number [{}] block.minsSinceReceiving [{}] exceeds import time limit, continue sync",

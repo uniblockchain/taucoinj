@@ -33,6 +33,7 @@ import org.ethereum.net.shh.ShhHandler;
 import org.ethereum.net.shh.ShhMessageFactory;
 import org.ethereum.net.swarm.bzz.BzzHandler;
 import org.ethereum.net.swarm.bzz.BzzMessageFactory;
+import org.ethereum.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,8 @@ import java.util.concurrent.TimeUnit;
 public class Channel {
 
     private final static Logger logger = LoggerFactory.getLogger("net");
+
+    public static final int MAX_SAFE_TXS = 192;
 
     @Autowired
     SystemProperties config;
@@ -347,6 +350,21 @@ public class Channel {
 
     public void prohibitTransactionProcessing() {
         eth.disableTransactions();
+    }
+
+    /**
+     * Sames as {@link #sendTransactions(List)} but input list is randomly sliced to
+     * contain not more than {@link #MAX_SAFE_TXS} if needed
+     * @param txs   List of txs to send
+     */
+    public void sendTransactionsCapped(List<Transaction> txs) {
+        List<Transaction> slicedTxs;
+        if (txs.size() <= MAX_SAFE_TXS) {
+            slicedTxs = txs;
+        } else {
+            slicedTxs = CollectionUtils.truncateRand(txs, MAX_SAFE_TXS);
+        }
+        eth.sendTransaction(slicedTxs);
     }
 
     public void sendTransaction(List<Transaction> tx) {
