@@ -22,13 +22,13 @@ import org.ethereum.rpc.server.*;
 
 public final class JsonRpcServer extends org.ethereum.rpc.server.JsonRpcServer{
 
-    static public final int PORT = 8545;
     static private ArrayList<URL> RemoteServer = new ArrayList<>();
     static private int currentRemoteServer = 0;
     static public boolean IsRemoteServerRecuring = false;
 
     private Ethereum ethereum;
     private Dispatcher dispatcher;
+    private int port;
 
     EventLoopGroup bossGroup;
     EventLoopGroup workerGroup;
@@ -85,14 +85,15 @@ public final class JsonRpcServer extends org.ethereum.rpc.server.JsonRpcServer{
         return res;
     }
 
-    public void start() throws Exception {
+    public void start(int port) throws Exception {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
+        this.port = port;
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.option(ChannelOption.SO_BACKLOG, 1024);
-//            b.localAddress(InetAddress.getLocalHost(), PORT);
-            b.localAddress(PORT);
+//            b.localAddress(InetAddress.getLocalHost(), port);
+            b.localAddress(port);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new JsonRpcServerInitializer());

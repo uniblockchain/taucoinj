@@ -4,6 +4,8 @@ import org.ethereum.cli.CLIInterface;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.ethereum.net.rlpx.Node;
+import org.ethereum.rpc.server.JsonRpcServerFactory;
+import org.ethereum.rpc.server.JsonRpcServer;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
@@ -29,6 +31,16 @@ public class Start {
 
         if (!CONFIG.blocksLoader().equals(""))
             ethereum.getBlockLoader().loadBlocks();
+
+        // Start rpc server
+        if (CONFIG.isRpcEnabled()) {
+            JsonRpcServer rpcServer = JsonRpcServerFactory.createJsonRpcServer(ethereum);
+            try {
+                rpcServer.start(CONFIG.rpcListenPort());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

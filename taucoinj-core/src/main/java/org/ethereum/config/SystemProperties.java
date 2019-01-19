@@ -82,6 +82,7 @@ public class SystemProperties {
 
     private Boolean syncEnabled = null;
     private Boolean discoveryEnabled = null;
+    private Boolean rpcEnabled = null;
 
     private Genesis genesis;
 
@@ -617,6 +618,25 @@ public class SystemProperties {
 
     public void setSyncEnabled(Boolean syncEnabled) {
         this.syncEnabled = syncEnabled;
+    }
+
+    @ValidateMe
+    public boolean isRpcEnabled() {
+        return this.rpcEnabled == null ? config.getBoolean("rpc.enabled") : rpcEnabled;
+    }
+
+    public void setRpcEnabled(Boolean rpcEnabled) {
+        this.rpcEnabled = rpcEnabled;
+    }
+
+    @ValidateMe
+    public int rpcListenPort() {
+        return config.getInt("rpc.listen.port");
+    }
+
+    @ValidateMe
+    public String getRpcServerType() {
+        return config.getString("rpc.server.type");
     }
 
     @ValidateMe
