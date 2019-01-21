@@ -1,8 +1,5 @@
 package io.taucoin.core;
 
-import org.ethereum.core.*;
-import org.ethereum.vm.LogInfo;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -34,8 +31,6 @@ public class TransactionExecutor {
 
     long basicTxAmount = 0;
     long basicTxFee = 0;
-
-    List<LogInfo> logs = null;
 
     boolean localCall = false;
 

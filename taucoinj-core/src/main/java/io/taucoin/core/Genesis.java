@@ -3,10 +3,9 @@ package io.taucoin.core;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.genesis.GenesisLoader;
 import io.taucoin.db.ByteArrayWrapper;
-import org.ethereum.trie.SecureTrie;
-import org.ethereum.trie.Trie;
-import org.ethereum.util.ByteUtil;
-
+import io.taucoin.trie.SecureTrie;
+import io.taucoin.trie.Trie;
+import io.taucoin.util.ByteUtil;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static io.taucoin.crypto.HashUtil.EMPTY_LIST_HASH;
-import static org.ethereum.util.ByteUtil.wrap;
+import static io.taucoin.util.ByteUtil.wrap;
 /**
  * The genesis block is the first block in the chain and has fixed values according to
  * the protocol specification. The genesis block is 13 items, and is specified thus:

@@ -1,6 +1,6 @@
 package io.taucoin.core;
 
-import org.ethereum.core.Genesis;
+import io.taucoin.core.Genesis;
 import org.ethereum.core.TransactionReceipt;
 
 import java.math.BigInteger;

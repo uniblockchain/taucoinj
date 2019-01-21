@@ -35,9 +35,9 @@ import static java.lang.Runtime.getRuntime;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 import static java.util.Collections.emptyList;
-import static org.ethereum.core.Denomination.SZABO;
+import static io.taucoin.core.Denomination.SZABO;
 import static io.taucoin.core.ImportResult.*;
-import static org.ethereum.util.BIUtil.isMoreThan;
+import static io.taucoin.util.BIUtil.isMoreThan;
 
 /**
  * The Ethereum blockchain is in many ways similar to the Bitcoin blockchain,

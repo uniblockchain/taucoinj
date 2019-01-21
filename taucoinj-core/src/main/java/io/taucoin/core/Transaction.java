@@ -7,7 +7,6 @@ import io.taucoin.crypto.HashUtil;
 import io.taucoin.util.ByteUtil;
 import io.taucoin.util.RLP;
 import io.taucoin.util.RLPList;
-import org.ethereum.core.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
