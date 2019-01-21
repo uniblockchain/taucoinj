@@ -142,6 +142,38 @@ public class ByteUtil {
 
 
     /**
+     * Converts a int value into a byte array.
+     *
+     * @param val - int value to convert
+     * @return value with leading byte that are zeroes striped
+     */
+    public static byte[] intToBytesNoLeadZeroes(int val){
+
+        if (val == 0) return EMPTY_BYTE_ARRAY;
+
+        int lenght = 0;
+
+        int tmpVal = val;
+        while (tmpVal != 0){
+            tmpVal = tmpVal >>> 8;
+            ++lenght;
+        }
+
+        byte[] result = new byte[lenght];
+
+        int index = result.length - 1;
+        while(val != 0){
+
+            result[index] = (byte)(val & 0xFF);
+            val = val >>> 8;
+            index -= 1;
+        }
+
+        return result;
+    }
+
+
+    /**
      * Convert a byte-array into a hex String.<br>
      * Works similar to {@link Hex#toHexString}
      * but allows for <code>null</code>
