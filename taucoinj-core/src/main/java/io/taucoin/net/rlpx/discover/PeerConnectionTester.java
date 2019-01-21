@@ -2,7 +2,7 @@ package io.taucoin.net.rlpx.discover;
 
 import org.apache.commons.codec.binary.Hex;
 import io.taucoin.config.SystemProperties;
-import org.ethereum.manager.WorldManager;
+import io.taucoin.manager.WorldManager;
 import io.taucoin.net.rlpx.Node;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

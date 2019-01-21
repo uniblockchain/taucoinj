@@ -2,7 +2,7 @@ package io.taucoin.net.submit;
 
 import io.taucoin.core.Transaction;
 import io.taucoin.core.Wallet;
-import org.ethereum.manager.WorldManager;
+import io.taucoin.manager.WorldManager;
 import io.taucoin.net.server.Channel;
 import io.taucoin.net.server.ChannelManager;
 

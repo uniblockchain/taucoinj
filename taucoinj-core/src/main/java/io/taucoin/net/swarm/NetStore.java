@@ -2,7 +2,7 @@ package io.taucoin.net.swarm;
 
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Promise;
-import org.ethereum.manager.WorldManager;
+import io.taucoin.manager.WorldManager;
 import io.taucoin.net.swarm.bzz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

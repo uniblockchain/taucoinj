@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.ethereum.db.IndexedBlockStore.BLOCK_INFO_SERIALIZER;
+import static io.taucoin.db.IndexedBlockStore.BLOCK_INFO_SERIALIZER;
 
 /**
  *

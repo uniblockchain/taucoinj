@@ -4,7 +4,7 @@ import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Block;
 import io.taucoin.core.Transaction;
 import io.taucoin.listener.EthereumListener;
-import org.ethereum.manager.WorldManager;
+import io.taucoin.manager.WorldManager;
 import io.taucoin.net.MessageQueue;
 import io.taucoin.net.client.Capability;
 import io.taucoin.net.client.ConfigCapabilities;

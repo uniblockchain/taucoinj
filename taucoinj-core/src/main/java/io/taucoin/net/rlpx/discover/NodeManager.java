@@ -4,7 +4,7 @@ import io.taucoin.config.SystemProperties;
 import io.taucoin.crypto.ECKey;
 import io.taucoin.datasource.mapdb.MapDBFactory;
 import io.taucoin.listener.EthereumListener;
-import org.ethereum.manager.WorldManager;
+import io.taucoin.manager.WorldManager;
 import io.taucoin.net.rlpx.*;
 import io.taucoin.net.rlpx.discover.table.NodeTable;
 import io.taucoin.util.CollectionUtils;

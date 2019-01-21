@@ -1,6 +1,5 @@
 package io.taucoin.config;
 
-import org.ethereum.core.PendingTransaction;
 import io.taucoin.core.Repository;
 import io.taucoin.core.Transaction;
 import io.taucoin.datasource.KeyValueDataSource;
@@ -8,7 +7,7 @@ import io.taucoin.datasource.LevelDbDataSource;
 import io.taucoin.datasource.mapdb.MapDBFactory;
 import io.taucoin.datasource.redis.RedisConnection;
 import io.taucoin.db.RepositoryImpl;
-import org.ethereum.sync.*;
+import io.taucoin.sync.*;
 import io.taucoin.validator.*;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ import static java.util.Arrays.asList;
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(
-        basePackages = "org.ethereum",
+        basePackages = "io.taucoin",
         excludeFilters = @ComponentScan.Filter(NoAutoscan.class))
 public class CommonConfig {
 
@@ -66,21 +65,6 @@ public class CommonConfig {
     }
 
     @Bean
-    public Set<PendingTransaction> wireTransactions() {
-        String storage = "Redis";
-        try {
-            if (redisConnection.isAvailable()) {
-                return redisConnection.createPendingTransactionSet("wireTransactions");
-            }
-
-            storage = "In memory";
-            return Collections.synchronizedSet(new HashSet<PendingTransaction>());
-        } finally {
-            logger.info(storage + " 'wireTransactions' storage created.");
-        }
-    }
-
-    @Bean
     public List<Transaction> pendingStateTransactions() {
         return Collections.synchronizedList(new ArrayList<Transaction>());
     }
@@ -90,7 +74,7 @@ public class CommonConfig {
     public SessionFactory sessionFactory() {
         LocalSessionFactoryBuilder builder =
                 new LocalSessionFactoryBuilder(dataSource());
-        builder.scanPackages("org.ethereum.db")
+        builder.scanPackages("io.taucoin.db")
                 .addProperties(getHibernateProperties());
 
         return builder.buildSessionFactory();
