@@ -103,7 +103,6 @@ public class BlockHeader {
     public byte[] getHeaderHash(){
        return HashUtil.ripemd160(HashUtil.sha256(this.getEncoded()));
     }
-
     /*
     * TODO:
      */
@@ -119,7 +118,10 @@ public class BlockHeader {
 
         return difficulty;
     }
-
+    //temporary method will be discarded when smooth
+    public long getNumber(){
+        return 0;
+    }
     public String toString() {
         return toStringWithSuffix("\n");
     }
