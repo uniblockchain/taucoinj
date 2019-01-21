@@ -6,7 +6,7 @@ import java.util.Set;
  * @author Mikhail Kalinin
  * @since 28.09.2015
  */
-public interface PendingState{
+public interface PendingState extends io.taucoin.facade.PendingState{
 
     /**
      * Initialized pending state <br>
