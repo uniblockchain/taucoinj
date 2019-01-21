@@ -100,9 +100,14 @@ public class BlockHeader {
                     generatorPublicKey);
     }
 
-    public byte[] getHeaderHash(){
+    public byte[] getHeaderHash() {
        return HashUtil.ripemd160(HashUtil.sha256(this.getEncoded()));
     }
+
+    public byte[] getHash() {
+       return getHeaderHash();
+    }
+
     /*
     * TODO:
      */

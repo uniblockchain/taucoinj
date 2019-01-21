@@ -2,10 +2,10 @@ package io.taucoin.core;
 
 import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
-import org.ethereum.core.BlockIdentifier;
+import io.taucoin.core.BlockIdentifier;
 import org.ethereum.core.Chain;
 import org.ethereum.core.Genesis;
-import org.ethereum.core.ImportResult;
+import io.taucoin.core.ImportResult;
 import org.ethereum.core.TransactionReceipt;
 
 import java.math.BigInteger;
