@@ -6,10 +6,10 @@ import io.taucoin.listener.EthereumListener;
 import io.taucoin.manager.AdminInfo;
 import io.taucoin.manager.BlockLoader;
 import io.taucoin.forge.BlockMiner;
-import org.ethereum.net.client.PeerClient;
-import org.ethereum.net.peerdiscovery.PeerInfo;
-import org.ethereum.net.rlpx.Node;
-import org.ethereum.net.server.ChannelManager;
+import io.taucoin.net.client.PeerClient;
+import io.taucoin.net.peerdiscovery.PeerInfo;
+import io.taucoin.net.rlpx.Node;
+import io.taucoin.net.server.ChannelManager;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -101,12 +101,12 @@ public interface Taucoin {
      *               transactions this one is empty.
      * @return newly created transaction
      */
-    Transaction createTransaction(BigInteger nonce,
-                                 BigInteger gasPrice,
-                                 BigInteger gas,
-                                 byte[] receiveAddress,
-                                 BigInteger value, byte[] data);
-
+    Transaction createTransaction(byte version,
+                                  byte option,
+                                  byte[] timeStamp,
+                                  byte[] toAddress,
+                                  byte[] amount,
+                                  byte[] fee);
 
     /**
      * @param transaction submit transaction to the net, return option to wait for net
