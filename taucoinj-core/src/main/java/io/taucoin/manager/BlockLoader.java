@@ -1,6 +1,5 @@
 package io.taucoin.manager;
 
-
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
