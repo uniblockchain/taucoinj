@@ -13,6 +13,8 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import org.ethereum.facade.Ethereum;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import org.ethereum.rpc.server.light.method.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ import org.ethereum.rpc.server.*;
 
 
 public final class JsonRpcServer extends org.ethereum.rpc.server.JsonRpcServer{
+
+    private static final Logger logger = LoggerFactory.getLogger("rpc");
 
     static private ArrayList<URL> RemoteServer = new ArrayList<>();
     static private int currentRemoteServer = 0;
@@ -99,6 +103,8 @@ public final class JsonRpcServer extends org.ethereum.rpc.server.JsonRpcServer{
                     .childHandler(new JsonRpcServerInitializer());
 
             Channel ch = b.bind().sync().channel();
+
+            logger.info("Light json rpc server is starting, listen port: {}", this.port);
 
             ch.closeFuture().sync();
         } finally {

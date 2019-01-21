@@ -14,6 +14,8 @@ import org.ethereum.rpc.server.full.filter.FilterManager;
 import org.ethereum.facade.Ethereum;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import org.ethereum.rpc.server.full.method.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 
@@ -21,6 +23,8 @@ import org.ethereum.rpc.server.*;
 
 
 public final class JsonRpcServer extends org.ethereum.rpc.server.JsonRpcServer{
+
+    private static final Logger logger = LoggerFactory.getLogger("rpc");
 
     private Ethereum ethereum;
     private Dispatcher dispatcher;
@@ -112,13 +116,15 @@ public final class JsonRpcServer extends org.ethereum.rpc.server.JsonRpcServer{
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.option(ChannelOption.SO_BACKLOG, 1024);
-            b.localAddress(InetAddress.getLocalHost(), port);
-//            b.localAddress(port);
+            //b.localAddress(InetAddress.getLocalHost(), port);
+            b.localAddress(port);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new JsonRpcServerInitializer());
 
             Channel ch = b.bind().sync().channel();
+
+            logger.info("Full json rpc server is starting, listen port: {}", this.port);
 
             ch.closeFuture().sync();
         } finally {
