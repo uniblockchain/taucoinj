@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.ethereum.crypto.HashUtil.EMPTY_LIST_HASH;
+import static io.taucoin.crypto.HashUtil.EMPTY_LIST_HASH;
 import static org.ethereum.util.ByteUtil.wrap;
 /**
  * The genesis block is the first block in the chain and has fixed values according to

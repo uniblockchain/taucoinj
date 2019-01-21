@@ -27,7 +27,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.*;
 
-import static org.ethereum.crypto.SHA3Helper.sha3;
+import static io.taucoin.crypto.SHA3Helper.sha3;
 
 /**
  * Utility class to retrieve property values from the ethereumj.conf files

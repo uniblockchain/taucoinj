@@ -10,7 +10,7 @@ import org.spongycastle.util.encoders.Hex;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import static org.ethereum.crypto.HashUtil.*;
+import static io.taucoin.crypto.HashUtil.*;
 
 public class AccountState implements Serializable {
 

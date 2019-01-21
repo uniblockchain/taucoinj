@@ -1,6 +1,6 @@
 package io.taucoin.core;
 
-import org.ethereum.crypto.ECKey;
+import io.taucoin.crypto.ECKey;
 import io.taucoin.util.Utils;
 
 import org.springframework.beans.factory.annotation.Autowired;

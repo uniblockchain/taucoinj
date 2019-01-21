@@ -14,7 +14,7 @@ import java.io.*;
 import java.util.*;
 
 import static java.util.Arrays.copyOfRange;
-import static org.ethereum.crypto.HashUtil.EMPTY_TRIE_HASH;
+import static io.taucoin.crypto.HashUtil.EMPTY_TRIE_HASH;
 import static io.taucoin.util.ByteUtil.*;
 import static io.taucoin.util.CompactEncoder.*;
 import static io.taucoin.util.RLP.calcElementPrefixSize;

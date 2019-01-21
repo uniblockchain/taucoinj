@@ -1,7 +1,7 @@
 package io.taucoin.forge;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.ethereum.crypto.HashUtil;
+import io.taucoin.crypto.HashUtil;
 import org.spongycastle.util.Arrays;
 
 import java.math.BigInteger;
@@ -11,7 +11,7 @@ import java.util.Random;
 
 import static java.lang.System.arraycopy;
 import static java.math.BigInteger.valueOf;
-import static org.ethereum.crypto.SHA3Helper.sha3;
+import static io.taucoin.crypto.SHA3Helper.sha3;
 import static io.taucoin.util.ByteUtil.*; // some changes to be done
 import static org.spongycastle.util.Arrays.reverse;
 

@@ -1,7 +1,7 @@
 package io.taucoin.forge;
 
 import io.taucoin.core.Block;
-import org.ethereum.crypto.SHA3Helper;
+import io.taucoin.crypto.SHA3Helper;
 import io.taucoin.util.ByteUtil;
 import io.taucoin.util.FastByteComparisons;
 

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.concurrent.*;
 
-import static org.ethereum.crypto.HashUtil.sha3;
+import static io.taucoin.crypto.HashUtil.sha3;
 import static io.taucoin.util.ByteUtil.longToBytes;
 
 /**

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.math.BigInteger.ZERO;
-import static org.ethereum.crypto.HashUtil.shortHash;
+import static io.taucoin.crypto.HashUtil.shortHash;
 import static org.spongycastle.util.Arrays.areEqual;
 
 public class IndexedBlockStore implements BlockStore{

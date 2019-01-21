@@ -1,7 +1,7 @@
 package io.taucoin.core;
 
-import org.ethereum.crypto.HashUtil;
-import org.ethereum.crypto.SHA3Helper;
+import io.taucoin.crypto.HashUtil;
+import io.taucoin.crypto.SHA3Helper;
 import org.ethereum.trie.Trie;
 import org.ethereum.trie.TrieImpl;
 import io.taucoin.core.BlockHeader;

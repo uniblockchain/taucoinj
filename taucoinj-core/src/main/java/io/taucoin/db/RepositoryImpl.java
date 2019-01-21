@@ -30,9 +30,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.Thread.sleep;
 import static io.taucoin.config.SystemProperties.CONFIG;
-import static org.ethereum.crypto.HashUtil.EMPTY_DATA_HASH;
-import static org.ethereum.crypto.HashUtil.EMPTY_TRIE_HASH;
-import static org.ethereum.crypto.SHA3Helper.sha3;
+import static io.taucoin.crypto.HashUtil.EMPTY_DATA_HASH;
+import static io.taucoin.crypto.HashUtil.EMPTY_TRIE_HASH;
+import static io.taucoin.crypto.SHA3Helper.sha3;
 import static io.taucoin.util.ByteUtil.EMPTY_BYTE_ARRAY;
 import static io.taucoin.util.ByteUtil.wrap;
 
