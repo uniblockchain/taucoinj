@@ -1,6 +1,6 @@
 package io.taucoin.facade;
 
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.SystemProperties;
 import io.taucoin.core.*;
 import io.taucoin.core.PendingState;
 import io.taucoin.listener.CompositeEthereumListener;

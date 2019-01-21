@@ -8,10 +8,9 @@ import io.taucoin.core.*;
 import io.taucoin.db.BlockStore;
 import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.db.IndexedBlockStore;
-import org.ethereum.facade.Ethereum;
-import org.ethereum.facade.EthereumImpl;
-import org.ethereum.listener.CompositeEthereumListener;
-import org.ethereum.listener.EthereumListenerAdapter;
+import io.taucoin.facade.Taucoin;
+import io.taucoin.listener.CompositeEthereumListener;
+import io.taucoin.listener.EthereumListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ public class BlockMiner {
     private BlockStore blockStore;
 
     @Autowired
-    private Ethereum ethereum;
+    private Taucoin taucoin;
 
     @Autowired
     private CompositeEthereumListener listener;

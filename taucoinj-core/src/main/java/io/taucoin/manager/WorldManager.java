@@ -8,7 +8,7 @@ import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.listener.CompositeEthereumListener;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.net.client.PeerClient;
-import org.ethereum.sync.SyncManager;
+import io.taucoin.sync.SyncManager;
 import io.taucoin.net.peerdiscovery.PeerDiscovery;
 import io.taucoin.net.rlpx.discover.NodeManager;
 import io.taucoin.net.server.ChannelManager;
