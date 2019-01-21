@@ -6,7 +6,7 @@ import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigRenderOptions;
 import io.taucoin.net.rlpx.NodeType;
 import io.taucoin.core.Genesis;
-import org.ethereum.core.genesis.GenesisLoader;
+import io.taucoin.core.genesis.GenesisLoader;
 import io.taucoin.crypto.ECKey;
 import io.taucoin.net.p2p.P2pHandler;
 import io.taucoin.net.rlpx.MessageCodec;

@@ -1,7 +1,7 @@
 package io.taucoin.core;
 
 import io.taucoin.config.SystemProperties;
-import org.ethereum.core.genesis.GenesisLoader;
+import io.taucoin.core.genesis.GenesisLoader;
 import io.taucoin.db.ByteArrayWrapper;
 import org.ethereum.trie.SecureTrie;
 import org.ethereum.trie.Trie;
