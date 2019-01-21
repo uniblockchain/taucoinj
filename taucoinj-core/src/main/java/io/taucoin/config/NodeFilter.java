@@ -1,6 +1,6 @@
 package io.taucoin.config;
 
-import org.ethereum.net.rlpx.Node;
+import io.taucoin.net.rlpx.Node;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

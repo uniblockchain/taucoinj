@@ -139,19 +139,19 @@ public class BlockQueueMem implements BlockQueue {
 //        db.commit();
     }
 
-//    @Override
-//    public void addOrReplace(BlockWrapper block) {
-//        awaitInit();
-//        synchronized (writeMutex) {
-//
-//            if (!index.contains(block.getNumber())) {
-//                addInner(block);
-//            } else {
-//                replaceInner(block);
-//            }
-//        }
+    @Override
+    public void addOrReplace(BlockWrapper block) {
+        awaitInit();
+        synchronized (writeMutex) {
+
+            if (!index.contains(block.getNumber())) {
+                addInner(block);
+            } else {
+                replaceInner(block);
+            }
+        }
 ////        db.commit();
-//    }
+    }
 
     private void replaceInner(BlockWrapper block) {
 

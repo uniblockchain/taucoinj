@@ -143,6 +143,47 @@ public class BlockQueueImpl implements BlockQueue {
     }
 
     @Override
+    public void addOrReplace(BlockWrapper block) {
+        awaitInit();
+        synchronized (writeMutex) {
+
+            if (!index.contains(block.getNumber())) {
+                addInner(block);
+            } else {
+                replaceInner(block);
+            }
+        }
+        db.commit();
+    }
+
+    private void replaceInner(BlockWrapper block) {
+
+        BlockWrapper old = blocks.get(block.getNumber());
+
+        if (block.equals(old)) return;
+
+        if (old != null) {
+            hashes.remove(new ByteArrayWrapper(old.getHash()));
+        }
+
+        blocks.put(block.getNumber(), block);
+        hashes.add(new ByteArrayWrapper(block.getHash()));
+    }
+
+    private void addInner(BlockWrapper block) {
+        blocks.put(block.getNumber(), block);
+        hashes.add(new ByteArrayWrapper(block.getHash()));
+
+        takeLock.lock();
+        try {
+            index.add(block.getNumber());
+            notEmpty.signalAll();
+        } finally {
+            takeLock.unlock();
+        }
+    }
+
+    @Override
     public BlockWrapper poll() {
         awaitInit();
         BlockWrapper block = pollInner();

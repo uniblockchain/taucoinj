@@ -3,10 +3,10 @@ package io.taucoin.facade;
 import io.taucoin.config.DefaultConfig;
 import io.taucoin.config.NoAutoscan;
 import io.taucoin.config.SystemProperties;
-import org.ethereum.net.eth.EthVersion;
-import org.ethereum.net.shh.ShhHandler;
+import io.taucoin.net.eth.EthVersion;
+import io.taucoin.net.shh.ShhHandler;
 
-import org.ethereum.net.swarm.bzz.BzzHandler;
+import io.taucoin.net.swarm.bzz.BzzHandler;
 import io.taucoin.util.BuildInfo;
 import io.taucoin.util.FileUtil;
 import org.slf4j.Logger;

@@ -22,7 +22,7 @@ import com.google.common.base.Objects;
 //import io.taucoin.core.Block;
 //import io.taucoin.core.StoredBlock;
 //import io.taucoin.core.VerificationException;
-//import org.ethereum.net.peerdiscovery.*;
+//import io.taucoin.net.peerdiscovery.*;
 import io.taucoin.config.*;
 //import org.ethereum.store.BlockStore;
 //import org.ethereum.store.BlockStoreException;
