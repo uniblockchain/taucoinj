@@ -254,7 +254,10 @@ public class BlockQueueImpl implements BlockQueue {
     public boolean isBlockExist(byte[] hash) {
         return hashes.contains(new ByteArrayWrapper(hash));
     }
+    @Override
+    public void drop(byte[] nodeId, int scanLimit){
 
+    }
     private void awaitInit() {
         initLock.lock();
         try {

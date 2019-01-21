@@ -293,36 +293,36 @@ public class BlockQueueMem implements BlockQueue {
         return hashes.contains(new ByteArrayWrapper(hash));
     }
 
-//    @Override
-//    public void drop(byte[] nodeId, int scanLimit) {
-//        awaitInit();
-//
-//        int i = 0;
-//        List<Long> removed = new ArrayList<>();
-//
-//        synchronized (index) {
-//
-//            for (Long idx : index) {
-//                if (++i > scanLimit) break;
-//
-//                BlockWrapper b = blocks.get(idx);
-//                if (b.sentBy(nodeId)) removed.add(idx);
-//            }
-//
-//            blocks.keySet().removeAll(removed);
-//            index.removeAll(removed);
-//        }
+    @Override
+    public void drop(byte[] nodeId, int scanLimit) {
+        awaitInit();
 
-//        db.commit();
-//
-//        if (logger.isDebugEnabled()) {
-//            if (removed.isEmpty()) {
-//                logger.debug("0 blocks are dropped out");
-//            } else {
-//                logger.debug("[{}..{}] blocks are dropped out", removed.get(0), removed.get(removed.size() - 1));
-//            }
-//        }
-//    }
+        int i = 0;
+        List<Long> removed = new ArrayList<>();
+
+        synchronized (index) {
+
+            for (Long idx : index) {
+                if (++i > scanLimit) break;
+
+                BlockWrapper b = blocks.get(idx);
+                //if (b.sentBy(nodeId)) removed.add(idx);
+            }
+
+            blocks.keySet().removeAll(removed);
+            index.removeAll(removed);
+        }
+
+        //db.commit();
+
+        if (logger.isDebugEnabled()) {
+            if (removed.isEmpty()) {
+                logger.debug("0 blocks are dropped out");
+            } else {
+                logger.debug("[{}..{}] blocks are dropped out", removed.get(0), removed.get(removed.size() - 1));
+            }
+        }
+    }
 
 
     private void awaitInit() {
