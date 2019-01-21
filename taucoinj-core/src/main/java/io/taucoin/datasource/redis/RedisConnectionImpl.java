@@ -1,6 +1,6 @@
 package io.taucoin.datasource.redis;
 
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.SystemProperties;
 import org.ethereum.core.PendingTransaction;
 import org.ethereum.core.Transaction;
 import io.taucoin.datasource.KeyValueDataSource;

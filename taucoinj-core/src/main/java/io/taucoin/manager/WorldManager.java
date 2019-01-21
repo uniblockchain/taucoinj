@@ -1,6 +1,6 @@
 package io.taucoin.manager;
 
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.SystemProperties;
 import io.taucoin.core.*;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.db.BlockStore;

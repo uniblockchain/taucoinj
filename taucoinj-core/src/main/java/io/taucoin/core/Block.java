@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static org.ethereum.config.SystemProperties.CONFIG;
+import static io.taucoin.config.SystemProperties.CONFIG;
 
 /**
  * The block in taucoin is the collection of relevant pieces of information

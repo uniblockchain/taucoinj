@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
 import io.taucoin.util.ByteUtil;

@@ -1,8 +1,8 @@
 package io.taucoin.facade;
 
-import org.ethereum.config.DefaultConfig;
-import org.ethereum.config.NoAutoscan;
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.DefaultConfig;
+import io.taucoin.config.NoAutoscan;
+import io.taucoin.config.SystemProperties;
 import org.ethereum.net.eth.EthVersion;
 import org.ethereum.net.shh.ShhHandler;
 

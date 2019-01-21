@@ -2,7 +2,7 @@ package io.taucoin.config;
 
 import java.math.BigInteger;
 
-import static org.ethereum.config.SystemProperties.CONFIG;
+import static io.taucoin.config.SystemProperties.CONFIG;
 
 public class Constants {
 

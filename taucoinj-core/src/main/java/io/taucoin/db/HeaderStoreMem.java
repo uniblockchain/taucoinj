@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.ethereum.config.SystemProperties.CONFIG;
+import static io.taucoin.config.SystemProperties.CONFIG;
 
 /**
  * @author Mikhail Kalinin

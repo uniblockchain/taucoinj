@@ -10,9 +10,9 @@ import org.spongycastle.util.BigIntegers;
 import java.math.BigInteger;
 import java.util.List;
 
-import static org.ethereum.config.Constants.DIFFICULTY_BOUND_DIVISOR;
-import static org.ethereum.config.Constants.EXP_DIFFICULTY_PERIOD;
-import static org.ethereum.config.Constants.MINIMUM_DIFFICULTY;
+import static io.taucoin.config.Constants.DIFFICULTY_BOUND_DIVISOR;
+import static io.taucoin.config.Constants.EXP_DIFFICULTY_PERIOD;
+import static io.taucoin.config.Constants.MINIMUM_DIFFICULTY;
 import static org.ethereum.crypto.HashUtil.EMPTY_TRIE_HASH;
 import static io.taucoin.util.BIUtil.max;
 import static io.taucoin.util.ByteUtil.toHexString;

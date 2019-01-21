@@ -4,7 +4,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import java.net.URL;
 
-import static org.ethereum.config.SystemProperties.CONFIG;
+import static io.taucoin.config.SystemProperties.CONFIG;
 
 /**
  * @author Roman Mandeleil

@@ -1,7 +1,7 @@
 package io.taucoin.manager;
 
 
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
 import io.taucoin.core.Blockchain;

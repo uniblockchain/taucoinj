@@ -3,7 +3,7 @@ package io.taucoin.forge;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ethereum.config.SystemProperties;
+import io.taucoin.config.SystemProperties;
 import io.taucoin.core.*;
 import io.taucoin.db.BlockStore;
 import io.taucoin.db.ByteArrayWrapper;
@@ -24,8 +24,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static java.lang.Math.max;
-import static org.ethereum.config.Constants.UNCLE_GENERATION_LIMIT;
-import static org.ethereum.config.Constants.UNCLE_LIST_LIMIT;
+import static io.taucoin.config.Constants.UNCLE_GENERATION_LIMIT;
+import static io.taucoin.config.Constants.UNCLE_LIST_LIMIT;
 
 /**
  * Created by Anton Nashatyrev on 10.12.2015.
