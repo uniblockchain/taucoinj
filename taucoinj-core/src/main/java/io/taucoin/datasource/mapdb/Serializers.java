@@ -1,8 +1,8 @@
 package io.taucoin.datasource.mapdb;
 
-import org.ethereum.core.Block;
-import org.ethereum.core.BlockHeader;
-import org.ethereum.core.BlockWrapper;
+import io.taucoin.core.Block;
+import io.taucoin.core.BlockHeader;
+import io.taucoin.core.BlockWrapper;
 import io.taucoin.db.ByteArrayWrapper;
 import org.mapdb.Serializer;
 

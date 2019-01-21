@@ -2,8 +2,8 @@ package io.taucoin.db;
 
 import io.taucoin.core.BlockHeader;
 import io.taucoin.core.BlockWrapper;
-import org.ethereum.datasource.mapdb.MapDBFactory;
-import org.ethereum.datasource.mapdb.Serializers;
+import io.taucoin.datasource.mapdb.MapDBFactory;
+import io.taucoin.datasource.mapdb.Serializers;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;

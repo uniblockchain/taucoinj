@@ -1,7 +1,7 @@
 package io.taucoin.db;
 
 import io.taucoin.core.AccountState;
-import org.ethereum.core.Block;
+import io.taucoin.core.Block;
 import io.taucoin.core.Repository;
 
 import org.slf4j.Logger;
