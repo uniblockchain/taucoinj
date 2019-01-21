@@ -1,11 +1,6 @@
 package io.taucoin.core;
 
-import io.taucoin.core.Block;
-import io.taucoin.core.BlockHeader;
-import io.taucoin.core.BlockIdentifier;
-import org.ethereum.core.Chain;
 import org.ethereum.core.Genesis;
-import io.taucoin.core.ImportResult;
 import org.ethereum.core.TransactionReceipt;
 
 import java.math.BigInteger;
@@ -17,7 +12,7 @@ public interface Blockchain {
 
     public long getSize();
 
-    public void add(Block block);
+    public boolean add(Block block);
 
     public ImportResult tryToConnect(Block block);
 
