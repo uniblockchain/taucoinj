@@ -47,7 +47,7 @@ public class WorldManager {
     private Repository repository;
 
     //@Autowired
-    //private Wallet wallet;
+    private Wallet wallet;
 
     @Autowired
     private PeerClient activePeer;
@@ -115,21 +115,21 @@ public class WorldManager {
         return listener;
     }
 
-//    public void setWallet(Wallet wallet) {
-//        this.wallet = wallet;
-//    }
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
 
-    public org.ethereum.facade.Repository getRepository() {
-        return (org.ethereum.facade.Repository)repository;
+    public io.taucoin.facade.Repository getRepository() {
+        return (io.taucoin.facade.Repository)repository;
     }
 
     public Blockchain getBlockchain() {
         return blockchain;
     }
 
-//    public Wallet getWallet() {
-//        return wallet;
-//    }
+    public Wallet getWallet() {
+        return wallet;
+    }
 
     public void setActivePeer(PeerClient peer) {
         this.activePeer = peer;
