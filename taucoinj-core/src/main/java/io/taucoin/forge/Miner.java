@@ -3,7 +3,7 @@ package io.taucoin.forge;
 import io.taucoin.core.Block;
 import org.ethereum.crypto.SHA3Helper;
 import io.taucoin.util.ByteUtil;
-import org.ethereum.util.FastByteComparisons;
+import io.taucoin.util.FastByteComparisons;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

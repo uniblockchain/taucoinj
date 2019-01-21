@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.ethereum.config.SystemProperties.CONFIG;
-import static org.ethereum.util.Functional.Consumer;
+import static io.taucoin.util.Functional.Consumer;
 
 public class RedisDataSource extends RedisMap<byte[], byte[]> implements KeyValueDataSource {
 

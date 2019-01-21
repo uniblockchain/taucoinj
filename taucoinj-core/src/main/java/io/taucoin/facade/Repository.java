@@ -1,6 +1,5 @@
 package io.taucoin.facade;
 
-
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Collection;

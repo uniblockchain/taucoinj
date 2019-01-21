@@ -12,7 +12,7 @@ import java.util.Random;
 import static java.lang.System.arraycopy;
 import static java.math.BigInteger.valueOf;
 import static org.ethereum.crypto.SHA3Helper.sha3;
-import static org.ethereum.util.ByteUtil.*; // some changes to be done
+import static io.taucoin.util.ByteUtil.*; // some changes to be done
 import static org.spongycastle.util.Arrays.reverse;
 
 /**

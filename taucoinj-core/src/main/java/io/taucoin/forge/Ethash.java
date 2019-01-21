@@ -8,7 +8,7 @@ import org.ethereum.config.SystemProperties;
 import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
 import io.taucoin.util.ByteUtil;
-import org.ethereum.util.FastByteComparisons;
+import io.taucoin.util.FastByteComparisons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import java.io.*;
 import java.util.concurrent.*;
 
 import static org.ethereum.crypto.HashUtil.sha3;
-import static org.ethereum.util.ByteUtil.longToBytes;
+import static io.taucoin.util.ByteUtil.longToBytes;
 
 /**
  * More high level validator/miner class which keeps a cache for the last requested block epoch

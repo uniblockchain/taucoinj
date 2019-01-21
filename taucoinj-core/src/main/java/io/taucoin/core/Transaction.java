@@ -4,9 +4,9 @@ import org.ethereum.crypto.ECKey;
 import org.ethereum.crypto.ECKey.ECDSASignature;
 import org.ethereum.crypto.ECKey.MissingPrivateKeyException;
 import org.ethereum.crypto.HashUtil;
-import org.ethereum.util.ByteUtil;
-import org.ethereum.util.RLP;
-import org.ethereum.util.RLPList;
+import io.taucoin.util.ByteUtil;
+import io.taucoin.util.RLP;
+import io.taucoin.util.RLPList;
 import org.ethereum.core.*;
 
 import org.slf4j.Logger;
@@ -20,8 +20,8 @@ import java.security.SignatureException;
 import java.util.Arrays;
 
 import static org.apache.commons.lang3.ArrayUtils.getLength;
-import static org.ethereum.util.ByteUtil.*;
-import static org.ethereum.util.BIUtil.toBI;
+import static io.taucoin.util.ByteUtil.*;
+import static io.taucoin.util.BIUtil.toBI;
 import static io.taucoin.util.TimeUtils.timeNows;
 
 /**

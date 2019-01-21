@@ -10,7 +10,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import static org.ethereum.util.ByteUtil.EMPTY_BYTE_ARRAY;
+import static io.taucoin.util.ByteUtil.EMPTY_BYTE_ARRAY;
 
 /**
  * @author Mikhail Kalinin

@@ -13,9 +13,9 @@ import java.util.List;
 import static org.apache.commons.lang3.ArrayUtils.getLength;
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 import static org.ethereum.config.SystemProperties.CONFIG;
-import static org.ethereum.util.BIUtil.*;
-import static org.ethereum.util.ByteUtil.EMPTY_BYTE_ARRAY;
-import static org.ethereum.util.ByteUtil.toHexString;
+import static io.taucoin.util.BIUtil.*;
+import static io.taucoin.util.ByteUtil.EMPTY_BYTE_ARRAY;
+import static io.taucoin.util.ByteUtil.toHexString;
 
 /**
  * @author Roman Mandeleil

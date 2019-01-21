@@ -11,7 +11,7 @@ import org.ethereum.json.JSONHelper;
 import io.taucoin.trie.SecureTrie;
 import io.taucoin.trie.Trie;
 import io.taucoin.trie.TrieImpl;
-import org.ethereum.util.Functional;
+import io.taucoin.util.Functional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;

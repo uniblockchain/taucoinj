@@ -26,7 +26,7 @@ import io.taucoin.core.NetworkParameters;
 //import io.taucoin.core.StoredBlock;
 //import org.ethereum.core.Transaction;
 //import org.ethereum.core.Util;
-//import org.ethereum.util.MonetaryFormat;
+//import io.taucoin.util.MonetaryFormat;
 //import io.taucoin.core.VerificationException;
 //import org.ethereum.store.BlockStore;
 //import org.ethereum.store.BlockStoreException;

@@ -1,8 +1,8 @@
 package io.taucoin.core;
 
-import org.ethereum.util.RLP;
-import org.ethereum.util.RLPList;
-import org.ethereum.util.RLPElement;
+import io.taucoin.util.RLP;
+import io.taucoin.util.RLPList;
+import io.taucoin.util.RLPElement;
 import java.util.*;
 
 import org.spongycastle.util.encoders.Hex;

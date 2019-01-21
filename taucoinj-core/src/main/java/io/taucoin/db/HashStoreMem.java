@@ -3,7 +3,7 @@ package io.taucoin.db;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 import io.taucoin.datasource.mapdb.MapDBFactory;
-import org.ethereum.util.FastByteComparisons;
+import io.taucoin.util.FastByteComparisons;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;

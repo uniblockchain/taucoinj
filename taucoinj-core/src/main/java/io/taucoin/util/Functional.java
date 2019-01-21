@@ -29,7 +29,7 @@ public interface Functional {
      * @param <T> the type of the first argument to the operation
      * @param <U> the type of the second argument to the operation
      *
-     * @see org.ethereum.util.Functional.Consumer
+     * @see io.taucoin.util.Functional.Consumer
      */
     public interface BiConsumer<T, U> {
 

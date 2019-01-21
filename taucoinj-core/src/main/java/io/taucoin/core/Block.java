@@ -5,7 +5,7 @@ import org.ethereum.crypto.SHA3Helper;
 import org.ethereum.trie.Trie;
 import org.ethereum.trie.TrieImpl;
 import io.taucoin.core.BlockHeader;
-import org.ethereum.util.*;
+import io.taucoin.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.Arrays;

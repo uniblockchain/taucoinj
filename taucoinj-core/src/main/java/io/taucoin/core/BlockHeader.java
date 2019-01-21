@@ -1,9 +1,9 @@
 package io.taucoin.core;
 
 import org.ethereum.crypto.HashUtil;
-import org.ethereum.util.RLP;
-import org.ethereum.util.RLPList;
-import org.ethereum.util.Utils;
+import io.taucoin.util.RLP;
+import io.taucoin.util.RLPList;
+import io.taucoin.util.Utils;
 import org.spongycastle.util.Arrays;
 import org.spongycastle.util.BigIntegers;
 
@@ -14,8 +14,8 @@ import static org.ethereum.config.Constants.DIFFICULTY_BOUND_DIVISOR;
 import static org.ethereum.config.Constants.EXP_DIFFICULTY_PERIOD;
 import static org.ethereum.config.Constants.MINIMUM_DIFFICULTY;
 import static org.ethereum.crypto.HashUtil.EMPTY_TRIE_HASH;
-import static org.ethereum.util.BIUtil.max;
-import static org.ethereum.util.ByteUtil.toHexString;
+import static io.taucoin.util.BIUtil.max;
+import static io.taucoin.util.ByteUtil.toHexString;
 
 /**
  * Block header is a value object containing

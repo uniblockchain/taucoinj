@@ -20,7 +20,7 @@ import java.util.Map;
 import static java.math.BigInteger.ZERO;
 import org.apache.commons.collections4.map.LRUMap;
 import static org.ethereum.config.SystemProperties.CONFIG;
-import static org.ethereum.util.BIUtil.toBI;
+import static io.taucoin.util.BIUtil.toBI;
 import org.ethereum.db.ByteArrayWrapper;
 
 /**

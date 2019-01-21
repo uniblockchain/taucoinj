@@ -1,7 +1,7 @@
 package io.taucoin.core;
 
 import org.ethereum.crypto.ECKey;
-import org.ethereum.util.Utils;
+import io.taucoin.util.Utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
