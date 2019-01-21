@@ -4,12 +4,11 @@ import io.taucoin.core.BlockHeader;
 
 /**
  * Parent class for {@link BlockHeader} validators
- * which run depends on the header of another block
  *
  * @author Mikhail Kalinin
  * @since 02.09.2015
  */
-public abstract class DependentBlockHeaderRule extends AbstractValidationRule {
+public abstract class BlockHeaderRule extends AbstractValidationRule {
 
     @Override
     public Class getEntityClass() {
@@ -19,10 +18,9 @@ public abstract class DependentBlockHeaderRule extends AbstractValidationRule {
     /**
      * Runs header validation and returns its result
      *
-     * @param header block's header
-     * @param dependency header of the dependency block
+     * @param header block header
      * @return true if validation passed, false otherwise
      */
-    abstract public boolean validate(BlockHeader header, BlockHeader dependency);
+    abstract public boolean validate(BlockHeader header);
 
 }

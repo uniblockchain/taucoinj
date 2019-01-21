@@ -122,6 +122,11 @@ public class BlockHeader {
     public long getNumber(){
         return 0;
     }
+    //temporary method will be discarded when smooth
+    public byte[] getPotBoundary(){
+        return null;
+    }
+    
     public String toString() {
         return toStringWithSuffix("\n");
     }
