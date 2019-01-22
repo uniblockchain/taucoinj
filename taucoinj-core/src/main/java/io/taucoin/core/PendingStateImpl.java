@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 */
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import io.taucoin.db.ByteArrayWrapper;
  * @since 28.09.2015
  */
 //@Singleton
+@Component
 public class PendingStateImpl implements PendingState {
 
     private static final Logger logger = LoggerFactory.getLogger("state");
