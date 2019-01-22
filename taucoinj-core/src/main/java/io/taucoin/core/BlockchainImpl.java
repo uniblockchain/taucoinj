@@ -1,7 +1,7 @@
 package io.taucoin.core;
 
 import io.taucoin.config.SystemProperties;
-import org.ethereum.core.TransactionReceipt;
+import io.taucoin.core.Transaction;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.crypto.SHA3Helper;
 import io.taucoin.db.BlockStore;
@@ -157,7 +157,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     }
 
     @Override
-    public TransactionReceipt getTransactionReceiptByHash(byte[] hash) {
+    public Transaction getTransactionByHash(byte[] hash) {
         throw new UnsupportedOperationException("TODO: will be implemented soon "); // FIXME: go and fix me
     }
 
@@ -396,14 +396,14 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
 //        pushState(parent.getHash());
 //
 //        track = repository.startTracking();
-//        List<TransactionReceipt> receipts = applyBlock(block);
+//        List<Transaction> receipts = applyBlock(block);
 //        track.commit();
 //        block.setStateRoot(getRepository().getRoot());
 //
 //        popState();
 //
 //        Bloom logBloom = new Bloom();
-//        for (TransactionReceipt receipt : receipts) {
+//        for (Transaction receipt : receipts) {
 //            logBloom.or(receipt.getBloomFilter());
 //        }
 //        block.getHeader().setLogsBloom(logBloom.getData());
@@ -461,7 +461,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         listener.trace(String.format("Block chain size: [ %d ]", this.getSize()));
 
 
-        List<TransactionReceipt> receipts = null;
+        List<Transaction> receipts = null;
         listener.onBlock(block);
 
         return true;
@@ -481,7 +481,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         return getRuntime().freeMemory() < (getRuntime().totalMemory() * (1 - maxMemoryPercents));
     }
 
-    public static byte[] calcReceiptsTrie(List<TransactionReceipt> receipts) {
+    public static byte[] calcReceiptsTrie(List<Transaction> receipts) {
         //TODO Fix Trie hash for receipts - doesnt match cpp
         Trie receiptsTrie = new TrieImpl(null);
 
@@ -557,9 +557,9 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         return ret;
     }
 
-    private List<TransactionReceipt> processBlock(Block block) {
+    private List<Transaction> processBlock(Block block) {
 
-        List<TransactionReceipt> receipts = new ArrayList<>();
+        List<Transaction> receipts = new ArrayList<>();
         if (!block.isGenesis()) {
             if (!config.blockChainOnly()) {
 //                wallet.addTransactions(block.getTransactionsList());
@@ -571,13 +571,13 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         return receipts;
     }
 
-    private List<TransactionReceipt> applyBlock(Block block) {
+    private List<Transaction> applyBlock(Block block) {
 
         logger.info("applyBlock: block: [{}] tx.list: [{}]", block.getNumber(), block.getTransactionsList().size());
         long saveTime = System.nanoTime();
         int i = 1;
         long totalGasUsed = 0;
-        List<TransactionReceipt> receipts = new ArrayList<>();
+        List<Transaction> receipts = new ArrayList<>();
 
         for (Transaction tx : block.getTransactionsList()) {
             stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), i);
