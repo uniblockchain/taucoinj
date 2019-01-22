@@ -15,8 +15,12 @@ import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
 import io.taucoin.core.Blockchain;
 import io.taucoin.core.Transaction;
+import io.taucoin.core.transaction.TransactionVersion;
+import io.taucoin.core.transaction.TransactionOptions;
+import io.taucoin.crypto.ECKey;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.facade.Taucoin;
+import io.taucoin.util.ByteUtil;
 import io.taucoin.util.RLP;
 import org.spongycastle.util.encoders.Hex;
 
@@ -80,6 +84,10 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         return Hex.decode(clearJSString(data));
     }
 
+    protected byte[] jsToByteArray(String data) {
+        return Hex.decode(clearJSString(data));
+    }
+
     protected int jsToInt(String data) {
         return Integer.parseInt(clearJSString(data), 16);
     }
@@ -92,74 +100,63 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         return new BigInteger(clearJSString(data), 16);
     }
 
+    protected BigInteger jsToBigIntegerDecimal(String data) {
+        return new BigInteger(data, 10);
+    }
+
+    /**
+     * Create transaction by rpc method parameters.
+     * {
+     *     "to" : <toAddress>,
+     *     "value": <value>,
+     *     "fee": <tx fee>,
+     *     "privkey": <sender private key>
+     * }
+     */
     protected Transaction jsToTransaction(JSONObject obj) throws Exception {
-        if ((!obj.containsKey("to") || ((String)obj.get("to")).equals("")) && (!obj.containsKey("data") || ((String)obj.get("data")).equals(""))) {
-            throw new Exception("");
+        if ((!obj.containsKey("to") || ((String)obj.get("to")).equals(""))   || (!obj.containsKey("value") || ((String)obj.get("value")).equals(""))
+                || (!obj.containsKey("privkey") || ((String)obj.get("privkey")).equals(""))) {
+            throw new Exception("Invalid params");
         }
 
-        byte[] from = getCoinBase();
-        if (obj.containsKey("from") && !((String)obj.get("from")).equals("")) {
-            from = jsToAddress((String) obj.get("from"));
-        }
-        Account acc = null;
-        for (Account ac : taucoin.getWallet().getAccountCollection()) {
-            if (Arrays.equals(ac.getAddress(), from)) {
-                acc = ac;
-                break;
-            }
-        }
-        if (acc == null) {
-            throw new Exception("");
-        }
-
-        byte[] senderPrivKey = acc.getEcKey().getPrivKeyBytes();
-
-        // default - from taucoinj-studio
         byte[] to = null;
         if (obj.containsKey("to") && !((String)obj.get("to")).equals("")) {
             to = jsToAddress((String) obj.get("to"));
         }
 
-        // default - from taucoinj-studio
-        BigInteger gasPrice = SZABO.value().multiply(BigInteger.TEN);
-        if (obj.containsKey("gasPrice") && !((String)obj.get("gasPrice")).equals("")) {
-            gasPrice = jsToBigInteger((String) obj.get("gasPrice"));
-        }
-
-        // default - from cpp-taucoin
-        BigInteger gas = acc.getBalance().divide(gasPrice);
-        //BigInteger gasBBRemaining = new BigInteger(Long.toString((taucoin.getBlockchain().getBestBlock().getGasLimit() - taucoin.getBlockchain().getBestBlock().getGasUsed()) / 5));
-        BigInteger gasBBRemaining = BigInteger.ZERO;
-        if (gasBBRemaining.compareTo(gas) < 0)
-            gas = gasBBRemaining;
-        if (obj.containsKey("gas") && !((String)obj.get("gas")).equals("")) {
-            gas = jsToBigInteger((String) obj.get("gas"));
-        }
-
-        // default - from taucoinj-studio
-        BigInteger value = new BigInteger("1000");
+        BigInteger value = BigInteger.ZERO;
         if (obj.containsKey("value") && !((String)obj.get("value")).equals("")) {
-            value = jsToBigInteger((String) obj.get("value"));
+            value = jsToBigIntegerDecimal((String) obj.get("value"));
         }
 
-        // default - from taucoinj-studio
-        BigInteger nonce = BigInteger.ONE;//taucoin.getRepository().getNonce(acc.getAddress());
-        if (obj.containsKey("nonce") && !((String)obj.get("nonce")).equals("")) {
-            nonce = jsToBigInteger((String) obj.get("nonce"));
+        BigInteger fee = BigInteger.ZERO;
+        if (obj.containsKey("fee") && !((String)obj.get("fee")).equals("")) {
+            value = jsToBigIntegerDecimal((String) obj.get("fee"));
         }
 
-        // default - from taucoinj-studio
-        byte[] data = new byte[]{};
-        if (obj.containsKey("data") && !((String)obj.get("data")).equals("")) {
-            data = jsToAddress((String) obj.get("data"));
+        byte[] senderPrivkey = null;
+        if (obj.containsKey("privkey") && !((String)obj.get("privkey")).equals("")) {
+            senderPrivkey = jsToByteArray((String) obj.get("privkey"));
         }
 
-        Transaction tx = taucoin.createTransaction((byte)0x01, (byte)0x00, null/*gas*/, null/*to*/, null/*value*/, null/*data*/);;
+        // Check account balance
+        byte[] accountAddress = ECKey.fromPrivate(senderPrivkey).getAccountAddress().getHash160();
+        BigInteger balance = this.taucoin.getRepository().getBalance(accountAddress);
+        if (value.add(fee).compareTo(balance) > 0) {
+            throw new Exception("Not enough balance");
+        }
 
-        tx.sign(senderPrivKey);
+        long timeStamp = System.currentTimeMillis();
+
+        Transaction tx = taucoin.createTransaction(TransactionVersion.V01.getCode(),
+                TransactionOptions.TRANSACTION_OPTION_DEFAULT, ByteUtil.longToBytes(timeStamp),
+                to, ByteUtil.bigIntegerToBytes(value), ByteUtil.bigIntegerToBytes(fee));
+
+        tx.sign(senderPrivkey);
 
         return tx;
     }
+
 
     protected JSONObject blockToJS (Block block, Boolean detailed) {
         JSONObject res = new JSONObject();
