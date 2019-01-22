@@ -10,7 +10,7 @@ import io.taucoin.core.Transaction;
 import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.net.MessageQueue;
 import io.taucoin.net.client.Capability;
-import io.taucoin.net.tau.handler.Eth;
+import io.taucoin.net.tau.handler.Tau;
 import io.taucoin.net.tau.handler.TauAdapter;
 import io.taucoin.net.tau.handler.TauHandler;
 import io.taucoin.net.tau.handler.TauHandlerFactory;
@@ -78,7 +78,7 @@ public class Channel {
     @Autowired
     private StaticMessages staticMessages;
 
-    private Eth eth = new TauAdapter();
+    private Tau eth = new TauAdapter();
 
     private InetSocketAddress inetSocketAddress;
 
@@ -262,7 +262,7 @@ public class Channel {
         return peer != null && peer.getTauVersion().isCompatible(getTauVersion());
     }
 
-    public Eth getTauHandler() {
+    public Tau getTauHandler() {
         return eth;
     }
 

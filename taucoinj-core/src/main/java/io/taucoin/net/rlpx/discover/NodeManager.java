@@ -306,7 +306,7 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
     }
 
     /**
-     * Returns list of unused Eth nodes with highest total difficulty<br>
+     * Returns list of unused Tau nodes with highest total difficulty<br>
      *     Search criteria:
      *     <ul>
      *         <li>not presented in {@code usedIds} collection</li>

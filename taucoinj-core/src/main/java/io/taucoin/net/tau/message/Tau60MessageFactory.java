@@ -6,7 +6,7 @@ import io.taucoin.net.message.MessageFactory;
 import static io.taucoin.net.tau.TauVersion.*;
 
 /**
- * Eth V60 message factory
+ * Tau V60 message factory
  *
  * @author Mikhail Kalinin
  * @since 20.08.2015

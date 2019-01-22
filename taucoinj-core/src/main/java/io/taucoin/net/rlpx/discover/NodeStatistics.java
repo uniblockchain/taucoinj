@@ -87,7 +87,7 @@ public class NodeStatistics {
     private ReasonCode rlpxLastLocalDisconnectReason = null;
     private boolean disconnected = false;
 
-    // Eth stat
+    // Tau stat
     public final StatHandler ethHandshake = new StatHandler();
     public final StatHandler ethInbound = new StatHandler();
     public final StatHandler ethOutbound = new StatHandler();

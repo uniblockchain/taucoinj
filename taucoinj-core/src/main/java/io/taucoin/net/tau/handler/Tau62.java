@@ -24,7 +24,7 @@ import static io.taucoin.sync.SyncStateName.BLOCK_RETRIEVING;
 import static io.taucoin.util.BIUtil.isMoreThan;
 
 /**
- * Eth 62
+ * Tau 62
  *
  * @author Mikhail Kalinin
  * @since 04.09.2015

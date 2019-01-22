@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Wrapper around an Ethereum NewBlockHashes message on the network<br>
- * Represents new message structure introduced in Eth V62
+ * Represents new message structure introduced in Tau V62
  *
  * @see TauMessageCodes#NEW_BLOCK_HASHES
  *

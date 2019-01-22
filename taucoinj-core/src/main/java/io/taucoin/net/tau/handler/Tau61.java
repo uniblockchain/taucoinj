@@ -24,7 +24,7 @@ import static io.taucoin.sync.SyncStateName.DONE_HASH_RETRIEVING;
 import static io.taucoin.sync.SyncStateName.HASH_RETRIEVING;
 
 /**
- * Eth V61
+ * Tau V61
  *
  * @author Mikhail Kalinin
  * @since 20.08.2015
@@ -43,7 +43,7 @@ public class Tau61 extends TauLegacy {
     private long lastAskedNumber = 0;
 
     /**
-     * In Eth 61 we have an ability to check if we're on the fork
+     * In Tau 61 we have an ability to check if we're on the fork
      * before starting hash sync.
      *
      * To do this we just download hashes of already known blocks

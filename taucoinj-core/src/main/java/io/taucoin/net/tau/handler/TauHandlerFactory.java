@@ -9,12 +9,12 @@ import io.taucoin.net.tau.TauVersion;
 public interface TauHandlerFactory {
 
     /**
-     * Creates TauHandler by requested Eth version
+     * Creates TauHandler by requested Tau version
      *
-     * @param version Eth version
+     * @param version Tau version
      * @return created handler
      *
-     * @throws IllegalArgumentException if provided Eth version is not supported
+     * @throws IllegalArgumentException if provided Tau version is not supported
      */
     TauHandler create(TauVersion version);
 

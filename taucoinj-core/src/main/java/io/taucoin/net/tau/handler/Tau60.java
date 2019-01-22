@@ -12,7 +12,7 @@ import static io.taucoin.net.tau.TauVersion.*;
 import static io.taucoin.sync.SyncStateName.DONE_HASH_RETRIEVING;
 
 /**
- * Eth V60
+ * Tau V60
  *
  * @author Mikhail Kalinin
  * @since 20.08.2015

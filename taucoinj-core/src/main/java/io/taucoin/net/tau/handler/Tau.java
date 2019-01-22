@@ -9,14 +9,14 @@ import io.taucoin.sync.SyncStatistics;
 import java.util.List;
 
 /**
- * Describes interface required by Eth peer clients
+ * Describes interface required by Tau peer clients
  *
  * @see io.taucoin.net.server.Channel
  *
  * @author Mikhail Kalinin
  * @since 20.08.2015
  */
-public interface Eth {
+public interface Tau {
 
     /**
      * @return true if StatusMessage was processed, false otherwise

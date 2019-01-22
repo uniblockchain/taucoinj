@@ -23,7 +23,7 @@ import static io.taucoin.util.BIUtil.isMoreThan;
 import static io.taucoin.util.ByteUtil.wrap;
 
 /**
- * Holds commons for legacy versions of Eth protocol <br>
+ * Holds commons for legacy versions of Tau protocol <br>
  * Covers PV 60 and PV 61
  *
  * @author Mikhail Kalinin

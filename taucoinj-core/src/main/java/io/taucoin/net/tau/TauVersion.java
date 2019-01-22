@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents supported Eth versions
+ * Represents supported Tau versions
  *
  * @author Mikhail Kalinin
  * @since 14.08.2015

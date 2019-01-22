@@ -13,15 +13,15 @@ import static io.taucoin.net.tau.TauVersion.*;
 /**
  * It's quite annoying to always check {@code if (eth != null)} before accessing it. <br>
  *
- * This adapter helps to avoid such checks. It provides meaningful answers to Eth client
- * assuming that Eth hasn't been initialized yet. <br>
+ * This adapter helps to avoid such checks. It provides meaningful answers to Tau client
+ * assuming that Tau hasn't been initialized yet. <br>
  *
  * Check {@link io.taucoin.net.server.Channel} for example.
  *
  * @author Mikhail Kalinin
  * @since 20.08.2015
  */
-public class TauAdapter implements Eth {
+public class TauAdapter implements Tau {
 
     private final SyncStatistics syncStats = new SyncStatistics();
 

@@ -346,7 +346,7 @@ public class P2pHandler extends SimpleChannelInboundHandler<P2pMessage> {
         }
 
         // we need to pick up
-        // the most recent Eth version
+        // the most recent Tau version
         Capability highest = null;
         for (Capability eth : eths) {
             if (highest == null || highest.getVersion() < eth.getVersion()) {

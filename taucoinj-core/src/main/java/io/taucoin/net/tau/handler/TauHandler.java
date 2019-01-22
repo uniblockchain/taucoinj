@@ -50,7 +50,7 @@ import static io.taucoin.util.BIUtil.isLessThan;
  * <li>GET_BLOCK_HASHES_BY_NUMBER       :   Request list of know block hashes starting from the block</li>
  * </ul>
  */
-public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage> implements Eth {
+public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage> implements Tau {
 
     private final static Logger loggerNet = LoggerFactory.getLogger("net");
     private final static Logger loggerSync = LoggerFactory.getLogger("sync");
@@ -112,7 +112,7 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
 
     /**
      * Last block hash to be asked from the peer,
-     * its usage depends on Eth version
+     * its usage depends on Tau version
      *
      * @see Tau60
      * @see Tau61
