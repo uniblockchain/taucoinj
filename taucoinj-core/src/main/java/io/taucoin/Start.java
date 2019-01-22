@@ -1,6 +1,6 @@
 package io.taucoin;
 
-import org.ethereum.cli.CLIInterface;
+import io.taucoin.cli.CLIInterface;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.facade.TaucoinFactory;
 import io.taucoin.net.rlpx.Node;
