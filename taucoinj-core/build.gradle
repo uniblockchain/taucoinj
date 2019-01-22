@@ -24,7 +24,25 @@ apply plugin: 'com.jfrog.artifactory-upload'
 
 sourceCompatibility = 1.7
 
-mainClassName = 'org.ethereum.Start'
+sourceSets {
+    main {
+        java {
+            srcDirs 'src'
+            include 'io/taucoin/**'
+            exclude 'org/ethereum/**'
+        }
+    }
+
+    test {
+        java {
+            srcDirs 'src'
+            include 'io/taucoin/**'
+            exclude 'org/ethereum/**'
+        }
+    }
+}
+
+mainClassName = 'io.taucoin.Start'
 applicationDefaultJvmArgs = ["-server", "-Xss32m", "-Xms3g", "-XX:+UseCompressedOops", "-XX:-OmitStackTraceInFastThrow"]
 if (project.hasProperty("mainClass")) {
     mainClassName = mainClass
@@ -216,7 +234,7 @@ bintray {
     pkg {
         userOrg = 'ethereum' //An optional organization name when the repo belongs to one of the user's orgs
         repo = 'maven'
-        name = 'org.ethereum'
+        name = 'io.taucoin'
     }
 }
 
