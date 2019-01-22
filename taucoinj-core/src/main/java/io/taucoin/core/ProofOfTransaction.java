@@ -8,8 +8,9 @@ import static java.lang.Math.abs;
 import static java.lang.Math.log;
 
 public class ProofOfTransaction {
-    private final static int MAXRATIO = 67;
-    private final static int MINRATIO = 53;
+    private final static int MAXRATIO = 335;
+    private final static int MINRATIO = 265;
+    private final static int AVERTIME = 300;
     private final static double GAMMA = 0.64;
     private final static BigInteger DiffAdjustNumerator = new BigInteger("010000000000000000",16);
     private final static BigInteger DiffAdjustNumeratorHalf = new BigInteger("0100000000",16);
@@ -36,14 +37,14 @@ public class ProofOfTransaction {
         long pastTimeAver = pastTimeFromLatestBlock/3;
 
         BigInteger newRequiredBaseTarget;
-        if( pastTimeAver > 60 ) {
+        if( pastTimeAver > AVERTIME ) {
             long min = 0;
             if (pastTimeAver < MAXRATIO){
                 min = pastTimeAver;
             }else {
                 min = MAXRATIO;
             }
-            newRequiredBaseTarget = lastBlockbaseTarget.multiply(BigInteger.valueOf(min).divide(BigInteger.valueOf(60)));
+            newRequiredBaseTarget = lastBlockbaseTarget.multiply(BigInteger.valueOf(min).divide(BigInteger.valueOf(AVERTIME)));
         }else{
             long max = 0;
 
@@ -56,7 +57,9 @@ public class ProofOfTransaction {
             //double doubletemp =  (60-max)*GAMMA/60;
             //long temp = Math.round(1000*doubletemp);
             //this.newRequiredBaseTarget = lastBlockbaseTarget.subtract(BigInteger.valueOf(temp).multiply(lastBlockbaseTarget).divide(BigInteger.valueOf(1000)));
-            newRequiredBaseTarget = lastBlockbaseTarget.subtract(lastBlockbaseTarget.divide(BigInteger.valueOf(375)).multiply(BigInteger.valueOf(60-max)).multiply(BigInteger.valueOf(4)));
+            newRequiredBaseTarget = lastBlockbaseTarget.
+                    subtract(lastBlockbaseTarget.divide(BigInteger.valueOf(1875)).
+                            multiply(BigInteger.valueOf(AVERTIME-max)).multiply(BigInteger.valueOf(4)));
         }
         return newRequiredBaseTarget;
     }
