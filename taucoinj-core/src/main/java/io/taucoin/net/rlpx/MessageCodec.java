@@ -7,8 +7,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.net.client.Capability;
-import io.taucoin.net.eth.EthVersion;
-import io.taucoin.net.eth.message.EthMessageCodes;
+import io.taucoin.net.tau.TauVersion;
+import io.taucoin.net.tau.message.TauMessageCodes;
 import io.taucoin.net.message.Message;
 import io.taucoin.net.message.MessageFactory;
 import io.taucoin.net.p2p.P2pMessageCodes;
@@ -50,7 +50,7 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
     private MessageFactory ethMessageFactory;
     private MessageFactory shhMessageFactory;
     private MessageFactory bzzMessageFactory;
-    private EthVersion ethVersion;
+    private TauVersion ethVersion;
 
     @Autowired
     EthereumListener ethereumListener;
@@ -204,8 +204,8 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
             code = messageCodesResolver.withP2pOffset(((P2pMessageCodes) msgCommand).asByte());
         }
 
-        if (msgCommand instanceof EthMessageCodes){
-            code = messageCodesResolver.withEthOffset(((EthMessageCodes) msgCommand).asByte());
+        if (msgCommand instanceof TauMessageCodes){
+            code = messageCodesResolver.withEthOffset(((TauMessageCodes) msgCommand).asByte());
         }
 
         return code;
@@ -219,7 +219,7 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
         }
 
         resolved = messageCodesResolver.resolveEth(code);
-        if (ethMessageFactory != null && EthMessageCodes.inRange(resolved, ethVersion)) {
+        if (ethMessageFactory != null && TauMessageCodes.inRange(resolved, ethVersion)) {
             return ethMessageFactory.create(resolved, payload);
         }
 
@@ -230,7 +230,7 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
         this.channel = channel;
     }
 
-    public void setEthVersion(EthVersion ethVersion) {
+    public void setTauVersion(TauVersion ethVersion) {
         this.ethVersion = ethVersion;
     }
 
@@ -246,7 +246,7 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
         this.p2pMessageFactory = p2pMessageFactory;
     }
 
-    public void setEthMessageFactory(MessageFactory ethMessageFactory) {
+    public void setTauMessageFactory(MessageFactory ethMessageFactory) {
         this.ethMessageFactory = ethMessageFactory;
     }
 

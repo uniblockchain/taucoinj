@@ -1,8 +1,8 @@
 package io.taucoin.net.rlpx;
 
 import io.taucoin.net.client.Capability;
-import io.taucoin.net.eth.EthVersion;
-import io.taucoin.net.eth.message.EthMessageCodes;
+import io.taucoin.net.tau.TauVersion;
+import io.taucoin.net.tau.message.TauMessageCodes;
 import io.taucoin.net.p2p.P2pMessageCodes;
 
 import java.util.Collections;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.taucoin.net.eth.EthVersion.*;
+import static io.taucoin.net.tau.TauVersion.*;
 
 /**
  * @author Mikhail Kalinin
@@ -32,10 +32,10 @@ public class MessageCodesResolver {
         int offset = P2pMessageCodes.USER.asByte() + 1;
 
         for (Capability capability : caps) {
-            if (capability.getName().equals(Capability.ETH)) {
+            if (capability.getName().equals(Capability.TAU)) {
                 setEthOffset(offset);
-                EthVersion v = fromCode(capability.getVersion());
-                offset += EthMessageCodes.values(v).length;
+                TauVersion v = fromCode(capability.getVersion());
+                offset += TauMessageCodes.values(v).length;
             }
         }
     }
@@ -45,7 +45,7 @@ public class MessageCodesResolver {
     }
 
     public byte withEthOffset(byte code) {
-        return withOffset(code, Capability.ETH);
+        return withOffset(code, Capability.TAU);
     }
 
     public byte withOffset(byte code, String cap) {
@@ -58,7 +58,7 @@ public class MessageCodesResolver {
     }
 
     public byte resolveEth(byte code) {
-        return resolve(code, Capability.ETH);
+        return resolve(code, Capability.TAU);
     }
 
     private byte resolve(byte code, String cap) {
@@ -72,7 +72,7 @@ public class MessageCodesResolver {
     }
 
     public void setEthOffset(int offset) {
-        setOffset(Capability.ETH, offset);
+        setOffset(Capability.TAU, offset);
     }
 
     private void setOffset(String cap, int offset) {

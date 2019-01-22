@@ -5,7 +5,7 @@ import io.taucoin.core.Block;
 import io.taucoin.core.BlockWrapper;
 import io.taucoin.core.Blockchain;
 import io.taucoin.listener.EthereumListener;
-import io.taucoin.net.eth.EthVersion;
+import io.taucoin.net.tau.TauVersion;
 import io.taucoin.net.rlpx.discover.DiscoverListener;
 import io.taucoin.net.rlpx.discover.NodeHandler;
 import io.taucoin.net.rlpx.discover.NodeManager;
@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static io.taucoin.config.SystemProperties.CONFIG;
-import static io.taucoin.net.eth.EthVersion.*;
+import static io.taucoin.net.tau.TauVersion.*;
 import static io.taucoin.net.message.ReasonCode.USELESS_PEER;
 import static io.taucoin.sync.SyncStateName.*;
 import static io.taucoin.util.BIUtil.isIn20PercentRange;
@@ -63,7 +63,7 @@ public class SyncManager {
     /**
      * master peer version
      */
-    EthVersion masterVersion = V62;
+    TauVersion masterVersion = V62;
 
     /**
      * block which gap recovery is running for
@@ -349,7 +349,7 @@ public class SyncManager {
     void startMaster(Channel master) {
         pool.changeState(IDLE);
 
-        masterVersion = master.getEthVersion();
+        masterVersion = master.getTauVersion();
 
         if (gapBlock != null) {
             master.setLastHashToAsk(gapBlock.getHash());
@@ -395,10 +395,10 @@ public class SyncManager {
         }
     }
 
-    private EthVersion initialMasterVersion() {
+    private TauVersion initialMasterVersion() {
 
         if (CONFIG.syncVersion() != null) {
-            return EthVersion.fromCode(CONFIG.syncVersion());
+            return TauVersion.fromCode(CONFIG.syncVersion());
         }
 
         if (!queue.isHeadersEmpty() || queue.isHashesEmpty()) {

@@ -6,8 +6,7 @@ package io.taucoin.net.client;
 public class Capability implements Comparable<Capability> {
 
     public final static String P2P = "p2p";
-    public final static String ETH = "eth";
-    public final static String SHH = "shh";
+    public final static String TAU = "eth";
     public final static String BZZ = "bzz";
 
     private String name;
@@ -27,7 +26,7 @@ public class Capability implements Comparable<Capability> {
     }
 
     public boolean isEth() {
-        return ETH.equals(name);
+        return TAU.equals(name);
     }
 
     @Override

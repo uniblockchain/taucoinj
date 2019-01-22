@@ -10,14 +10,14 @@ import io.taucoin.core.Transaction;
 import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.net.MessageQueue;
 import io.taucoin.net.client.Capability;
-import io.taucoin.net.eth.handler.Eth;
-import io.taucoin.net.eth.handler.EthAdapter;
-import io.taucoin.net.eth.handler.EthHandler;
-import io.taucoin.net.eth.handler.EthHandlerFactory;
-import io.taucoin.net.eth.EthVersion;
-import io.taucoin.net.eth.message.Eth60MessageFactory;
-import io.taucoin.net.eth.message.Eth61MessageFactory;
-import io.taucoin.net.eth.message.Eth62MessageFactory;
+import io.taucoin.net.tau.handler.Eth;
+import io.taucoin.net.tau.handler.TauAdapter;
+import io.taucoin.net.tau.handler.TauHandler;
+import io.taucoin.net.tau.handler.TauHandlerFactory;
+import io.taucoin.net.tau.TauVersion;
+import io.taucoin.net.tau.message.Tau60MessageFactory;
+import io.taucoin.net.tau.message.Tau61MessageFactory;
+import io.taucoin.net.tau.message.Tau62MessageFactory;
 import io.taucoin.net.message.ReasonCode;
 import io.taucoin.net.rlpx.*;
 import io.taucoin.sync.SyncStateName;
@@ -73,12 +73,12 @@ public class Channel {
     private NodeManager nodeManager;
 
     @Autowired
-    private EthHandlerFactory ethHandlerFactory;
+    private TauHandlerFactory ethHandlerFactory;
 
     @Autowired
     private StaticMessages staticMessages;
 
-    private Eth eth = new EthAdapter();
+    private Eth eth = new TauAdapter();
 
     private InetSocketAddress inetSocketAddress;
 
@@ -160,15 +160,15 @@ public class Channel {
         getNodeStatistics().rlpxOutHello.add();
     }
 
-    public void activateEth(ChannelHandlerContext ctx, EthVersion version) {
-        EthHandler handler = ethHandlerFactory.create(version);
-        MessageFactory messageFactory = createEthMessageFactory(version);
-        messageCodec.setEthVersion(version);
-        messageCodec.setEthMessageFactory(messageFactory);
+    public void activateEth(ChannelHandlerContext ctx, TauVersion version) {
+        TauHandler handler = ethHandlerFactory.create(version);
+        MessageFactory messageFactory = createTauMessageFactory(version);
+        messageCodec.setTauVersion(version);
+        messageCodec.setTauMessageFactory(messageFactory);
 
         logger.info("Eth{} [ address = {} | id = {} ]", handler.getVersion(), inetSocketAddress, getPeerIdShort());
 
-        ctx.pipeline().addLast(Capability.ETH, handler);
+        ctx.pipeline().addLast(Capability.TAU, handler);
 
         handler.setMsgQueue(msgQueue);
         handler.setChannel(this);
@@ -179,11 +179,11 @@ public class Channel {
         eth = handler;
     }
 
-    private MessageFactory createEthMessageFactory(EthVersion version) {
+    private MessageFactory createTauMessageFactory(TauVersion version) {
         switch (version) {
-            case V60:   return new Eth60MessageFactory();
-            case V61:   return new Eth61MessageFactory();
-            case V62:   return new Eth62MessageFactory();
+            case V60:   return new Tau60MessageFactory();
+            case V61:   return new Tau61MessageFactory();
+            case V62:   return new Tau62MessageFactory();
             default:    throw new IllegalArgumentException("Eth " + version + " is not supported");
         }
     }
@@ -259,10 +259,10 @@ public class Channel {
     // ETH sub protocol
 
     public boolean isEthCompatible(Channel peer) {
-        return peer != null && peer.getEthVersion().isCompatible(getEthVersion());
+        return peer != null && peer.getTauVersion().isCompatible(getTauVersion());
     }
 
-    public Eth getEthHandler() {
+    public Eth getTauHandler() {
         return eth;
     }
 
@@ -349,7 +349,7 @@ public class Channel {
         eth.sendNewBlock(block);
     }
 
-    public EthVersion getEthVersion() {
+    public TauVersion getTauVersion() {
         return eth.getVersion();
     }
 

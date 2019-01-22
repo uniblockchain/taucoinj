@@ -3,7 +3,7 @@ package io.taucoin.facade;
 import io.taucoin.config.DefaultConfig;
 import io.taucoin.config.NoAutoscan;
 import io.taucoin.config.SystemProperties;
-import io.taucoin.net.eth.EthVersion;
+import io.taucoin.net.tau.TauVersion;
 import io.taucoin.util.BuildInfo;
 import io.taucoin.util.FileUtil;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class TaucoinFactory {
 
         if (logger.isInfoEnabled()) {
             StringBuilder versions = new StringBuilder();
-            for (EthVersion v : EthVersion.supported()) {
+            for (TauVersion v : TauVersion.supported()) {
                 versions.append(v.getCode()).append(", ");
             }
             versions.delete(versions.length() - 2, versions.length());

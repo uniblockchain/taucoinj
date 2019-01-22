@@ -13,7 +13,7 @@ import static io.taucoin.util.ByteUtil.byteArrayToLong;
 /**
  * Block identifier holds block hash and number <br>
  * This tuple is used in some places of the core,
- * like by {@link io.taucoin.net.eth.message.EthMessageCodes#NEW_BLOCK_HASHES} message wrapper
+ * like by {@link io.taucoin.net.tau.message.TauMessageCodes#NEW_BLOCK_HASHES} message wrapper
  *
  * @author Mikhail Kalinin
  * @since 04.09.2015

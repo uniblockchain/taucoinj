@@ -38,7 +38,7 @@ public class PeerServer {
     @Autowired
     private ApplicationContext ctx;
 
-    public EthereumChannelInitializer ethereumChannelInitializer;
+    public TauChannelInitializer ethereumChannelInitializer;
 
     @Autowired
     EthereumListener ethereumListener;
@@ -53,7 +53,7 @@ public class PeerServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        ethereumChannelInitializer = ctx.getBean(EthereumChannelInitializer.class, "");
+        ethereumChannelInitializer = ctx.getBean(TauChannelInitializer.class, "");
 
         ethereumListener.trace("Listening on port " + port);
 

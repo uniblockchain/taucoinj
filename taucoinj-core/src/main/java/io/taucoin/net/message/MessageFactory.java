@@ -10,7 +10,7 @@ public interface MessageFactory {
 
     /**
      * Creates message by absolute message codes
-     * e.g. codes described in {@link io.taucoin.net.eth.message.EthMessageCodes}
+     * e.g. codes described in {@link io.taucoin.net.tau.message.TauMessageCodes}
      *
      * @param code message code
      * @param encoded encoded message bytes

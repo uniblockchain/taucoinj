@@ -2,7 +2,7 @@ package io.taucoin.net.client;
 
 import io.taucoin.config.SystemProperties;
 import io.taucoin.listener.EthereumListener;
-import io.taucoin.net.server.EthereumChannelInitializer;
+import io.taucoin.net.server.TauChannelInitializer;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -89,7 +89,7 @@ public class PeerClient {
     public ChannelFuture connectAsync(String host, int port, String remoteId, boolean discoveryMode) {
         ethereumListener.trace("Connecting to: " + host + ":" + port);
 
-        EthereumChannelInitializer ethereumChannelInitializer = ctx.getBean(EthereumChannelInitializer.class, remoteId);
+        TauChannelInitializer ethereumChannelInitializer = ctx.getBean(TauChannelInitializer.class, remoteId);
         ethereumChannelInitializer.setPeerDiscoveryMode(discoveryMode);
 
         Bootstrap b = new Bootstrap();

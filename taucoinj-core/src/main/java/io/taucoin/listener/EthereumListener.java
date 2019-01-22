@@ -2,7 +2,7 @@ package io.taucoin.listener;
 
 import io.taucoin.core.*;
 import io.taucoin.net.rlpx.Node;
-import io.taucoin.net.eth.message.StatusMessage;
+import io.taucoin.net.tau.message.StatusMessage;
 import io.taucoin.net.message.Message;
 import io.taucoin.net.p2p.HelloMessage;
 import io.taucoin.net.server.Channel;

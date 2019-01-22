@@ -1,7 +1,7 @@
 package io.taucoin.sync;
 
-import static io.taucoin.net.eth.EthVersion.V61;
-import static io.taucoin.net.eth.EthVersion.V62;
+import static io.taucoin.net.tau.TauVersion.V61;
+import static io.taucoin.net.tau.TauVersion.V62;
 import static io.taucoin.sync.SyncStateName.*;
 
 /**

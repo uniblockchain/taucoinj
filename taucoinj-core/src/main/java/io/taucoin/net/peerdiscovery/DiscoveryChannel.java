@@ -8,8 +8,8 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.net.MessageQueue;
 import io.taucoin.net.client.Capability;
-import io.taucoin.net.eth.handler.EthHandler;
-import io.taucoin.net.eth.message.StatusMessage;
+import io.taucoin.net.tau.handler.TauHandler;
+import io.taucoin.net.tau.message.StatusMessage;
 import io.taucoin.net.p2p.HelloMessage;
 import io.taucoin.net.p2p.P2pHandler;
 import io.taucoin.net.rlpx.MessageCodec;
@@ -47,7 +47,7 @@ public class DiscoveryChannel {
     P2pHandler p2pHandler;
 
     @Autowired
-    EthHandler ethHandler;
+    TauHandler ethHandler;
 
     @Autowired
     ApplicationContext ctx;
@@ -94,7 +94,7 @@ public class DiscoveryChannel {
 //                            ch.pipeline().addLast("initiator", decoder.getInitiator());
                             ch.pipeline().addLast("messageCodec", decoder);
                             ch.pipeline().addLast(Capability.P2P, p2pHandler);
-                            ch.pipeline().addLast(Capability.ETH, ethHandler);
+                            ch.pipeline().addLast(Capability.TAU, ethHandler);
 
                             // limit the size of receiving buffer to 1024
                             ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(32368));

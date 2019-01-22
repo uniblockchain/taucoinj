@@ -3,7 +3,7 @@ package io.taucoin.sync;
 import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.listener.EthereumListener;
-import io.taucoin.net.eth.EthVersion;
+import io.taucoin.net.tau.TauVersion;
 import io.taucoin.net.rlpx.Node;
 import io.taucoin.net.server.Channel;
 import io.taucoin.util.Functional;
@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static io.taucoin.net.eth.EthVersion.V62;
+import static io.taucoin.net.tau.TauVersion.V62;
 import static io.taucoin.sync.SyncStateName.IDLE;
 import static io.taucoin.util.BIUtil.isIn20PercentRange;
 import static io.taucoin.util.BIUtil.isMoreThan;
@@ -117,7 +117,7 @@ public class PeersPool implements Iterable<Channel> {
 
             for (Channel peer : activePeers.values()) {
 
-                if (peer.getEthVersion().getCode() >= V62.getCode()) {
+                if (peer.getTauVersion().getCode() >= V62.getCode()) {
 
                     if (best62 == null || isMoreThan(peer.getTotalDifficulty(), best62.getTotalDifficulty())) {
                         best62 = peer;
@@ -249,11 +249,11 @@ public class PeersPool implements Iterable<Channel> {
         }
     }
 
-    public void changeStateForIdles(SyncStateName newState, EthVersion compatibleVersion) {
+    public void changeStateForIdles(SyncStateName newState, TauVersion compatibleVersion) {
 
         synchronized (activePeers) {
             for (Channel peer : activePeers.values()) {
-                if (peer.isIdle() && peer.getEthVersion().isCompatible(compatibleVersion))
+                if (peer.isIdle() && peer.getTauVersion().isCompatible(compatibleVersion))
                     peer.changeSyncState(newState);
             }
         }
@@ -269,11 +269,11 @@ public class PeersPool implements Iterable<Channel> {
         }
     }
 
-    public boolean hasCompatible(EthVersion version) {
+    public boolean hasCompatible(TauVersion version) {
 
         synchronized (activePeers) {
             for (Channel peer : activePeers.values()) {
-                if (peer.getEthVersion().isCompatible(version))
+                if (peer.getTauVersion().isCompatible(version))
                     return true;
             }
         }

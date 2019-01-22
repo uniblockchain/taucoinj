@@ -1,7 +1,7 @@
 package io.taucoin.net.peerdiscovery;
 
 import io.taucoin.net.client.Capability;
-import io.taucoin.net.eth.message.StatusMessage;
+import io.taucoin.net.tau.message.StatusMessage;
 import io.taucoin.net.p2p.HelloMessage;
 
 import java.net.InetAddress;

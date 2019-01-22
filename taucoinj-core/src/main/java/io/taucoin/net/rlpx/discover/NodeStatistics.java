@@ -1,6 +1,6 @@
 package io.taucoin.net.rlpx.discover;
 
-import io.taucoin.net.eth.message.StatusMessage;
+import io.taucoin.net.tau.message.StatusMessage;
 import io.taucoin.net.message.ReasonCode;
 import io.taucoin.net.rlpx.Node;
 import io.taucoin.net.swarm.Statter;

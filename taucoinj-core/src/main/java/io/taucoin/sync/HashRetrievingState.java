@@ -5,7 +5,7 @@ import io.taucoin.util.Functional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.taucoin.net.eth.EthVersion.*;
+import static io.taucoin.net.tau.TauVersion.*;
 import static io.taucoin.sync.SyncStateName.*;
 
 /**
@@ -77,7 +77,7 @@ public class HashRetrievingState extends AbstractSyncState {
         }
 
         // Since Eth V61 it makes sense to download blocks and hashes simultaneously
-        if (master.getEthVersion().getCode() > V60.getCode()) {
+        if (master.getTauVersion().getCode() > V60.getCode()) {
             syncManager.pool.changeStateForIdles(BLOCK_RETRIEVING, syncManager.masterVersion);
         }
     }

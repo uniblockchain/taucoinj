@@ -1,7 +1,7 @@
 package io.taucoin.net.client;
 
 import io.taucoin.config.SystemProperties;
-import io.taucoin.net.eth.EthVersion;
+import io.taucoin.net.tau.TauVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static io.taucoin.net.eth.EthVersion.fromCode;
+import static io.taucoin.net.tau.TauVersion.fromCode;
 import static io.taucoin.net.client.Capability.*;
 
 /**
@@ -27,11 +27,11 @@ public class ConfigCapabilities {
     @PostConstruct
     private void init() {
         if (config.syncVersion() != null) {
-            EthVersion eth = fromCode(config.syncVersion());
-            if (eth != null) AllCaps.add(new Capability(ETH, eth.getCode()));
+            TauVersion eth = fromCode(config.syncVersion());
+            if (eth != null) AllCaps.add(new Capability(TAU, eth.getCode()));
         } else {
-            for (EthVersion v : EthVersion.supported())
-                AllCaps.add(new Capability(ETH, v.getCode()));
+            for (TauVersion v : TauVersion.supported())
+                AllCaps.add(new Capability(TAU, v.getCode()));
         }
     }
 

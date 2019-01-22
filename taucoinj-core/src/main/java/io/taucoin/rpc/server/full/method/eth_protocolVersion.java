@@ -4,8 +4,8 @@ import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
-import io.taucoin.net.eth.EthVersion;
-import io.taucoin.net.eth.handler.EthHandler;
+import io.taucoin.net.tau.TauVersion;
+import io.taucoin.net.tau.handler.TauHandler;
 
 public class eth_protocolVersion extends JsonRpcServerMethod {
 
@@ -15,7 +15,7 @@ public class eth_protocolVersion extends JsonRpcServerMethod {
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
 
-        String tmp = Byte.toString(EthVersion.LOWER);
+        String tmp = Byte.toString(TauVersion.LOWER);
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
 

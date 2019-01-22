@@ -8,8 +8,8 @@ import io.taucoin.manager.WorldManager;
 import io.taucoin.net.MessageQueue;
 import io.taucoin.net.client.Capability;
 import io.taucoin.net.client.ConfigCapabilities;
-import io.taucoin.net.eth.message.NewBlockMessage;
-import io.taucoin.net.eth.message.TransactionsMessage;
+import io.taucoin.net.tau.message.NewBlockMessage;
+import io.taucoin.net.tau.message.TransactionsMessage;
 import io.taucoin.net.message.ReasonCode;
 import io.taucoin.net.message.StaticMessages;
 import io.taucoin.net.peerdiscovery.PeerDiscovery;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
-import static io.taucoin.net.eth.EthVersion.*;
+import static io.taucoin.net.tau.TauVersion.*;
 import static io.taucoin.net.message.StaticMessages.*;
 
 /**
@@ -154,7 +154,7 @@ public class P2pHandler extends SimpleChannelInboundHandler<P2pMessage> {
                 processPeers(ctx, (PeersMessage) msg);
 
                 if (peerDiscoveryMode ||
-                        !handshakeHelloMessage.getCapabilities().contains(Capability.ETH)) {
+                        !handshakeHelloMessage.getCapabilities().contains(Capability.TAU)) {
                     disconnect(ReasonCode.REQUESTED);
                     killTimers();
                     ctx.close().sync();
@@ -245,9 +245,9 @@ public class P2pHandler extends SimpleChannelInboundHandler<P2pMessage> {
             List<Capability> capInCommon = getSupportedCapabilities(msg);
             channel.initMessageCodes(capInCommon);
             for (Capability capability : capInCommon) {
-                if (capability.getName().equals(Capability.ETH)) {
+                if (capability.getName().equals(Capability.TAU)) {
 
-                    // Activate EthHandler for this peer
+                    // Activate TauHandler for this peer
                     channel.activateEth(ctx, fromCode(capability.getVersion()));
                 }
             }
