@@ -4,8 +4,8 @@ import io.taucoin.cli.CLIInterface;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.facade.TaucoinFactory;
 import io.taucoin.net.rlpx.Node;
-import org.ethereum.rpc.server.JsonRpcServerFactory;
-import org.ethereum.rpc.server.JsonRpcServer;
+import io.taucoin.rpc.server.JsonRpcServerFactory;
+import io.taucoin.rpc.server.JsonRpcServer;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
