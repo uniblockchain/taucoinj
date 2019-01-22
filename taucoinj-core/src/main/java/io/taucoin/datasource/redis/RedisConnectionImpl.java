@@ -1,8 +1,7 @@
 package io.taucoin.datasource.redis;
 
 import io.taucoin.config.SystemProperties;
-import org.ethereum.core.PendingTransaction;
-import org.ethereum.core.Transaction;
+import io.taucoin.core.Transaction;
 import io.taucoin.datasource.KeyValueDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,11 +104,6 @@ public class RedisConnectionImpl implements RedisConnection {
     @Override
     public Set<Transaction> createTransactionSet(String name) {
         return createSetFor(Transaction.class, name);
-    }
-
-    @Override
-    public Set<PendingTransaction> createPendingTransactionSet(String name) {
-        return createSetFor(PendingTransaction.class, name);
     }
 
     @Override
