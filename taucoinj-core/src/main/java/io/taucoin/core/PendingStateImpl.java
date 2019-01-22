@@ -1,6 +1,6 @@
 package io.taucoin.core;
 
-//import org.ethereum.listener.EthereumListener;
+//import io.taucoin.listener.TaucoinListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;

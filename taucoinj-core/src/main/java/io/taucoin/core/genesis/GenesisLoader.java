@@ -9,7 +9,7 @@ import io.taucoin.core.AccountState;
 import io.taucoin.core.Block;
 import io.taucoin.core.Genesis;
 import io.taucoin.db.ByteArrayWrapper;
-import org.ethereum.jsontestsuite.Utils;
+import io.taucoin.jsontestsuite.Utils;
 import io.taucoin.trie.SecureTrie;
 import io.taucoin.trie.Trie;
 import io.taucoin.util.ByteUtil;

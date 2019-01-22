@@ -24,8 +24,7 @@ import com.google.common.base.Objects;
 //import io.taucoin.core.VerificationException;
 //import io.taucoin.net.peerdiscovery.*;
 import io.taucoin.config.*;
-//import org.ethereum.store.BlockStore;
-//import org.ethereum.store.BlockStoreException;
+//import io.taucoin.db.BlockStore;
 
 //import io.taucoin.util.MonetaryFormat;
 
