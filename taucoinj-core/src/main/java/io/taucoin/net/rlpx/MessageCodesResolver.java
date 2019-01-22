@@ -44,16 +44,8 @@ public class MessageCodesResolver {
         return withOffset(code, Capability.P2P);
     }
 
-    public byte withBzzOffset(byte code) {
-        return withOffset(code, Capability.BZZ);
-    }
-
     public byte withEthOffset(byte code) {
         return withOffset(code, Capability.ETH);
-    }
-
-    public byte withShhOffset(byte code) {
-        return withOffset(code, Capability.SHH);
     }
 
     public byte withOffset(byte code, String cap) {
@@ -65,16 +57,8 @@ public class MessageCodesResolver {
         return resolve(code, Capability.P2P);
     }
 
-    public byte resolveBzz(byte code) {
-        return resolve(code, Capability.BZZ);
-    }
-
     public byte resolveEth(byte code) {
         return resolve(code, Capability.ETH);
-    }
-
-    public byte resolveShh(byte code) {
-        return resolve(code, Capability.SHH);
     }
 
     private byte resolve(byte code, String cap) {
@@ -87,16 +71,8 @@ public class MessageCodesResolver {
         return offset == null ? 0 : offset.byteValue();
     }
 
-    public void setBzzOffset(int offset) {
-        setOffset(Capability.BZZ, offset);
-    }
-
     public void setEthOffset(int offset) {
         setOffset(Capability.ETH, offset);
-    }
-
-    public void setShhOffset(int offset) {
-        setOffset(Capability.SHH, offset);
     }
 
     private void setOffset(String cap, int offset) {

@@ -14,7 +14,6 @@ import io.taucoin.net.peerdiscovery.PeerInfo;
 import io.taucoin.net.rlpx.Node;
 import io.taucoin.net.server.ChannelManager;
 import io.taucoin.net.server.PeerServer;
-import io.taucoin.net.shh.Whisper;
 import io.taucoin.net.submit.TransactionExecutor;
 import io.taucoin.net.submit.TransactionTask;
 import io.taucoin.util.ByteUtil;

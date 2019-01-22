@@ -4,9 +4,6 @@ import io.taucoin.config.DefaultConfig;
 import io.taucoin.config.NoAutoscan;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.net.eth.EthVersion;
-import io.taucoin.net.shh.ShhHandler;
-
-import io.taucoin.net.swarm.bzz.BzzHandler;
 import io.taucoin.util.BuildInfo;
 import io.taucoin.util.FileUtil;
 import org.slf4j.Logger;
@@ -64,8 +61,6 @@ public class TaucoinFactory {
             versions.delete(versions.length() - 2, versions.length());
             logger.info("capability eth version: [{}]", versions);
         }
-        logger.info("capability shh version: [{}]", ShhHandler.VERSION);
-        logger.info("capability bzz version: [{}]", BzzHandler.VERSION);
 
         context = new AnnotationConfigApplicationContext(springConfigs);
         return context.getBean(Taucoin.class);
