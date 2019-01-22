@@ -53,8 +53,7 @@ public class Genesis extends Block {
     }
 
     public static Block getInstance(SystemProperties config) {
-        //return config.getGenesis();
-        return null;
+        return config.getGenesis();
     }
 
 

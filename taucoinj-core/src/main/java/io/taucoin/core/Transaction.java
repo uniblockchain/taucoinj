@@ -250,6 +250,7 @@ public class Transaction {
         return "TransactionData [" +
                 "  version=" + ByteUtil.toHexString(new byte[]{version}) +
                 ", option=" + ByteUtil.toHexString(new byte[]{option}) +
+                ", time=" + ByteUtil.toHexString(timeStamp) +
                 ", receiveAddress=" + ByteUtil.toHexString(toAddress) +
                 ", amount=" + ByteUtil.toHexString(amount) +
                 ", fee=" + ByteUtil.toHexString(fee) +

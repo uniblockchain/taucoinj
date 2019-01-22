@@ -1,38 +1,34 @@
 package io.taucoin.core.genesis;
 
 import java.util.Map;
-
+/*
+*Items 1-9 construct tau ,1-6 will be recorded in genesis block.
+* what more 7-8 combined also, to reduce block size item9 is excepted.
+*/
 public class GenesisJson {
 
-    String mixhash;
-    String coinbase;
+    String version;
     String timestamp;
-    String parentHash;
-    String extraData;
-    String gasLimit;
-    String nonce;
-    String difficulty;
+    String previousHeaderHash;
+    String generatorPublicKey;
 
+    String blockSignature;
+    String option;
+
+    String coinbase;
     Map<String, AllocatedAccount> alloc;
 
+    String geneBasetarget;
     public GenesisJson() {
     }
 
 
-    public String getMixhash() {
-        return mixhash;
+    public String getVersion() {
+        return version;
     }
 
-    public void setMixhash(String mixhash) {
-        this.mixhash = mixhash;
-    }
-
-    public String getCoinbase() {
-        return coinbase;
-    }
-
-    public void setCoinbase(String coinbase) {
-        this.coinbase = coinbase;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getTimestamp() {
@@ -43,44 +39,52 @@ public class GenesisJson {
         this.timestamp = timestamp;
     }
 
-    public String getParentHash() {
-        return parentHash;
+    public String getPreviousHeaderHash() {
+        return previousHeaderHash;
     }
 
-    public void setParentHash(String parentHash) {
-        this.parentHash = parentHash;
+    public void setPreviousHeaderHash(String previousHeaderHash) {
+        this.previousHeaderHash = previousHeaderHash;
     }
 
-    public String getExtraData() {
-        return extraData;
+    public String getGeneratorPublicKey() {
+        return generatorPublicKey;
     }
 
-    public void setExtraData(String extraData) {
-        this.extraData = extraData;
+    public void setGeneratorPublicKey(String generatorPublicKey) {
+        this.geneBasetarget = generatorPublicKey;
     }
 
-    public String getGasLimit() {
-        return gasLimit;
+    public String getBlockSignature() {
+        return blockSignature;
     }
 
-    public void setGasLimit(String gasLimit) {
-        this.gasLimit = gasLimit;
+    public void setBlockSignature(String blockSignature) {
+        this.blockSignature = blockSignature;
     }
 
-    public String getNonce() {
-        return nonce;
+    public String getOption() {
+        return option;
     }
 
-    public void setNonce(String nonce) {
-        this.nonce = nonce;
+    public void setOption(String option) {
+        this.option = option;
     }
 
-    public String getDifficulty() {
-        return difficulty;
+    public String getGeneBasetarget() {
+        return geneBasetarget;
     }
 
-    public void setDifficulty(String difficulty) {
-        this.difficulty = difficulty;
+    public void setGeneBasetarget(String geneBasetarget) {
+        this.geneBasetarget = geneBasetarget;
+    }
+
+    public String getCoinbase() {
+        return coinbase;
+    }
+
+    public void setCoinbase(String coinbase) {
+        this.coinbase = coinbase;
     }
 
     public Map<String, AllocatedAccount> getAlloc() {

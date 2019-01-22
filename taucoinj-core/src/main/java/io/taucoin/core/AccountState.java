@@ -18,7 +18,7 @@ public class AccountState implements Serializable {
 
     /* A list size equal to the number of transactions sent since 24 h before.
      */
-    private HashMap<Integer,Long> tranHistory;
+    private HashMap<Integer,Long> tranHistory = new HashMap<Integer,Long>();
 
     /*
     * power owned by this account to new block.
@@ -34,7 +34,6 @@ public class AccountState implements Serializable {
 
     public AccountState() {
         this(BigInteger.ZERO, BigInteger.ZERO);
-        tranHistory = new HashMap<Integer,Long>();
     }
 
     public AccountState(BigInteger forgePower, BigInteger balance) {

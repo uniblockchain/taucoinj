@@ -722,7 +722,7 @@ public class SystemProperties {
     public Genesis getGenesis() {
         if (genesis == null) {
             //temporary schema
-            //genesis = GenesisLoader.loadGenesis(this);
+            genesis = GenesisLoader.loadGenesis(this);
         }
         return genesis;
     }
