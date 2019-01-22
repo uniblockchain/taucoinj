@@ -5,6 +5,8 @@ import io.taucoin.util.RLPList;
 import io.taucoin.util.RLPElement;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.Serializable;
@@ -13,7 +15,7 @@ import java.math.BigInteger;
 import static io.taucoin.crypto.HashUtil.*;
 
 public class AccountState implements Serializable {
-
+    private static final Logger log = LoggerFactory.getLogger("accountState");
     private byte[] rlpEncoded;
 
     /* A list size equal to the number of transactions sent since 24 h before.
@@ -44,9 +46,12 @@ public class AccountState implements Serializable {
     //used to initial a account from reposity
     public AccountState(byte[] rlpData) {
         this.rlpEncoded = rlpData;
-
         RLPList items = (RLPList) RLP.decode2(rlpEncoded).get(0);
-
+        if(items.size()==0){
+          log.error("create account sate fail{%d}",items.size());
+          System.exit(-1);
+        }
+        log.info("account state size is {}",items.size());
         this.forgePower = new BigInteger(1, items.get(0).getRLPData());
         this.balance = new BigInteger(1, items.get(1).getRLPData());
         RLPList trHis = (RLPList) items.get(2);
