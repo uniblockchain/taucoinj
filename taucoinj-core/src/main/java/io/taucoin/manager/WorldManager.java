@@ -46,7 +46,7 @@ public class WorldManager {
     @Autowired
     private Repository repository;
 
-    //@Autowired
+    @Autowired
     private Wallet wallet;
 
     @Autowired
