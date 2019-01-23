@@ -73,7 +73,7 @@ public class TransactionTest {
         byte[] gas = Hex.decode("4255");
 
         // Tn (nonce); Tp(pgas); Tg(gaslimi); Tt(value); Tv(value); Ti(sender);  Tw; Tr; Ts
-        Transaction tx = new Transaction(intToBytes(10000)[0], intToBytes(0)[0], longToBytes(timeNows()), ecKey.getAddressBindAccount(),
+        Transaction tx = new Transaction(intToBytes(10000)[0], intToBytes(100)[0], longToBytes(timeNows()), ecKey.getAddressBindAccount(),
                 value.toByteArray(),
                 null);
 
@@ -86,7 +86,7 @@ public class TransactionTest {
         System.out.println("RLP encoded tx\t\t: " + Hex.toHexString(tx.getEncoded()));
 
         // retrieve the signer/sender of the transaction
-        ECKey key = ECKey.signatureToKey(tx.getHash(), tx.getSignature().toBase64());
+        ECKey key = ECKey.signatureToKey(tx.getRawHash(), tx.getSignature().toBase64());
 
         System.out.println("Tx unsigned RLP\t\t: " + Hex.toHexString(tx.getEncodedRaw()));
         System.out.println("Tx signed   RLP\t\t: " + Hex.toHexString(tx.getEncoded()));
