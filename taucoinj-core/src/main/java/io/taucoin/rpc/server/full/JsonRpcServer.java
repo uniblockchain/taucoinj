@@ -39,7 +39,7 @@ public final class JsonRpcServer extends io.taucoin.rpc.server.JsonRpcServer{
         this.dispatcher = new Dispatcher();
 
         // Custom methods to receive Address Transaction History
-        this.dispatcher.register(new tau_getTransactionHistory(this.taucoin));
+        this.dispatcher.register(new tau_getTransactions(this.taucoin));
 
         //this.dispatcher.register(new web3_clientVersion(this.taucoin));
         //this.dispatcher.register(new web3_sha3(this.taucoin));
