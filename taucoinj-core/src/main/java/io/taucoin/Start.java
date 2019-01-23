@@ -33,14 +33,14 @@ public class Start {
             taucoin.getBlockLoader().loadBlocks();
 
         // Start rpc server
-//        if (CONFIG.isRpcEnabled()) {
-//            JsonRpcServer rpcServer = JsonRpcServerFactory.createJsonRpcServer(taucoin);
-//            try {
-//                rpcServer.start(CONFIG.rpcListenPort());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+        if (CONFIG.isRpcEnabled()) {
+            JsonRpcServer rpcServer = JsonRpcServerFactory.createJsonRpcServer(taucoin);
+            try {
+                rpcServer.start(CONFIG.rpcListenPort());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
