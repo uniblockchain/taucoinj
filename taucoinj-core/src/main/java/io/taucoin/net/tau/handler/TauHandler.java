@@ -14,6 +14,8 @@ import io.taucoin.net.submit.TransactionTask;
 import io.taucoin.sync.SyncManager;
 import io.taucoin.sync.SyncQueue;
 import io.taucoin.net.MessageQueue;
+import io.taucoin.net.submit.TransactionExecutor;
+import io.taucoin.net.submit.TransactionTask;
 import io.taucoin.net.tau.TauVersion;
 import io.taucoin.net.tau.message.*;
 import io.taucoin.sync.SyncStateName;
@@ -264,6 +266,11 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
             txSet.add(tx);
         }
         pendingState.addWireTransactions(txSet);
+
+        // TODO: broadcast transactions only after tx is verified.
+        TransactionTask transactionTask = new TransactionTask(txList, channelManager, channel);
+        TransactionExecutor.instance.submitTransaction(transactionTask);
+
     }
 
     public void sendNewBlock(Block block) {
