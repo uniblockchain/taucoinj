@@ -12,9 +12,9 @@ import java.util.List;
 import static io.taucoin.util.ByteUtil.bigIntegerToBytes;
 
 
-public class eth_sign extends JsonRpcServerMethod {
+public class tau_sign extends JsonRpcServerMethod {
 
-    public eth_sign (Taucoin taucoin) {
+    public tau_sign (Taucoin taucoin) {
         super(taucoin);
     }
 

@@ -5,16 +5,18 @@ import com.thetransactioncompany.jsonrpc2.server.*;
 import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
 
-public class eth_blockNumber extends JsonRpcServerMethod {
+/*
+TODO: must be changed in app that implement mining
+*/
+public class tau_getWork extends JsonRpcServerMethod {
 
-    public eth_blockNumber (Taucoin taucoin) {
+    public tau_getWork (Taucoin taucoin) {
         super(taucoin);
     }
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
 
-        String tmp = "0x" + Long.toHexString(taucoin.getBlockchain().getBestBlock().getNumber());
-        JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
+        JSONRPC2Response res = new JSONRPC2Response(JSONRPC2Error.METHOD_NOT_FOUND, req.getID());
         return res;
 
     }

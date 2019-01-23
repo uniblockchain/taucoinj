@@ -19,9 +19,9 @@ import static io.taucoin.config.SystemProperties.CONFIG;
 /*
 TODO: get more information from Roman, he think about this right now about 20 - 32 result.
 */
-public class eth_sendTransaction extends JsonRpcServerMethod {
+public class tau_sendTransaction extends JsonRpcServerMethod {
 
-    public eth_sendTransaction (Taucoin taucoin) {
+    public tau_sendTransaction (Taucoin taucoin) {
         super(taucoin);
     }
 

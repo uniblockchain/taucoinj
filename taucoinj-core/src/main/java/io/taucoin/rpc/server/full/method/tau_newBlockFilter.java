@@ -7,9 +7,9 @@ import io.taucoin.rpc.server.full.filter.FilterBlock;
 import io.taucoin.rpc.server.full.filter.FilterManager;
 import io.taucoin.facade.Taucoin;
 
-public class eth_newBlockFilter extends JsonRpcServerMethod {
+public class tau_newBlockFilter extends JsonRpcServerMethod {
 
-    public eth_newBlockFilter (Taucoin taucoin) {
+    public tau_newBlockFilter (Taucoin taucoin) {
         super(taucoin);
     }
 

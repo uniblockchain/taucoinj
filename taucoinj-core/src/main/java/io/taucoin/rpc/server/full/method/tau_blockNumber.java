@@ -1,21 +1,19 @@
-package io.taucoin.rpc.server.light.method;
+package io.taucoin.rpc.server.full.method;
 
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
-import io.taucoin.rpc.server.light.JsonRpcServerMethod;
+import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
-import io.taucoin.core.*;
-import org.spongycastle.util.encoders.Hex;
 
-public class eth_coinbase extends JsonRpcServerMethod {
+public class tau_blockNumber extends JsonRpcServerMethod {
 
-    public eth_coinbase (Taucoin taucoin) {
+    public tau_blockNumber (Taucoin taucoin) {
         super(taucoin);
     }
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
 
-        String tmp = "0x" + Hex.toHexString(getCoinBase());
+        String tmp = "0x" + Long.toHexString(taucoin.getBlockchain().getBestBlock().getNumber());
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
 

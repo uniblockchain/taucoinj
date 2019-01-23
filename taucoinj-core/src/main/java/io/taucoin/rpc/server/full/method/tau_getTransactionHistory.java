@@ -18,9 +18,9 @@ import java.net.URL;
 import java.util.List;
 
 
-public class eth_getTransactionHistory extends JsonRpcServerMethod {
+public class tau_getTransactionHistory extends JsonRpcServerMethod {
 
-    public eth_getTransactionHistory(Taucoin taucoin) {
+    public tau_getTransactionHistory(Taucoin taucoin) {
         super(taucoin);
     }
 

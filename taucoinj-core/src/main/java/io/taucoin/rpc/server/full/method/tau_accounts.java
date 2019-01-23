@@ -1,17 +1,17 @@
-package io.taucoin.rpc.server.light.method;
+package io.taucoin.rpc.server.full.method;
 
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
-import io.taucoin.rpc.server.light.JsonRpcServerMethod;
+import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.core.*;
 import org.spongycastle.util.encoders.Hex;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class eth_accounts extends JsonRpcServerMethod {
+public class tau_accounts extends JsonRpcServerMethod {
 
-    public eth_accounts (Taucoin taucoin) {
+    public tau_accounts (Taucoin taucoin) {
         super(taucoin);
     }
 

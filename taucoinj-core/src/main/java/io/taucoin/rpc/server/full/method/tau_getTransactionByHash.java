@@ -7,9 +7,9 @@ import io.taucoin.core.Blockchain;
 import io.taucoin.facade.Taucoin;
 import java.util.List;
 
-public class eth_getTransactionByHash extends JsonRpcServerMethod {
+public class tau_getTransactionByHash extends JsonRpcServerMethod {
 
-    public eth_getTransactionByHash (Taucoin taucoin) {
+    public tau_getTransactionByHash (Taucoin taucoin) {
         super(taucoin);
     }
 
