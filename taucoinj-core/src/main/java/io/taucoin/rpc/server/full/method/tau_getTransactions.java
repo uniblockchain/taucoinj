@@ -11,18 +11,18 @@ import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.core.Transaction;
 import io.taucoin.core.PendingState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
+import java.util.ArrayList;
 
 public class tau_getTransactions extends JsonRpcServerMethod {
 
-    protected PendingState pendingState;
+    private static final Logger logger = LoggerFactory.getLogger("rpc");
 
     public tau_getTransactions(Taucoin taucoin) {
         super(taucoin);
@@ -30,15 +30,17 @@ public class tau_getTransactions extends JsonRpcServerMethod {
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
 
-        String rres = "Transacions: [";
-		/*
-        for(Transaction tx: pendingState.getWireTransactions()){
-            rres += Hex.toHexString(tx.getHash())+ ", \n";
-        }
-		*/
-        rres+= "]";
+        ArrayList<String> tmpTransactions = new ArrayList<String>();
 
-        JSONRPC2Response res = new JSONRPC2Response(JSONValue.parse(rres), req.getID());
+		if(taucoin.getPendingStateTransactions().size()> 0){
+            for(Transaction tx: taucoin.getPendingStateTransactions()){
+               tmpTransactions.add(Hex.toHexString(tx.getHash()));
+            }
+        } else {
+            tmpTransactions.add("Transactions: NULL");
+        }
+
+        JSONRPC2Response res = new JSONRPC2Response(tmpTransactions, req.getID());
         return res;
     }
 }
