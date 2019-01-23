@@ -7,7 +7,7 @@ import com.thetransactioncompany.jsonrpc2.server.MessageContext;
 
 import net.minidev.json.JSONValue;
 
-import io.taucoin.rpc.server.light.JsonRpcServerMethod;
+import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
 
 import java.io.BufferedInputStream;
