@@ -2,6 +2,7 @@ package io.taucoin.forge;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.taucoin.facade.TaucoinImpl;
 import org.apache.commons.collections4.CollectionUtils;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.*;
@@ -23,8 +24,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static java.lang.Math.max;
-import static io.taucoin.config.Constants.UNCLE_GENERATION_LIMIT;
-import static io.taucoin.config.Constants.UNCLE_LIST_LIMIT;
+
 
 /**
  * Created by Anton Nashatyrev on 10.12.2015.
@@ -34,6 +34,9 @@ public class BlockMiner {
     private static final Logger logger = LoggerFactory.getLogger("mine");
 
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    @Autowired
+    private  Repository repository;
 
     @Autowired
     private Blockchain blockchain;
@@ -55,23 +58,28 @@ public class BlockMiner {
 
     private List<MinerListener> listeners = new CopyOnWriteArrayList<>();
 
-    private BigInteger minGasPrice;
     private long minBlockTimeout;
     private int cpuThreads;
     private boolean fullMining = true;
 
     private boolean isMining;
 
+    private byte[] minerPubkey;
+    private byte[] minerCoinbase;
+
     private Block miningBlock;
     private ListenableFuture<Long> ethashTask;
     private long lastBlockMinedTime;
 
+    private boolean stopForge;
+
     @PostConstruct
     private void init() {
-        minGasPrice = config.getMineMinGasPrice();
         minBlockTimeout = config.getMineMinBlockTimeoutMsec();
         cpuThreads = config.getMineCpuThreads();
         fullMining = config.isMineFullDataset();
+        minerPubkey = config.getMinerPubkey();
+        minerCoinbase = config.getMinerCoinbase();
         listener.addListener(new EthereumListenerAdapter() {
 
             public void onPendingStateChanged(PendingState pendingState) {
@@ -99,6 +107,14 @@ public class BlockMiner {
 
     public void setCpuThreads(int cpuThreads) {
         this.cpuThreads = cpuThreads;
+    }
+
+    public void setStopForge(boolean stopForge) {
+        this.stopForge = stopForge;
+    }
+
+    public boolean isStopForge() {
+        return stopForge;
     }
 
     public void startMining() {
@@ -136,10 +152,10 @@ public class BlockMiner {
         logger.debug("onPendingStateChanged()");
         if (miningBlock == null) {
             restartMining();
-        } /*else if (miningBlock.getNumber() <= ((PendingStateImpl) pendingState).getBestBlock().getNumber()) {
+        } else if (miningBlock.getNumber() <= ((PendingStateImpl) pendingState).getBestBlock().getNumber()) {
             logger.debug("Restart mining: new best block: " + blockchain.getBestBlock().getShortDescr());
             restartMining();
-        }*/ else if (!CollectionUtils.isEqualCollection(miningBlock.getTransactionsList(), getAllPendingTransactions())) {
+        } else if (!CollectionUtils.isEqualCollection(miningBlock.getTransactionsList(), getAllPendingTransactions())) {
             logger.debug("Restart mining: pending transactions changed");
             restartMining();
         } else {
@@ -154,7 +170,7 @@ public class BlockMiner {
     }
 
     protected boolean isAcceptableTx(Transaction tx) {
-        return minGasPrice.compareTo(new BigInteger(1, tx.transactionCost())) <= 0;
+        return true;
     }
 
     protected synchronized void cancelCurrentBlock() {
@@ -167,50 +183,36 @@ public class BlockMiner {
         }
     }
 
-    protected List<BlockHeader> getUncles(Block mineBest) {
-        List<BlockHeader> ret = new ArrayList<>();
-        long miningNum = mineBest.getNumber() + 1;
-        Block mineChain = mineBest;
-
-        long limitNum = max(0, miningNum - UNCLE_GENERATION_LIMIT);
-        Set<ByteArrayWrapper> ancestors /*= BlockchainImpl.getAncestors(blockStore, mineBest, UNCLE_GENERATION_LIMIT + 1, true)*/;
-        Set<ByteArrayWrapper> knownUncles /* = BlockchainImpl.getUsedUncles(blockStore, mineBest, true)*/;
-        //knownUncles.addAll(ancestors);
-        //knownUncles.add(new ByteArrayWrapper(mineBest.getHash()));
-
-        if (blockStore instanceof IndexedBlockStore) {
-            outer:
-            while (mineChain.getNumber() > limitNum) {
-                List<Block> genBlocks = ((IndexedBlockStore) blockStore).getBlocksByNumber(mineChain.getNumber());
-                if (genBlocks.size() > 1) {
-                    for (Block uncleCandidate : genBlocks) {
-//                        if (!knownUncles.contains(new ByteArrayWrapper(uncleCandidate.getHash())) &&
-//                                ancestors.contains(new ByteArrayWrapper(blockStore.getBlockByHash(uncleCandidate.getParentHash()).getHash()))) {
-//
-//                            ret.add(uncleCandidate.getHeader());
-//                            if (ret.size() >= UNCLE_LIST_LIMIT) {
-//                                break outer;
-//                            }
-//                        }
-                    }
-                }
-                mineChain = blockStore.getBlockByHash(mineChain.getPreviousHeaderHash());
-            }
-        } else {
-            logger.warn("BlockStore is not instance of IndexedBlockStore: miner can't include uncles");
-        }
-        return ret;
-    }
-
     protected void restartMining() {
         Block bestBlockchain = blockchain.getBestBlock();
-//        Block bestPendingState = ((PendingStateImpl) pendingState).getBestBlock();
-//
-//        logger.debug("Best blocks: PendingState: " + bestPendingState.getShortDescr() +
-//                ", Blockchain: " + bestBlockchain.getShortDescr());
-//
-//        Block newMiningBlock = blockchain.createNewBlock(bestPendingState, getAllPendingTransactions(),
-//                getUncles(bestPendingState));
+        Block bestPendingState = ((PendingStateImpl) pendingState).getBestBlock();
+
+        BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestPendingState, blockStore);
+        BigInteger forgingPower = repository.getforgePower(minerCoinbase);
+
+        byte[] generationSignature = ProofOfTransaction.
+                calculateNextBlockGenerationSignature(bestPendingState.getGenerationSignature().toByteArray(), minerPubkey);
+
+        BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
+
+        long timeInterval = ProofOfTransaction.calculateForgingTimeInterval(hit, baseTarget, forgingPower);
+        long timeNow = System.currentTimeMillis() / 1000;
+        long timePreBlock = new BigInteger(bestPendingState.getTimestamp()).longValue();
+        if (timeNow < timePreBlock + timeInterval) {
+            long sleepTime = timePreBlock + timeInterval - timeNow;
+            logger.debug("Sleeping " + sleepTime + " s before importing...");
+            try {
+                Thread.sleep(sleepTime * 1000);
+            } catch (InterruptedException e) {
+                //
+            }
+        }
+
+        if (!stopForge) {
+            Block newMiningBlock = blockchain.createNewBlock(bestPendingState, getAllPendingTransactions());
+        }
+
+        Block newMiningBlock = blockchain.createNewBlock(bestPendingState, getAllPendingTransactions());
 
         synchronized(this) {
             cancelCurrentBlock();
@@ -257,8 +259,8 @@ public class BlockMiner {
 
         // broadcast the block
         logger.debug("Importing newly mined block " + newBlock.getShortHash() + " ...");
-        //ImportResult importResult = ((EthereumImpl) ethereum).addNewMinedBlock(newBlock);
-        //logger.debug("Mined block import result is " + importResult + " : " + newBlock.getShortHash());
+        ImportResult importResult = ((TaucoinImpl) taucoin).addNewMinedBlock(newBlock);
+        logger.debug("Mined block import result is " + importResult + " : " + newBlock.getShortHash());
     }
 
     /*****  Listener boilerplate  ******/

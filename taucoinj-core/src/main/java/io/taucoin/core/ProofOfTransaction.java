@@ -20,8 +20,8 @@ public class ProofOfTransaction {
     /*
         get required base target
      */
-    public static BigInteger calculateRequiredBaseTarget(Block block, BlockStore blockStore) {
-        long blockNumber = block.getNumber();
+    public static BigInteger calculateRequiredBaseTarget(Block parent, BlockStore blockStore) {
+        long blockNumber = parent.getNumber();
         if(blockNumber <= 3) {
             return (new BigInteger("369D0369D036978",16));
         }
@@ -30,7 +30,7 @@ public class ProofOfTransaction {
         Block block3 = blockStore.getChainBlockByNumber(blockNumber - 2);
         BigInteger lastBlockbaseTarget = block2.getBaseTarget();
         long pastTimeFromLatestBlock = new BigInteger(block3.getTimestamp()).longValue() -
-                new BigInteger(block.getTimestamp()).longValue();
+                new BigInteger(parent.getTimestamp()).longValue();
 
         if (pastTimeFromLatestBlock < 0)
             pastTimeFromLatestBlock = 0;
@@ -68,10 +68,10 @@ public class ProofOfTransaction {
         get next block generation signature
         Gn+1 = hash(Gn, pubkey)
      */
-    public static byte[] calculateNextBlockGenerationSignature(byte[] generationSignature, byte[] pubkey){
-        byte[] data = new byte[generationSignature.length + pubkey.length];
-        System.arraycopy(generationSignature, 0, data, 0, generationSignature.length);
-        System.arraycopy(pubkey, 0, data, generationSignature.length, pubkey.length);
+    public static byte[] calculateNextBlockGenerationSignature(byte[] preGenerationSignature, byte[] pubkey){
+        byte[] data = new byte[preGenerationSignature.length + pubkey.length];
+        System.arraycopy(preGenerationSignature, 0, data, 0, preGenerationSignature.length);
+        System.arraycopy(pubkey, 0, data, preGenerationSignature.length, pubkey.length);
         byte[] nextGenerationSignature = Sha256Hash.hash(data);
         return nextGenerationSignature;
     }
@@ -80,8 +80,8 @@ public class ProofOfTransaction {
         get miner target value
         target = base target * mining power * time
      */
-    public static BigInteger calculateMinerTargetValue(BigInteger baseTarget, BigInteger miningPower, long time){
-        BigInteger targetValue = baseTarget.multiply(miningPower).
+    public static BigInteger calculateMinerTargetValue(BigInteger baseTarget, BigInteger forgingPower, long time){
+        BigInteger targetValue = baseTarget.multiply(forgingPower).
                 multiply(BigInteger.valueOf(time));
         return targetValue;
     }
@@ -109,6 +109,12 @@ public class ProofOfTransaction {
         BigInteger delta = DiffAdjustNumerator.divide(baseTarget);
         BigInteger cumulativeDifficulty = lastCumulativeDifficulty.add(delta);
         return cumulativeDifficulty;
+    }
+
+    public static long calculateForgingTimeInterval(BigInteger hit, BigInteger baseTarget, BigInteger forgingPower) {
+        long timeInterval =
+                hit.divide(baseTarget).divide(forgingPower).add(BigInteger.ONE).longValue();
+        return timeInterval;
     }
 
 }

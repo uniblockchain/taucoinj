@@ -680,6 +680,14 @@ public class SystemProperties {
     }
 
     @ValidateMe
+    public byte[] getMinerPubkey() {
+        String sc = config.getString("mine.pubkey");
+        byte[] c = Hex.decode(sc);
+        if (c.length != 32 && c.length != 33) throw new RuntimeException("mine.coinbase has invalid value: '" + sc + "'");
+        return c;
+    }
+
+    @ValidateMe
     public byte[] getMinerCoinbase() {
         String sc = config.getString("mine.coinbase");
         byte[] c = Hex.decode(sc);

@@ -1,7 +1,5 @@
 package io.taucoin.core;
 
-import io.taucoin.core.Genesis;
-import io.taucoin.core.Transaction;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -55,4 +53,6 @@ public interface Blockchain {
     List<byte[]> getListOfBodiesByHashes(List<byte[]> hashes);
 
     Transaction getTransactionByHash(byte[] hash);
+
+    Block createNewBlock(Block parent, List<Transaction> transactions);
 }

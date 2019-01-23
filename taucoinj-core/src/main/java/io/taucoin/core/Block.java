@@ -37,6 +37,7 @@ public class Block {
      * The genesis block has a number of zero */
     private long number;
     private BigInteger baseTarget; //this is uint64 type so here we should use compact type
+    private BigInteger generationSignature;
     private BigInteger cumulativeDifficulty = BigInteger.ZERO; //this is total chain difficulty
 
     /* Transactions */
@@ -74,6 +75,22 @@ public class Block {
     }
 
     public Block(byte version, byte[] timestamp, byte[] previousHeaderHash, byte[] generatorPublickey,
+                 byte option, List<Transaction> transactionsList) {
+        /*
+         * TODO: calculate GenerationSignature
+         *
+         */
+        this.header = new BlockHeader(version, timestamp, previousHeaderHash, generatorPublickey);
+
+        this.transactionsList = transactionsList;
+        if (this.transactionsList == null) {
+            this.transactionsList = new CopyOnWriteArrayList<>();
+        }
+
+        this.parsed = true;
+    }
+
+    public Block(byte version, byte[] timestamp, byte[] previousHeaderHash, byte[] generatorPublickey,
                  byte[] blockSignature,byte option,
                  List<Transaction> transactionsList) {
         /*
@@ -106,15 +123,18 @@ public class Block {
             byte[] btBytes = block.get(2).getRLPData();
             this.baseTarget = new BigInteger(1, btBytes);
 
-            byte[] cyBytes = block.get(3).getRLPData();
+            byte[] gsBytes = block.get(3).getRLPData();
+            this.generationSignature = new BigInteger(1, gsBytes);
+
+            byte[] cyBytes = block.get(4).getRLPData();
             this.cumulativeDifficulty = new BigInteger(1, cyBytes);
 
             // Parse blockSignature
-            this.blockSignature = block.get(4).getRLPData();
+            this.blockSignature = block.get(5).getRLPData();
             // Parse option
-            this.option = block.get(5).getRLPData()[0];
+            this.option = block.get(6).getRLPData()[0];
             // Parse Transactions
-            RLPList txTransactions = (RLPList) block.get(6);
+            RLPList txTransactions = (RLPList) block.get(7);
             // here may need original trie
             this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
         } else {
@@ -184,6 +204,14 @@ public class Block {
 
     public BigInteger getBaseTarget() {
         return baseTarget;
+    }
+
+    public void setGenerationSignature(BigInteger generationSignature) {
+        this.generationSignature = generationSignature;
+    }
+
+    public BigInteger getGenerationSignature() {
+        return generationSignature;
     }
 
     public void setCumulativeDifficulty(BigInteger cumulativeDifficulty) {
@@ -341,14 +369,16 @@ public class Block {
         if (!parsed) parseRLP();
 
         byte[] number = RLP.encodeBigInteger(BigInteger.valueOf(this.number));
-        byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget);
-        byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty);
+        byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget == null ? BigInteger.valueOf(0xffffffff): this.baseTarget);
+        byte[] generationSignature = RLP.encodeBigInteger(this.generationSignature == null ? BigInteger.valueOf(0xffffff):this.generationSignature);
+        byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty == null ? BigInteger.valueOf(0xffffff):this.cumulativeDifficulty);
         byte[] sigAndOption = getSigAndOptionEncoded();
         byte[] transactions = getTransactionsEncoded();
 
         List<byte[]> body = new ArrayList<>();
         body.add(number);
         body.add(baseTarget);
+        body.add(generationSignature);
         body.add(cumulativeDifficulty);
         body.add(sigAndOption);
         body.add(transactions);
@@ -359,6 +389,11 @@ public class Block {
     public String getShortHash() {
         if (!parsed) parseRLP();
         return Hex.toHexString(getHash()).substring(0, 6);
+    }
+
+    public String getShortDescr() {
+        return "#" + getNumber() + " (" + Hex.toHexString(getHash()).substring(0,6) + " <~ "
+                + Hex.toHexString(getPreviousHeaderHash()).substring(0,6) + ") Txs:" + getTransactionsList().size();
     }
 
     public static class Builder {

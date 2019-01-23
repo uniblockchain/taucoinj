@@ -116,6 +116,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     private boolean fork = false;
 
     private byte[] minerCoinbase;
+    private byte[] minerPubkey;
     private byte[] minerExtraData;
 
     private Stack<State> stateStack = new Stack<>();
@@ -138,6 +139,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     @PostConstruct
     private void init() {
         minerCoinbase = config.getMinerCoinbase();
+        minerPubkey = config.getMinerPubkey();
         minerExtraData = config.getMineExtraData();
     }
 
@@ -299,8 +301,15 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
             return NO_PARENT;
         if (block.isMsg()) {
             block.setNumber(preBlock.getNumber() + 1);
+
             BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(block, blockStore);
             block.setBaseTarget(baseTarget);
+
+            byte[] gsBytes = ProofOfTransaction.
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature().toByteArray(), minerPubkey);
+            BigInteger generationSignature = new BigInteger(1, gsBytes);
+            block.setGenerationSignature(generationSignature);
+
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();
             BigInteger cumulativeDifficulty = ProofOfTransaction.
                     calculateCumulativeDifficulty(lastCumulativeDifficulty, baseTarget);
@@ -363,7 +372,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         return NO_PARENT;
     }
 
-    public synchronized Block createNewBlock(Block parent, List<Transaction> txs, List<BlockHeader> uncles) {
+    public synchronized Block createNewBlock(Block parent, List<Transaction> txs) {
 
         // adjust time to parent block this may happen due to system clocks difference
 //        long time = System.currentTimeMillis() / 1000 + 10;
@@ -387,28 +396,17 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
 //                txs,
 //                null);  // uncle list
 //
-//        for (BlockHeader uncle : uncles) {
-//            block.addUncle(uncle);
-//        }
 //
 //        block.getHeader().setDifficulty(ByteUtil.bigIntegerToBytes(block.getHeader().calcDifficulty(parent.getHeader())));
 //
 //        pushState(parent.getHash());
 //
 //        track = repository.startTracking();
-//        List<Transaction> receipts = applyBlock(block);
+//        applyBlock(block);
 //        track.commit();
 //        block.setStateRoot(getRepository().getRoot());
 //
 //        popState();
-//
-//        Bloom logBloom = new Bloom();
-//        for (Transaction receipt : receipts) {
-//            logBloom.or(receipt.getBloomFilter());
-//        }
-//        block.getHeader().setLogsBloom(logBloom.getData());
-//        block.getHeader().setGasUsed(receipts.size() > 0 ? receipts.get(receipts.size() - 1).getCumulativeGasLong() : 0);
-//        block.getHeader().setReceiptsRoot(calcReceiptsTrie(receipts));
 
         byte[] bytes = null;
         Block block = new Block(bytes);
@@ -733,6 +731,10 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
 
     public void setMinerCoinbase(byte[] minerCoinbase) {
         this.minerCoinbase = minerCoinbase;
+    }
+
+    public void setMinerPubkey(byte[] minerPubkey) {
+        this.minerPubkey = minerPubkey;
     }
 
     public void setMinerExtraData(byte[] minerExtraData) {
