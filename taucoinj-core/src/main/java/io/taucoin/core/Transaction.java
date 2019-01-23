@@ -205,6 +205,11 @@ public class Transaction {
         return amount;
     }
 
+    public byte[] getFee() {
+        if (!parsed) rlpParse();
+        return fee;
+    }
+
     public byte[] getReceiveAddress() {
         if (!parsed) rlpParse();
         return toAddress;

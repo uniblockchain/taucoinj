@@ -1,6 +1,7 @@
 package io.taucoin.core;
 
 //import io.taucoin.listener.TaucoinListener;
+import io.taucoin.util.FastByteComparisons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -17,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
+import java.util.TreeSet;
 
 import static java.math.BigInteger.ZERO;
 import org.apache.commons.collections4.map.LRUMap;
@@ -34,6 +36,18 @@ import io.taucoin.db.ByteArrayWrapper;
 @Component
 public class PendingStateImpl implements PendingState {
 
+    /*
+    public static class TransactionSortedSet extends TreeSet<Transaction> {
+
+        public TransactionSortedSet() {
+
+            super(public int compareFee(Transaction tx1, Transaction tx2){
+                      return FastByteComparisons.compareTo(tx1.getFee(), 0, 2, tx2.getFee(), 0, 2);
+	            }
+			);
+        }
+    }
+    */
     private static final Logger logger = LoggerFactory.getLogger("state");
 
     // Private EthereumListener listener;
@@ -51,6 +65,8 @@ public class PendingStateImpl implements PendingState {
     private final List<Transaction> pendingStateTransactions = new ArrayList<>();
 
     private Repository pendingState;
+
+    private Block best = null;
 
     public PendingStateImpl() {
     }
@@ -81,6 +97,13 @@ public class PendingStateImpl implements PendingState {
         }
 
         return txs;
+    }
+
+    public Block getBestBlock() {
+        if (best == null) {
+            best = blockchain.getBestBlock();
+        }
+        return best;
     }
 
     private boolean addNewTxIfNotExist(Transaction tx) {
