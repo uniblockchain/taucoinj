@@ -341,8 +341,8 @@ public class Block {
         if (!parsed) parseRLP();
 
         byte[] number = RLP.encodeBigInteger(BigInteger.valueOf(this.number));
-        byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget == null ? BigInteger.valueOf(0xffffffff): this.baseTarget);
-        byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty == null ? BigInteger.valueOf(0xffffff):this.cumulativeDifficulty);
+        byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget);
+        byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty);
         byte[] sigAndOption = getSigAndOptionEncoded();
         byte[] transactions = getTransactionsEncoded();
 
