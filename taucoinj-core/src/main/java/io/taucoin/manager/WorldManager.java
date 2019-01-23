@@ -198,7 +198,8 @@ public class WorldManager {
             // to word state we should be watch out...
             // todo this is just a workaround, move EMPTY_TRIE_HASH logic to Trie implementation
             if (!Arrays.equals(blockchain.getBestBlock().getHash(), EMPTY_TRIE_HASH)) {
-                this.repository.syncToRoot(blockchain.getBestBlock().getHash());
+                //this.repository.syncToRoot(blockchain.getBestBlock().getHash());
+                this.repository.flushNoReconnect();
             }
         }
 
