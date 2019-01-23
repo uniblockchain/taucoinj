@@ -138,10 +138,13 @@ public class Transaction {
 
         RLPList decodedTxList = RLP.decode2(rlpEncoded);
         RLPList transaction = (RLPList) decodedTxList.get(0);
-
+        logger.info("transaction item size is {}",transaction.size());
         this.version = transaction.get(0).getRLPData()[0];
-        this.option = transaction.get(1).getRLPData()[0];
+        logger.info("item version is {}",(int)this.version);
+        //logger.info("item option size is {}",transaction.get(1) == null ? 0 : transaction.get(1).getRLPData().length);
+        //this.option = transaction.get(1).getRLPData()[0];
         this.timeStamp = transaction.get(2).getRLPData();
+        logger.info("item timestamp is {}",ByteUtil.byteArrayToLong(this.timeStamp));
         this.toAddress = transaction.get(3).getRLPData();
         this.amount = transaction.get(4).getRLPData();
         this.fee = transaction.get(5).getRLPData();

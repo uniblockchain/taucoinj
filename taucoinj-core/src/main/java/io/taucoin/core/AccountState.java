@@ -1,5 +1,6 @@
 package io.taucoin.core;
 
+import io.taucoin.util.ByteUtil;
 import io.taucoin.util.RLP;
 import io.taucoin.util.RLPList;
 import io.taucoin.util.RLPElement;
@@ -35,7 +36,7 @@ public class AccountState implements Serializable {
 
 
     public AccountState() {
-        this(BigInteger.ZERO, BigInteger.ZERO);
+        this(BigInteger.valueOf(1), BigInteger.valueOf(1));
     }
 
     public AccountState(BigInteger forgePower, BigInteger balance) {
@@ -52,15 +53,23 @@ public class AccountState implements Serializable {
           System.exit(-1);
         }
         log.info("account state size is {}",items.size());
-        this.forgePower = new BigInteger(1, items.get(0).getRLPData());
-        this.balance = new BigInteger(1, items.get(1).getRLPData());
-        RLPList trHis = (RLPList) items.get(2);
-        for(int i=0; i < trHis.size();++i){
-             RLPElement transactionHis = trHis.get(i);
-             TransactionInfo trinfo = new TransactionInfo(transactionHis.getRLPData());
-             this.tranHistory.put(trinfo.gettrHashcode(),trinfo.gettrTime());
+        log.info("forge power in account state is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
+        try {
+            this.forgePower = new BigInteger(1, items.get(0).getRLPData());
+        }catch (Exception E){
+            E.printStackTrace();
         }
 
+        //log.info("forge power in account state size is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
+        this.balance = new BigInteger(1, items.get(1).getRLPData());
+        if(items.size() > 2) {
+            RLPList trHis = (RLPList) items.get(2);
+            for (int i = 0; i < trHis.size(); ++i) {
+                RLPElement transactionHis = trHis.get(i);
+                TransactionInfo trinfo = new TransactionInfo(transactionHis.getRLPData());
+                this.tranHistory.put(trinfo.gettrHashcode(), trinfo.gettrTime());
+            }
+        }
     }
 
     public BigInteger getforgePower() {
