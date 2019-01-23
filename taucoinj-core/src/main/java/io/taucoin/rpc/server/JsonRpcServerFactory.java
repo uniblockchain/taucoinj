@@ -14,10 +14,6 @@ public class JsonRpcServerFactory {
     public static JsonRpcServer createJsonRpcServer(Taucoin taucoin) {
         String type = CONFIG.getRpcServerType();
         logger.info("Json rpc serer type {}", type);
-        if ("full".equals(type)) {
-            return new io.taucoin.rpc.server.full.JsonRpcServer(taucoin);
-        } else {
-            return new io.taucoin.rpc.server.light.JsonRpcServer(taucoin);
-        }
+        return new io.taucoin.rpc.server.full.JsonRpcServer(taucoin);
     }
 }
