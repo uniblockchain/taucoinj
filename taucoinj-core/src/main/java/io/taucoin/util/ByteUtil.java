@@ -584,4 +584,13 @@ public class ByteUtil {
         String ip = sb.toString();
         return ip;
     }
+
+    /**
+     * Remove hex string prefix '0x'
+     */
+    public static String removeHexPrefix(String data) {
+        if (data.substring(0, 2).equals("0x"))
+            return data.substring(2);
+        return data;
+    }
 }

@@ -49,6 +49,10 @@ public class GenesisLoader {
             GenesisJson genesisJson  = new ObjectMapper().readValue(json, type);
 
             Genesis genesis = createBlockForJson(genesisJson);
+            // Set genesis base target value and cumulative difficulty
+            genesis.setBaseTarget(new BigInteger(
+                    ByteUtil.removeHexPrefix(genesisJson.getGeneBasetarget()), 16));
+            genesis.setCumulativeDifficulty(BigInteger.ZERO);
 
             Map<ByteArrayWrapper, AccountState> premine = generatePreMine(genesisJson.getAlloc());
             genesis.setPremine(premine);

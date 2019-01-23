@@ -37,7 +37,7 @@ public class Block {
      * The genesis block has a number of zero */
     private long number;
     private BigInteger baseTarget; //this is uint64 type so here we should use compact type
-    private BigInteger cumulativeDifficulty; //this is total chain difficulty
+    private BigInteger cumulativeDifficulty = BigInteger.ZERO; //this is total chain difficulty
 
     /* Transactions */
     private List<Transaction> transactionsList = new CopyOnWriteArrayList<>();
