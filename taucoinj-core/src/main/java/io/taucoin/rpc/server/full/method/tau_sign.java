@@ -1,8 +1,8 @@
-package io.taucoin.rpc.server.light.method;
+package io.taucoin.rpc.server.full.method;
 
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
-import io.taucoin.rpc.server.light.JsonRpcServerMethod;
+import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.core.Account;
 import io.taucoin.crypto.ECKey;
 import io.taucoin.facade.Taucoin;
@@ -12,9 +12,9 @@ import java.util.List;
 import static io.taucoin.util.ByteUtil.bigIntegerToBytes;
 
 
-public class eth_sign extends JsonRpcServerMethod {
+public class tau_sign extends JsonRpcServerMethod {
 
-    public eth_sign (Taucoin taucoin) {
+    public tau_sign (Taucoin taucoin) {
         super(taucoin);
     }
 

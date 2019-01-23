@@ -11,9 +11,9 @@ import java.util.List;
 /*
 TODO: must be changed in app that implement mining
 */
-public class eth_submitWork extends JsonRpcServerMethod {
+public class tau_submitWork extends JsonRpcServerMethod {
 
-    public eth_submitWork (Taucoin taucoin) {
+    public tau_submitWork (Taucoin taucoin) {
         super(taucoin);
     }
 

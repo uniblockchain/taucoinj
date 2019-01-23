@@ -4,18 +4,19 @@ import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
-import io.taucoin.net.tau.TauVersion;
-import io.taucoin.net.tau.handler.TauHandler;
 
-public class eth_protocolVersion extends JsonRpcServerMethod {
+/*
+TODO: must be changed in app that implement mining
+*/
+public class tau_mining extends JsonRpcServerMethod {
 
-    public eth_protocolVersion (Taucoin taucoin) {
+    public tau_mining (Taucoin taucoin) {
         super(taucoin);
     }
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
 
-        String tmp = Byte.toString(TauVersion.LOWER);
+        Boolean tmp = false;
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
 

@@ -1,15 +1,14 @@
-package io.taucoin.rpc.server.light.method;
+package io.taucoin.rpc.server.full.method;
 
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import net.minidev.json.JSONObject;
-import io.taucoin.rpc.server.light.JsonRpcServerMethod;
+import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.core.Account;
 import io.taucoin.core.Transaction;
 import io.taucoin.facade.Taucoin;
 import org.spongycastle.util.encoders.Hex;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -17,9 +16,12 @@ import static io.taucoin.core.Denomination.SZABO;
 import static io.taucoin.config.SystemProperties.CONFIG;
 
 
-public class eth_sendTransaction extends JsonRpcServerMethod {
+/*
+TODO: get more information from Roman, he think about this right now about 20 - 32 result.
+*/
+public class tau_sendTransaction extends JsonRpcServerMethod {
 
-    public eth_sendTransaction (Taucoin taucoin) {
+    public tau_sendTransaction (Taucoin taucoin) {
         super(taucoin);
     }
 
@@ -37,16 +39,15 @@ public class eth_sendTransaction extends JsonRpcServerMethod {
                 return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
             }
 
-            ArrayList<Object> rparams = new ArrayList<Object>();
-            rparams.add("0x" + Hex.toHexString(tx.getEncoded()));
-            JSONRPC2Request rreq = new JSONRPC2Request("eth_sendRawTransaction", rparams, req.getID());
-            JSONRPC2Response rres = getRemoteData(rreq);
-            if (rres == null) {
+            try {
+                taucoin.submitTransaction(tx).get(CONFIG.transactionApproveTimeout(), TimeUnit.SECONDS);
+            } catch (Exception e) {
                 return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, req.getID());
             }
-            rres.setID(req.getID());
 
-            return rres;
+            String tmp = "0x" + Hex.toHexString(tx.getHash());
+            JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
+            return res;
         }
 
     }

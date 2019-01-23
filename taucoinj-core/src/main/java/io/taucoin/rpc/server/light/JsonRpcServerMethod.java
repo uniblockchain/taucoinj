@@ -175,7 +175,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         ArrayList<Object> params = new ArrayList<Object>();
         params.add("0x" + Hex.toHexString(account));
         params.add("latest");
-        JSONRPC2Request req = new JSONRPC2Request("eth_getBalance", params, 1000);
+        JSONRPC2Request req = new JSONRPC2Request("tau_getBalance", params, 1000);
         JSONRPC2Response res = getRemoteData(req);
         if (res == null || !res.indicatesSuccess()) {
             return BigInteger.ZERO;
@@ -188,7 +188,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         ArrayList<Object> params = new ArrayList<Object>();
         params.add("latest");
         params.add(false);
-        JSONRPC2Request req = new JSONRPC2Request("eth_getBlockByNumber", params, 1000);
+        JSONRPC2Request req = new JSONRPC2Request("tau_getBlockByNumber", params, 1000);
         JSONRPC2Response res = getRemoteData(req);
         if (res == null || !res.indicatesSuccess()) {
             return BigInteger.ZERO;
@@ -202,7 +202,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         ArrayList<Object> params = new ArrayList<Object>();
         params.add("0x" + Hex.toHexString(account));
         params.add("latest");
-        JSONRPC2Request req = new JSONRPC2Request("eth_getTransactionCount", params, 1000);
+        JSONRPC2Request req = new JSONRPC2Request("tau_getTransactionCount", params, 1000);
         JSONRPC2Response res = getRemoteData(req);
         if (res == null || !res.indicatesSuccess()) {
             return BigInteger.ZERO;
@@ -213,7 +213,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
     protected BigInteger getGasPrice() {
         ArrayList<Object> params = new ArrayList<Object>();
-        JSONRPC2Request req = new JSONRPC2Request("eth_gasPrice", params, 1000);
+        JSONRPC2Request req = new JSONRPC2Request("tau_gasPrice", params, 1000);
         JSONRPC2Response res = getRemoteData(req);
         if (res == null || !res.indicatesSuccess()) {
             return BigInteger.ZERO;
@@ -225,7 +225,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
     protected BigInteger getEstimateGas(JSONObject obj) {
         ArrayList<Object> params = new ArrayList<Object>();
         params.add(obj);
-        JSONRPC2Request req = new JSONRPC2Request("eth_estimateGas", params, 1000);
+        JSONRPC2Request req = new JSONRPC2Request("tau_estimateGas", params, 1000);
         JSONRPC2Response res = getRemoteData(req);
         if (res == null || !res.indicatesSuccess()) {
             return BigInteger.valueOf(90000);

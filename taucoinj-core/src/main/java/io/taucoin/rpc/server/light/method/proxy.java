@@ -21,36 +21,36 @@ public class proxy extends JsonRpcServerMethod {
         proxyMethods.add("net_version");
         proxyMethods.add("net_listening");
         proxyMethods.add("net_peerCount");
-        proxyMethods.add("eth_protocolVersion");
-        proxyMethods.add("eth_gasPrice");
-        proxyMethods.add("eth_blockNumber");
-        proxyMethods.add("eth_getBalance");
-        proxyMethods.add("eth_getStorageAt");
-        proxyMethods.add("eth_getTransactionCount");
-        proxyMethods.add("eth_getBlockTransactionCountByHash");
-        proxyMethods.add("eth_getBlockTransactionCountByNumber");
-        proxyMethods.add("eth_getUncleCountByBlockHash");
-        proxyMethods.add("eth_getUncleCountByBlockNumber");
-        proxyMethods.add("eth_getCode");
-        proxyMethods.add("eth_getBlockByHash");
-        proxyMethods.add("eth_getBlockByNumber");
-        proxyMethods.add("eth_getTransactionByHash");
-        proxyMethods.add("eth_getTransactionByBlockHashAndIndex");
-        proxyMethods.add("eth_getTransactionByBlockNumberAndIndex");
-        proxyMethods.add("eth_getTransactionReceipt");
-        proxyMethods.add("eth_getUncleByBlockHashAndIndex");
-        proxyMethods.add("eth_getUncleByBlockNumberAndIndex");
-        proxyMethods.add("eth_getCompilers");
-        proxyMethods.add("eth_compileSolidity");
-        proxyMethods.add("eth_compileLLL");
-        proxyMethods.add("eth_compileSerpent");
-        proxyMethods.add("eth_newFilter");
-        proxyMethods.add("eth_newBlockFilter");
-        proxyMethods.add("eth_newPendingTransactionFilter");
-        proxyMethods.add("eth_uninstallFilter");
-        proxyMethods.add("eth_getFilterChanges");
-        proxyMethods.add("eth_getFilterLogs");
-        proxyMethods.add("eth_getLogs");
+        proxyMethods.add("tau_protocolVersion");
+        proxyMethods.add("tau_gasPrice");
+        proxyMethods.add("tau_blockNumber");
+        proxyMethods.add("tau_getBalance");
+        proxyMethods.add("tau_getStorageAt");
+        proxyMethods.add("tau_getTransactionCount");
+        proxyMethods.add("tau_getBlockTransactionCountByHash");
+        proxyMethods.add("tau_getBlockTransactionCountByNumber");
+        proxyMethods.add("tau_getUncleCountByBlockHash");
+        proxyMethods.add("tau_getUncleCountByBlockNumber");
+        proxyMethods.add("tau_getCode");
+        proxyMethods.add("tau_getBlockByHash");
+        proxyMethods.add("tau_getBlockByNumber");
+        proxyMethods.add("tau_getTransactionByHash");
+        proxyMethods.add("tau_getTransactionByBlockHashAndIndex");
+        proxyMethods.add("tau_getTransactionByBlockNumberAndIndex");
+        proxyMethods.add("tau_getTransactionReceipt");
+        proxyMethods.add("tau_getUncleByBlockHashAndIndex");
+        proxyMethods.add("tau_getUncleByBlockNumberAndIndex");
+        proxyMethods.add("tau_getCompilers");
+        proxyMethods.add("tau_compileSolidity");
+        proxyMethods.add("tau_compileLLL");
+        proxyMethods.add("tau_compileSerpent");
+        proxyMethods.add("tau_newFilter");
+        proxyMethods.add("tau_newBlockFilter");
+        proxyMethods.add("tau_newPendingTransactionFilter");
+        proxyMethods.add("tau_uninstallFilter");
+        proxyMethods.add("tau_getFilterChanges");
+        proxyMethods.add("tau_getFilterLogs");
+        proxyMethods.add("tau_getLogs");
 
         proxyMethods.add("shh_version");
         proxyMethods.add("shh_post");
@@ -64,8 +64,8 @@ public class proxy extends JsonRpcServerMethod {
         proxyMethods.add("shh_getMessages");
 
         //TODO: issue methods - they generate transaction but must call them in blockchain.
-        proxyMethods.add("eth_call");
-        proxyMethods.add("eth_estimateGas");
+        proxyMethods.add("tau_call");
+        proxyMethods.add("tau_estimateGas");
 
 
         deprecatedMethods = new ArrayList<>();
@@ -75,10 +75,10 @@ public class proxy extends JsonRpcServerMethod {
         deprecatedMethods.add("db_putHex");
         deprecatedMethods.add("db_putString");
         //mining - deprecated because will be mess over global.
-        deprecatedMethods.add("eth_getWork");
-        deprecatedMethods.add("eth_hashrate");
-        deprecatedMethods.add("eth_mining");
-        deprecatedMethods.add("eth_submitWork");
+        deprecatedMethods.add("tau_getWork");
+        deprecatedMethods.add("tau_hashrate");
+        deprecatedMethods.add("tau_mining");
+        deprecatedMethods.add("tau_submitWork");
     }
 
     @Override

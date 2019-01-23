@@ -1,31 +1,26 @@
-package io.taucoin.rpc.server.light.method;
+package io.taucoin.rpc.server.full.method;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.MessageContext;
 
-import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import net.minidev.json.parser.JSONParser;
 
 import io.taucoin.rpc.server.light.JsonRpcServerMethod;
-import io.taucoin.core.Transaction;
 import io.taucoin.facade.Taucoin;
-import org.spongycastle.util.encoders.Hex;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 
-public class eth_getTransactionHistory extends JsonRpcServerMethod {
+public class tau_getTransactionHistory extends JsonRpcServerMethod {
 
-    public eth_getTransactionHistory(Taucoin taucoin) {
+    public tau_getTransactionHistory(Taucoin taucoin) {
         super(taucoin);
     }
 

@@ -9,9 +9,9 @@ import org.spongycastle.util.encoders.Hex;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class eth_accounts extends JsonRpcServerMethod {
+public class tau_accounts extends JsonRpcServerMethod {
 
-    public eth_accounts (Taucoin taucoin) {
+    public tau_accounts (Taucoin taucoin) {
         super(taucoin);
     }
 
