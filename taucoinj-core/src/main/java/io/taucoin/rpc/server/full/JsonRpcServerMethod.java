@@ -22,6 +22,8 @@ import io.taucoin.crypto.HashUtil;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.util.ByteUtil;
 import io.taucoin.util.RLP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
@@ -31,6 +33,8 @@ import java.util.List;
 import static io.taucoin.core.Denomination.SZABO;
 
 public abstract class JsonRpcServerMethod implements RequestHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger("rpc");
 
     private String name = "";
     protected Taucoin taucoin;
@@ -114,7 +118,9 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
      * }
      */
     protected Transaction jsToTransaction(JSONObject obj) throws Exception {
-        if ((!obj.containsKey("to") || ((String)obj.get("to")).equals(""))   || (!obj.containsKey("value") || ((String)obj.get("value")).equals(""))
+        logger.info("json to tx: {}", obj);
+
+        if ((!obj.containsKey("to") || ((String)obj.get("to")).equals(""))   || (!obj.containsKey("value") || ((long)obj.get("value")) <= 0)
                 || (!obj.containsKey("privkey") || ((String)obj.get("privkey")).equals(""))) {
             throw new Exception("Invalid params");
         }
@@ -125,13 +131,13 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         }
 
         BigInteger value = BigInteger.ZERO;
-        if (obj.containsKey("value") && !((String)obj.get("value")).equals("")) {
-            value = jsToBigIntegerDecimal((String) obj.get("value"));
+        if (obj.containsKey("value") && ((long)obj.get("value")) > 0) {
+            value = BigInteger.valueOf((long) obj.get("value"));
         }
 
         BigInteger fee = BigInteger.ZERO;
-        if (obj.containsKey("fee") && !((String)obj.get("fee")).equals("")) {
-            value = jsToBigIntegerDecimal((String) obj.get("fee"));
+        if (obj.containsKey("fee") && ((long)obj.get("fee")) > 0) {
+            value = BigInteger.valueOf((long) obj.get("fee"));
         }
 
         byte[] senderPrivkey = null;
@@ -143,6 +149,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         byte[] accountAddress = ECKey.fromPrivate(senderPrivkey).getAccountAddress().getHash160();
         BigInteger balance = this.taucoin.getRepository().getBalance(accountAddress);
         if (value.add(fee).compareTo(balance) > 0) {
+            logger.error("Not enough balance");
             throw new Exception("Not enough balance");
         }
 
