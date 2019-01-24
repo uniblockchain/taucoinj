@@ -422,7 +422,7 @@ public class ECKey implements Serializable {
          * @param s
          * @return -
          */
-        private static ECDSASignature fromComponents(byte[] r, byte[] s) {
+        public static ECDSASignature fromComponents(byte[] r, byte[] s) {
             return new ECDSASignature(new BigInteger(1, r), new BigInteger(1, s));
         }
 
