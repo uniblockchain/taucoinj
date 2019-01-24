@@ -146,8 +146,9 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         }
 
         // Check account balance
-        byte[] accountAddress = ECKey.fromPrivate(senderPrivkey).getAccountAddress().getHash160();
+        byte[] accountAddress = ECKey.fromPrivate(senderPrivkey).getAddressBindAccount();
         BigInteger balance = this.taucoin.getRepository().getBalance(accountAddress);
+        logger.info("Sender address: {}, balance: {}", Hex.toHexString(accountAddress), balance);
         if (value.add(fee).compareTo(balance) > 0) {
             logger.error("Not enough balance");
             throw new Exception("Not enough balance");
