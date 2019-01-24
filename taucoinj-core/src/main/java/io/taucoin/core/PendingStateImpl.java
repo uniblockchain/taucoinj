@@ -184,7 +184,7 @@ public class PendingStateImpl implements PendingState {
 			return false;
         }
         
-        TransactionExecutor executor = new TransactionExecutor(tx, pendingState);
+        TransactionExecutor executor = new TransactionExecutor(tx, getRepository());
         executor.init();
 
         return true;
