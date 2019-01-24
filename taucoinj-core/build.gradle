@@ -127,6 +127,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:2.5.1"
     compile "org.apache.commons:commons-collections4:4.0"
     compile "org.apache.commons:commons-lang3:3.4"
+    compile 'commons-io:commons-io:2.4'
     compile "commons-codec:commons-codec:1.10"
     compile "org.springframework:spring-context:${springVersion}"
     compile "org.springframework:spring-tx:${springVersion}"

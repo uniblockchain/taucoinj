@@ -15,7 +15,7 @@ import io.taucoin.util.Functional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
-//import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -212,11 +212,11 @@ public class RepositoryImpl implements Repository , io.taucoin.facade.Repository
 
         if (txNumber == 0)
             if (CONFIG.dumpCleanOnRestart()) {
-//                try{
-//                	FileUtils.forceDelete(new File(CONFIG.dumpDir()));
-//                }catch(IOException e){
-//                	logger.error(e.getMessage(), e);
-//                }
+                try{
+                	FileUtils.forceDelete(new File(CONFIG.dumpDir()));
+                }catch(IOException e){
+                	logger.error(e.getMessage(), e);
+                }
             }
 
         String dir = CONFIG.dumpDir() + "/";
