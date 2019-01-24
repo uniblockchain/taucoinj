@@ -32,11 +32,19 @@ public class tau_getTransactions extends JsonRpcServerMethod {
 
         ArrayList<String> tmpTransactions = new ArrayList<String>();
 
-		if(taucoin.getPendingStateTransactions().size()> 0){
+        if (taucoin.getPendingStateTransactions().size() > 0) {
             for(Transaction tx: taucoin.getPendingStateTransactions()){
                tmpTransactions.add(Hex.toHexString(tx.getHash()));
             }
-        } else {
+        }
+
+        if (taucoin.getWireTransactions().size() > 0){
+            for(Transaction tx: taucoin.getWireTransactions()) {
+               tmpTransactions.add(Hex.toHexString(tx.getHash()));
+            }
+        }
+
+        if (tmpTransactions.size() == 0) {
             tmpTransactions.add("Transactions: NULL");
         }
 
