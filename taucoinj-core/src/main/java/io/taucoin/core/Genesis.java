@@ -42,11 +42,19 @@ public class Genesis extends Block {
 
     private static Block instance;
 
-    public Genesis(byte version, byte[] timeStamp, byte[] previousHeaderHash, byte[] pubkey,
-                   byte[] generateSig, byte option, List<Transaction> TR){
-        super(version,timeStamp,previousHeaderHash,pubkey,generateSig,option,TR);
-    }
+//    public Genesis(byte version, byte[] timeStamp, byte[] previousHeaderHash, byte[] pubkey,
+//                   byte[] generateSig, byte option, List<Transaction> TR){
+//        byte[] r = new byte[32];
+//        byte[] s = new byte[32];
+//        System.arraycopy(generateSig, 0, r, 0, 32);
+//        System.arraycopy(generateSig, 32, s, 0, 32);
+//        this(version,timeStamp,previousHeaderHash,pubkey,r,s,option,TR);
+//    }
 
+    public Genesis(byte version, byte[] timeStamp, byte[] previousHeaderHash, byte[] pubkey,
+                   byte[] r, byte[]s,byte option, List<Transaction> TR){
+        super(version,timeStamp,previousHeaderHash,pubkey,r,s,option,TR);
+    }
     public static Block getInstance() {
         return SystemProperties.CONFIG.getGenesis();
     }

@@ -91,8 +91,12 @@ public class GenesisLoader {
         //here is temporary method...
         List<Transaction> tr = new ArrayList<Transaction>();
         tr.add(new Transaction(coinbase));
+        byte[] r = new byte[32];
+        byte[] s = new byte[32];
+        System.arraycopy(geneSig, 0, r, 0, 32);
+        System.arraycopy(geneSig, 32, s, 0, 32);
         return new Genesis(version, timestampBytes, preheaderHash, genePubkey,
-                            geneSig, option, tr);
+                            r,s, option, tr);
     }
 
 
