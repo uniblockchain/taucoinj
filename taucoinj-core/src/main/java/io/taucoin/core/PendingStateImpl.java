@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 */
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
@@ -73,7 +74,7 @@ public class PendingStateImpl implements PendingState {
 
     //constructor
     //public PendingStateImpl(EthereumListener listener, Repository repository) {
-    //@Inject
+    @Autowired
     public PendingStateImpl(Repository repository) {
         this.repository = repository;
     }
