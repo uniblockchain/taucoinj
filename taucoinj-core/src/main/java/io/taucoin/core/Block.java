@@ -98,7 +98,8 @@ public class Block {
         *
          */
         this.header = new BlockHeader(version, timestamp, previousHeaderHash, generatorPublickey);
-
+        this.blockSignature = blockSignature;
+        this.option = option;
         this.transactionsList = transactionsList;
         if (this.transactionsList == null) {
             this.transactionsList = new CopyOnWriteArrayList<>();
@@ -129,14 +130,18 @@ public class Block {
             byte[] cyBytes = block.get(4).getRLPData();
             this.cumulativeDifficulty = RLP.decodeBigInteger(cyBytes, 0);
 
+            RLPList items = (RLPList) RLP.decode2(block.get(5).getRLPData()).get(0);
+            logger.info("items size is {}",items.size());
             // Parse blockSignature
-            this.blockSignature = block.get(5).getRLPData();
+            this.blockSignature = items.get(0).getRLPData();
             // Parse option
-            this.option = block.get(6).getRLPData()[0];
-            // Parse Transactions
-            RLPList txTransactions = (RLPList) block.get(7);
-            // here may need original trie
-            this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
+            this.option = items.get(1).getRLPData()[0];
+            if(block.size() > 6) {
+                // Parse Transactions
+                RLPList txTransactions = (RLPList) block.get(6);
+                // here may need original trie
+                this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
+            }
         } else {
             // Parse blockSignature
             this.blockSignature = block.get(1).getRLPData();
@@ -323,7 +328,9 @@ public class Block {
             byte[] header = this.header.getEncoded();
 
             List<byte[]> block = getFullBodyElements();
+            logger.info("size of encode element is {}",block.size());
             block.add(0, header);
+            logger.info("size of encode element is {}",block.size());
             byte[][] elements = block.toArray(new byte[block.size()][]);
 
             this.rlpEncoded = RLP.encodeList(elements);
