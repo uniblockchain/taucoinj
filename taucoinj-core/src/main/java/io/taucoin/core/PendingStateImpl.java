@@ -203,7 +203,7 @@ public class PendingStateImpl implements PendingState {
 
         clearWire(block.getTransactionsList());
 
-        //clearOutdated(block.getNumber());
+        clearOutdated();
 
         clearPendingState(block.getTransactionsList());
 
@@ -211,29 +211,32 @@ public class PendingStateImpl implements PendingState {
     }
 
     //Block Number -> Time
-    /*
-    private void clearOutdated(final long blockNumber) {
+    private void clearOutdated() {
+
         List<Transaction> outdated = new ArrayList<>();
 
+        //clear wired transactions
         synchronized (wireTransactions) {
             for (Transaction tx : wireTransactions)
-                if (blockNumber - tx.getBlockNumber() > CONFIG.txOutdatedThreshold())
+                if (!tx.checkTime())
                     outdated.add(tx);
         }
+		if(!outdated.isEmpty())
+            wireTransactions.removeAll(outdated);
+        
+        outdated.clear();
 
-        if (outdated.isEmpty()) return;
+        //clear pending transactions
+        synchronized (pendingStateTransactions) {
+            for (Transaction tx : pendingStateTransactions)
+                if (!tx.checkTime())
+                    outdated.add(tx);
+        }
+		if(!outdated.isEmpty())
+            pendingStateTransactions.removeAll(outdated);
 
-        if (logger.isInfoEnabled())
-            for (Transaction tx : outdated)
-                logger.info(
-                        "Clear outdated wire transaction, block.number: [{}] hash: [{}]",
-                        tx.getBlockNumber(),
-                        Hex.toHexString(tx.getHash())
-                );
-
-        wireTransactions.removeAll(outdated);
     }
-    */
+
     private void clearWire(List<Transaction> txs) {
         for (Transaction tx : txs) {
             if (logger.isInfoEnabled() && wireTransactions.contains(tx))
@@ -271,13 +274,12 @@ public class PendingStateImpl implements PendingState {
 
         logger.info("Apply pending state tx: {}", Hex.toHexString(tx.getHash()));
 
-        //Block best = blockchain.getBestBlock();
+        TransactionExecutor executor = new TransactionExecutor(tx, pendingState);
 
-        /* ********* Need getCoinbase method, block wrapper's address *******
-         * TransactionExecutor executor = new TransactionExecutor(tx, best.getCoinbase(), pendingState);
-         * executor.init();
-         * executor.execute();
-        */
+        executor.init();
+
+        executor.execute();
+
     }
 
     public void setBlockchain(Blockchain blockchain) {
