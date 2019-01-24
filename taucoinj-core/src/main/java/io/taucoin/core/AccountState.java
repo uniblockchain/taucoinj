@@ -36,7 +36,7 @@ public class AccountState implements Serializable {
 
 
     public AccountState() {
-        this(BigInteger.valueOf(1), BigInteger.valueOf(1));
+        this(BigInteger.ZERO, BigInteger.ZERO);
     }
 
     public AccountState(BigInteger forgePower, BigInteger balance) {
@@ -53,15 +53,25 @@ public class AccountState implements Serializable {
           System.exit(-1);
         }
         log.info("account state size is {}",items.size());
-        log.info("forge power in account state is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
-        try {
-            this.forgePower = new BigInteger(1, items.get(0).getRLPData());
-        }catch (Exception E){
-            E.printStackTrace();
+        //log.info("forge power in account state is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
+
+        // FIX ME: RLP issue?
+        // RLP encoding data is '0x80' for BigInteger.ZERO but the decoding RLP data
+        // got by 'items.get(1).getRLPData()'. So I have to judge this special case;
+        if (items.get(0).getRLPData() == null) {
+           log.info("Account forge power is 0");
+           this.forgePower = BigInteger.ZERO;
+        } else {
+            this.forgePower = RLP.decodeBigInteger(items.get(0).getRLPData(), 0);
         }
 
-        //log.info("forge power in account state size is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
-        this.balance = new BigInteger(1, items.get(1).getRLPData());
+        if (items.get(1).getRLPData() == null) {
+            log.info("Account balance is 0");
+            this.balance = BigInteger.ZERO;
+        } else {
+            this.balance = RLP.decodeBigInteger(items.get(1).getRLPData(), 0);
+        }
+
         if(items.size() > 2) {
             RLPList trHis = (RLPList) items.get(2);
             for (int i = 0; i < trHis.size(); ++i) {
