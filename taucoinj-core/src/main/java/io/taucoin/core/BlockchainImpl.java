@@ -375,30 +375,18 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     public synchronized Block createNewBlock(Block parent, List<Transaction> txs) {
 
         // adjust time to parent block this may happen due to system clocks difference
-//        long time = System.currentTimeMillis() / 1000 + 10;
-//        if (parent.getTimestamp() >= time) time = parent.getTimestamp() + 1;
-//
-//        Block block = new Block(parent.getHash(),
-//                SHA3Helper.sha3(RLP.encodeList(new byte[0])), // uncleHash
-//                minerCoinbase,
-//                new byte[0], // log bloom - from tx receipts
-//                new byte[0], // difficulty computed right after block creation
-//                parent.getNumber() + 1,
-//                parent.getGasLimit(), // (add to config ?)
-//                0,  // gas used - computed after running all transactions
-//                time,  // block time
-//                minerExtraData,  // extra data
-//                new byte[0],  // mixHash (to mine)
-//                new byte[0],  // nonce   (to mine)
-//                new byte[0],  // receiptsRoot - computed after running all transactions
-//                calcTxTrie(txs),    // TransactionsRoot - computed after running all transactions
-//                new byte[] {0}, // stateRoot - computed after running all transactions
-//                txs,
-//                null);  // uncle list
-//
-//
-//        block.getHeader().setDifficulty(ByteUtil.bigIntegerToBytes(block.getHeader().calcDifficulty(parent.getHeader())));
-//
+        Long time = System.currentTimeMillis() / 1000;
+        byte[] timeStamp = new BigInteger(time.toString()).toByteArray();
+        byte version = 1;
+        byte option = 1;
+        Block block = new Block(version,
+                timeStamp,
+                parent.getHash(),
+                minerPubkey,
+                new byte[] {0},
+                option,
+                txs);
+
 //        pushState(parent.getHash());
 //
 //        track = repository.startTracking();
@@ -408,8 +396,6 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
 //
 //        popState();
 
-        byte[] bytes = null;
-        Block block = new Block(bytes);
         return block;
     }
 

@@ -91,7 +91,7 @@ public class Block {
     }
 
     public Block(byte version, byte[] timestamp, byte[] previousHeaderHash, byte[] generatorPublickey,
-                 byte[] blockSignature,byte option,
+                 byte[] blockSignature, byte option,
                  List<Transaction> transactionsList) {
         /*
         * TODO: calculate GenerationSignature
@@ -352,11 +352,37 @@ public class Block {
         return rlpEncoded;
     }
 
+    //encode block for signature
+    public byte[] getEncodedForSignature() {
+        byte[] header = this.header.getEncoded();
+
+        List<byte[]> block = getBodyElementsWithoutBlockSignature();
+        block.add(0, header);
+        byte[][] elements = block.toArray(new byte[block.size()][]);
+
+        byte[] rlpEncoded = RLP.encodeList(elements);
+
+        return rlpEncoded;
+    }
+
 
     public byte[] getEncodedBody() {
         List<byte[]> body = getBodyElements();
         byte[][] elements = body.toArray(new byte[body.size()][]);
         return RLP.encodeList(elements);
+    }
+
+    private List<byte[]> getBodyElementsWithoutBlockSignature() {
+        if (!parsed) parseRLP();
+
+        byte[] option = RLP.encodeByte(this.option);
+        byte[] transactions = getTransactionsEncoded();
+
+        List<byte[]> body = new ArrayList<>();
+        body.add(option);
+        body.add(transactions);
+
+        return body;
     }
 
     private List<byte[]> getBodyElements() {
