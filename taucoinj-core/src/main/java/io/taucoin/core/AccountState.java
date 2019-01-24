@@ -55,8 +55,10 @@ public class AccountState implements Serializable {
         log.info("account state size is {}",items.size());
         //log.info("forge power in account state is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
 
-        this.forgePower = RLP.decodeBigInteger(items.get(0).getRLPData(), 0);
-        this.balance = RLP.decodeBigInteger(items.get(1).getRLPData(), 0);
+        this.forgePower = items.get(0).getRLPData() == null ? BigInteger.ZERO
+                : new BigInteger(1, items.get(0).getRLPData());
+        this.balance = items.get(1).getRLPData() == null ? BigInteger.ZERO
+                : new BigInteger(1, items.get(1).getRLPData());
 
         if(items.size() > 2) {
             RLPList trHis = (RLPList) items.get(2);

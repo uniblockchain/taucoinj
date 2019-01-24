@@ -128,7 +128,8 @@ public class Block {
             this.generationSignature = new BigInteger(1, gsBytes);
 
             byte[] cyBytes = block.get(4).getRLPData();
-            this.cumulativeDifficulty = RLP.decodeBigInteger(cyBytes, 0);
+            this.cumulativeDifficulty = cyBytes == null ? BigInteger.ZERO
+                    : new BigInteger(1, cyBytes);
 
             RLPList items = (RLPList) RLP.decode2(block.get(5).getRLPData()).get(0);
             logger.info("items size is {}",items.size());
