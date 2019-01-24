@@ -73,7 +73,6 @@ public class PendingStateImpl implements PendingState {
     }
 
     //constructor
-    //public PendingStateImpl(EthereumListener listener, Repository repository) {
     @Autowired
     public PendingStateImpl(Repository repository) {
         this.repository = repository;
@@ -131,13 +130,13 @@ public class PendingStateImpl implements PendingState {
         if (transactions.isEmpty()) return;
 
         for (Transaction tx : transactions) {
-
+            logger.info("from network coming TX: {}" + tx.getHash());
             if (addNewTxIfNotExist(tx)) {
                 unknownTx++;
                 if (isValid(tx)) {
                     newTxs.add(tx);
                 } else {
-                    logger.info("Non valid TX: " + tx);
+                    logger.info("Non valid TX: {} " + tx.getHash());
                 }
             }
         }
