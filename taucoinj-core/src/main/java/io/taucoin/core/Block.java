@@ -127,7 +127,7 @@ public class Block {
             this.generationSignature = new BigInteger(1, gsBytes);
 
             byte[] cyBytes = block.get(4).getRLPData();
-            this.cumulativeDifficulty = new BigInteger(1, cyBytes);
+            this.cumulativeDifficulty = RLP.decodeBigInteger(cyBytes, 0);
 
             // Parse blockSignature
             this.blockSignature = block.get(5).getRLPData();

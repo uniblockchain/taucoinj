@@ -55,22 +55,8 @@ public class AccountState implements Serializable {
         log.info("account state size is {}",items.size());
         //log.info("forge power in account state is {}",ByteUtil.byteArrayToLong(items.get(0).getRLPData()));
 
-        // FIX ME: RLP issue?
-        // RLP encoding data is '0x80' for BigInteger.ZERO but the decoding RLP data
-        // got by 'items.get(1).getRLPData()'. So I have to judge this special case;
-        if (items.get(0).getRLPData() == null) {
-           log.info("Account forge power is 0");
-           this.forgePower = BigInteger.ZERO;
-        } else {
-            this.forgePower = RLP.decodeBigInteger(items.get(0).getRLPData(), 0);
-        }
-
-        if (items.get(1).getRLPData() == null) {
-            log.info("Account balance is 0");
-            this.balance = BigInteger.ZERO;
-        } else {
-            this.balance = RLP.decodeBigInteger(items.get(1).getRLPData(), 0);
-        }
+        this.forgePower = RLP.decodeBigInteger(items.get(0).getRLPData(), 0);
+        this.balance = RLP.decodeBigInteger(items.get(1).getRLPData(), 0);
 
         if(items.size() > 2) {
             RLPList trHis = (RLPList) items.get(2);

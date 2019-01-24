@@ -252,6 +252,13 @@ public class RLP {
     }
 
     public static BigInteger decodeBigInteger(byte[] data, int index) {
+        // FIX ME: RLP issue?
+        // RLP encoding data is '0x80' for BigInteger.ZERO but the decoding RLP data
+        // got by 'items.get(1).getRLPData()'. So I have to judge this special case;
+        if (data == null) {
+            return BigInteger.ZERO;
+        }
+
         final byte[] valueBytes = decodeItemBytes(data, index);
 
         if (valueBytes.length == 0) {
