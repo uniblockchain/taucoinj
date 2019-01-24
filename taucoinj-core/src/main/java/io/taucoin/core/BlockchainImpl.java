@@ -383,7 +383,6 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
                 timeStamp,
                 parent.getHash(),
                 minerPubkey,
-                new byte[] {0},
                 option,
                 txs);
 
