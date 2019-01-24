@@ -84,6 +84,9 @@ public class PendingStateImpl implements PendingState {
     }
 
     public Repository getRepository() {
+        if (this.pendingState == null) {
+            init();
+        }
         return pendingState;
     }
 
@@ -274,7 +277,7 @@ public class PendingStateImpl implements PendingState {
 
         logger.info("Apply pending state tx: {}", Hex.toHexString(tx.getHash()));
 
-        TransactionExecutor executor = new TransactionExecutor(tx, pendingState);
+        TransactionExecutor executor = new TransactionExecutor(tx, getRepository());
 
         executor.init();
 
