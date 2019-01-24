@@ -161,8 +161,8 @@ public class Block {
 
     public byte[] getHash() {
         if (!parsed) parseRLP();
-        //temporary used header hash
-        return this.header.getHeaderHash();
+        //current block hash (sha256 ripemd160)
+        return HashUtil.ripemd160(HashUtil.sha256(this.getEncoded()));
     }
 
     public byte[] getPreviousHeaderHash() {
