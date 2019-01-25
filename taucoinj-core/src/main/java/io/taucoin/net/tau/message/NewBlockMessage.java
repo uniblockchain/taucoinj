@@ -78,8 +78,8 @@ public class NewBlockMessage extends TauMessage {
     public String toString() {
         if (!parsed) parse();
 
-        String hash = this.getBlock().getShortHash();
+//        String hash = this.getBlock().getShortHash();
         long number = this.getBlock().getNumber();
-        return "NEW_BLOCK [ number: " + number + " hash:" + hash + " difficulty: " + Hex.toHexString(difficulty) + " ]";
+        return "NEW_BLOCK [ number: " + number + " hash:" + /*hash +*/ " difficulty: " + Hex.toHexString(difficulty) + " ]";
     }
 }
