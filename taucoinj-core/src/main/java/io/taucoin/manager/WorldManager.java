@@ -160,6 +160,8 @@ public class WorldManager {
             Genesis genesis = (Genesis)Genesis.getInstance(config);
             for (ByteArrayWrapper key : genesis.getPremine().keySet()) {
                 repository.createAccount(key.getData());
+                BigInteger power = repository.increaseforgePower(key.getData());
+                logger.info("address : {} forge power : {}",Hex.toHexString(key.getData()),power);
                 repository.addBalance(key.getData(), genesis.getPremine().get(key).getBalance());
             }
             logger.info("genesis block hash: {}",Hex.toHexString(Genesis.getInstance(config).getHash()));
