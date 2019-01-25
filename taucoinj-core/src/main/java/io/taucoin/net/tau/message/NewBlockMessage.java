@@ -29,7 +29,7 @@ public class NewBlockMessage extends TauMessage {
     }
 
     private void encode() {
-        byte[] block = this.block.getEncoded();
+        byte[] block = this.block.getEncodedMsg();
         byte[] diff = RLP.encodeElement(this.difficulty);
 
         this.encoded = RLP.encodeList(block, diff);
@@ -40,7 +40,7 @@ public class NewBlockMessage extends TauMessage {
         RLPList paramsList = (RLPList) RLP.decode2(encoded).get(0);
 
         RLPList blockRLP = ((RLPList) paramsList.get(0));
-        block = new Block(blockRLP.getRLPData());
+        block = new Block(blockRLP.getRLPData(), true);
         difficulty = paramsList.get(1).getRLPData();
 
         parsed = true;
