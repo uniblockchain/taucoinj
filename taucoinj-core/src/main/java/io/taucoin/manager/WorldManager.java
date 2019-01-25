@@ -86,6 +86,7 @@ public class WorldManager {
         //wallet.importKey(cbAddr);
 
         loadBlockchain();
+        logger.info("chain size is {}",blockchain.getSize());
     }
 
     public void addListener(EthereumListener listener) {
@@ -162,6 +163,8 @@ public class WorldManager {
                 repository.addBalance(key.getData(), genesis.getPremine().get(key).getBalance());
             }
             logger.info("genesis block hash: {}",Hex.toHexString(Genesis.getInstance(config).getHash()));
+            Object object= blockStore.getClass();
+            logger.info("blockStore class : {}",((Class) object).getName());
             blockStore.saveBlock(Genesis.getInstance(config), Genesis.getInstance(config).getCumulativeDifficulty(), true);
             blockchain.setBestBlock(Genesis.getInstance(config));
             blockchain.setTotalDifficulty(Genesis.getInstance(config).getCumulativeDifficulty());

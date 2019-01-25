@@ -43,6 +43,7 @@ public class IndexedBlockStore implements BlockStore{
     public Block getBestBlock(){
 
         Long maxLevel = getMaxNumber();
+        logger.info("getBestBlock maxLevel is {}",maxLevel.intValue());
         if (maxLevel < 0) return null;
 
         Block bestBlock = getChainBlockByNumber(maxLevel);
