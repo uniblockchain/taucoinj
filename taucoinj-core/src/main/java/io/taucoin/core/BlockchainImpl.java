@@ -603,6 +603,8 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     @Override
     public synchronized void storeBlock(Block block) {
 
+        updateTotalDifficulty(block);
+
         if (fork)
             blockStore.saveBlock(block, totalDifficulty, false);
         else
