@@ -197,6 +197,11 @@ public class Block {
         return this.header.getTimeStamp();
     }
 
+    public byte[] getGeneratorPublicKey() {
+        if (!parsed) parseRLP();
+        return this.header.getGeneratorPublicKey();
+    }
+
     public byte getVersion() {
         if (!parsed) parseRLP();
         return this.header.getVersion();

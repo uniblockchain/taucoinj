@@ -2,6 +2,7 @@ package io.taucoin.core;
 
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Transaction;
+import io.taucoin.crypto.ECKey;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.crypto.SHA3Helper;
 import io.taucoin.db.BlockStore;
@@ -507,6 +508,17 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     }
 
     /**
+     * verify block signature with public key and signature
+     * @param block
+     * @return
+     */
+    private boolean verifyBlockSignature(Block block) {
+        ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
+        ECKey.ECDSASignature sig = block.getblockSignature();
+        return key.verify(block.getRawHash(), sig);
+    }
+
+    /**
      * This mechanism enforces a homeostasis in terms of the time between blocks;
      * a smaller period between the last two blocks results in an increase in the
      * difficulty level and thus additional computation required, lengthening the
@@ -518,7 +530,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         boolean isValid = true;
 
         if (!block.isGenesis()) {
-            isValid = isValid(block.getHeader());
+            if (!verifyBlockSignature(block)) {
+                isValid = false;
+                logger.error("Block signature is invalid, block number {}", block.getNumber());
+            }
+
+            if (!isValid(block.getHeader())) {
+                isValid = false;
+            }
 
             List<Transaction> txs = block.getTransactionsList();
             if (!txs.isEmpty()) {
