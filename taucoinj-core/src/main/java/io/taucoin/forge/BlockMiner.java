@@ -18,6 +18,7 @@ import org.spongycastle.util.BigIntegers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.spongycastle.util.encoders.Hex;
 
 import javax.annotation.PostConstruct;
 import java.math.BigInteger;
@@ -74,6 +75,8 @@ public class BlockMiner {
 
     private boolean stopForge;
 
+    private volatile boolean isForging = false;
+
     @PostConstruct
     private void init() {
         minBlockTimeout = config.getMineMinBlockTimeoutMsec();
@@ -96,7 +99,7 @@ public class BlockMiner {
             }
         });
 
-        if (config.minerStart()) {
+        if (config.minerStart() && !config.isSyncEnabled()) {
             logger.info("Start mining now...");
             startMining();
         }
@@ -127,10 +130,36 @@ public class BlockMiner {
 
     public void stopMining() {
         isMining = false;
+        this.isForging = false;
         cancelCurrentBlock();
         fireMinerStopped();
         logger.info("Miner stopped");
     }
+
+    public void startForging() {
+        startForging(-1);
+    }
+
+    public void startForging(long amount) {
+        if (isForging()) {
+            return;
+        }
+
+        executor.submit(new ForgeTask(this, amount));
+        fireMinerStarted();
+        this.isForging = true;
+    }
+
+    public void stopForging() {
+        this.isForging = false;
+        executor.shutdownNow();
+        fireMinerStopped();
+    }
+
+    public boolean isForging() {
+        return this.isForging;
+    }
+
 
     protected List<Transaction> getAllPendingTransactions() {
         List<Transaction> txList = new ArrayList<Transaction>();
@@ -195,7 +224,7 @@ public class BlockMiner {
         }
     }
 
-    protected void restartMining() {
+    public void restartMining() {
         Block /*bestBlockchain*/ bestPendingState = blockchain.getBestBlock();
 //        Block bestPendingState = ((PendingStateImpl) pendingState).getBestBlock();
 
@@ -335,4 +364,64 @@ public class BlockMiner {
             l.blockMined(b);
         }
     }
+
+        // Forge task implementation.
+    private static class ForgeTask implements Runnable, MinerListener {
+
+        BlockMiner forger;
+
+        private long forgeTargetAmount = -1;
+        private long forgedBlockAmount = 0;
+
+        public ForgeTask(BlockMiner forger) {
+            this.forger = forger;
+            registerForgeListener();
+        }
+
+        public ForgeTask(BlockMiner forger, long forgeTargetAmount) {
+           this.forger = forger;
+           this.forgeTargetAmount = forgeTargetAmount;
+           registerForgeListener();
+        }
+
+        private void registerForgeListener() {
+            forger.addListener(this);
+        }
+
+        @Override
+        public void run() {
+            while (forgeTargetAmount == -1
+                    || (forgeTargetAmount > 0 && forgedBlockAmount < forgeTargetAmount)) {
+               forger.restartMining();
+            }
+
+            forger.stopMining();
+        }
+
+        @Override
+        public void miningStarted() {
+            logger.info("Forging started...");
+        }
+
+        @Override
+        public void miningStopped() {
+            logger.info("Forging stopped...");
+        }
+
+        @Override
+        public void blockMiningStarted(Block block) {
+            logger.info("Block forging started...");
+        }
+
+        @Override
+        public void blockMined(Block block) {
+            forgedBlockAmount++;
+            logger.info("New Block: {}", Hex.toHexString(block.getHash()));
+        }
+
+        @Override
+        public void blockMiningCanceled(Block block) {
+            logger.info("Block froging canceled: {}", Hex.toHexString(block.getHash()));
+        }
+     }
 }
