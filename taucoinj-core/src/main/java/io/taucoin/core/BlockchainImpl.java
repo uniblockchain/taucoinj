@@ -440,11 +440,11 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         storeBlock(block);
 
 
-        if (!byTest && needFlush(block)) {
+//        if (!byTest && needFlush(block)) {
             repository.flush();
             blockStore.flush();
             System.gc();
-        }
+//        }
 
         // Remove all wallet transactions as they already approved by the net
         wallet.removeTransactions(block.getTransactionsList());
