@@ -149,7 +149,7 @@ public class Block {
             byte[] s = items.get(1).getRLPData();
             this.blockSignature = ECDSASignature.fromComponents(r, s);
             // Parse option
-            this.option = items.get(6).getRLPData()[0];
+            this.option = block.get(6).getRLPData()[0];
             if(block.size() > 7) {
                 // Parse Transactions
                 RLPList txTransactions = (RLPList) block.get(7);
@@ -158,13 +158,14 @@ public class Block {
             }
         } else {
             // Parse blockSignature
-            byte[] r = block.get(1).getRLPData();
-            byte[] s = block.get(2).getRLPData();
+            RLPList items = (RLPList) RLP.decode2(block.get(1).getRLPData()).get(0);
+            byte[] r = items.get(0).getRLPData();
+            byte[] s = items.get(1).getRLPData();
             this.blockSignature = ECDSASignature.fromComponents(r, s);
             // Parse option
-            this.option = block.get(3).getRLPData()[0];
+            this.option = block.get(2).getRLPData()[0];
             // Parse Transactions
-            RLPList txTransactions = (RLPList) block.get(4);
+            RLPList txTransactions = (RLPList) block.get(3);
             this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
         }
 
