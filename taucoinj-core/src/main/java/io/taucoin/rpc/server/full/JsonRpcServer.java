@@ -107,6 +107,8 @@ public final class JsonRpcServer extends io.taucoin.rpc.server.JsonRpcServer{
         //this.dispatcher.register(new shh_getFilterChanges(this.taucoin));
         //this.dispatcher.register(new shh_getMessages(this.taucoin));
 
+        this.dispatcher.register(new tau_getBlockHashList(this.taucoin));
+
         taucoin.addListener(FilterManager.getInstance());
         //io.taucoin.rpc.server.full.whisper.FilterManager.getInstance();
     }

@@ -25,3 +25,6 @@ curl --data-binary '{"jsonrpc": "2.0", "id":"1", "method": "tau_newaccount", "pa
 
 # Start forging
 #curl --data-binary '{"jsonrpc": "2.0", "id":"1", "method": "tau_forging", "params": [{"amount": 1}] }'  http://127.0.0.1:8606/
+
+# get block hash list
+# curl --data-binary '{"jsonrpc": "2.0", "id":"1", "method": "tau_getBlockHashList", "params": [{"start": 0}] }'  http://127.0.0.1:8606/

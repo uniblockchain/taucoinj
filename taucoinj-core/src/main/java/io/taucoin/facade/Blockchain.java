@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 
-public interface Blockchain {
+public interface Blockchain extends io.taucoin.core.Blockchain {
 
     /**
      * Get block by number from the best chain

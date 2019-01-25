@@ -69,7 +69,7 @@ import static io.taucoin.util.BIUtil.isMoreThan;
  * @since 20.05.2014
  */
 @Component
-public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain {
+public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
 
     private static final Logger logger = LoggerFactory.getLogger("blockchain");
