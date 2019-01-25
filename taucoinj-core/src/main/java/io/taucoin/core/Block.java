@@ -149,10 +149,10 @@ public class Block {
             byte[] s = items.get(1).getRLPData();
             this.blockSignature = ECDSASignature.fromComponents(r, s);
             // Parse option
-            this.option = items.get(2).getRLPData()[0];
-            if(block.size() > 6) {
+            this.option = items.get(6).getRLPData()[0];
+            if(block.size() > 7) {
                 // Parse Transactions
-                RLPList txTransactions = (RLPList) block.get(6);
+                RLPList txTransactions = (RLPList) block.get(7);
                 // here may need original trie
                 this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
             }
@@ -328,13 +328,18 @@ public class Block {
         return Arrays.areEqual(this.getHash(), block.getHash());
     }
 
-    private byte[] getSigAndOptionEncoded() {
+    private byte[] getSignatureEncoded() {
         byte[] r, s;
         r = RLP.encodeElement(BigIntegers.asUnsignedByteArray(blockSignature.r));
         s = RLP.encodeElement(BigIntegers.asUnsignedByteArray(blockSignature.s));
-        byte[] option = RLP.encodeByte(this.option);
-        return RLP.encodeList(r, s, option);
+        return RLP.encodeList(r, s);
     }
+
+    private byte[] getOptionEncoded() {
+        byte[] option = RLP.encodeByte(this.option);
+        return RLP.encodeList(option);
+    }
+
     private byte[] getTransactionsEncoded() {
 
         byte[][] transactionsEncoded = new byte[transactionsList.size()][];
@@ -413,11 +418,13 @@ public class Block {
     private List<byte[]> getBodyElements() {
         if (!parsed) parseRLP();
 
-        byte[] sigAndOption = getSigAndOptionEncoded();
+        byte[] signature = getSignatureEncoded();
+        byte[] option = getOptionEncoded();
         byte[] transactions = getTransactionsEncoded();
 
         List<byte[]> body = new ArrayList<>();
-        body.add(sigAndOption);
+        body.add(signature);
+        body.add(option);
         body.add(transactions);
 
         return body;
@@ -434,7 +441,8 @@ public class Block {
         byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget == null ? BigInteger.valueOf(0xffffffff): this.baseTarget);
         byte[] generationSignature = RLP.encodeBigInteger(this.generationSignature == null ? BigInteger.valueOf(0xffffff):this.generationSignature);
         byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty == null ? BigInteger.valueOf(0xffffff):this.cumulativeDifficulty);
-        byte[] sigAndOption = getSigAndOptionEncoded();
+        byte[] signature = getSignatureEncoded();
+        byte[] option = getOptionEncoded();
         byte[] transactions = getTransactionsEncoded();
 
         List<byte[]> body = new ArrayList<>();
@@ -442,7 +450,8 @@ public class Block {
         body.add(baseTarget);
         body.add(generationSignature);
         body.add(cumulativeDifficulty);
-        body.add(sigAndOption);
+        body.add(signature);
+        body.add(option);
         body.add(transactions);
 
         return body;
