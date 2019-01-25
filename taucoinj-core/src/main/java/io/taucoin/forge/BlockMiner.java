@@ -14,6 +14,7 @@ import io.taucoin.listener.CompositeEthereumListener;
 import io.taucoin.listener.EthereumListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.util.BigIntegers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -132,6 +133,17 @@ public class BlockMiner {
     }
 
     protected List<Transaction> getAllPendingTransactions() {
+        List<Transaction> txList = new ArrayList<Transaction>();
+        txList.addAll(pendingState.getPendingTransactions());
+        txList.addAll(pendingState.getWireTransactions());
+
+        if (txList.size() > 50) {
+            return txList.subList(0, 50);
+        }
+        else {
+            return txList;
+        }
+
 //        PendingStateImpl.TransactionSortedSet ret = new PendingStateImpl.TransactionSortedSet();
 //        ret.addAll(pendingState.getPendingTransactions());
 //        ret.addAll(pendingState.getWireTransactions());
@@ -143,7 +155,7 @@ public class BlockMiner {
 //                it.remove();
 //            }
 //        }
-        return null;
+//        return new ArrayList<>(ret);
     }
 
     private void onPendingStateChanged() {
@@ -184,18 +196,29 @@ public class BlockMiner {
     }
 
     protected void restartMining() {
-        Block bestBlockchain = blockchain.getBestBlock();
-        Block bestPendingState = ((PendingStateImpl) pendingState).getBestBlock();
+        Block /*bestBlockchain*/ bestPendingState = blockchain.getBestBlock();
+//        Block bestPendingState = ((PendingStateImpl) pendingState).getBestBlock();
 
         BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestPendingState, blockStore);
+        logger.info("baseTarget:", baseTarget);
         BigInteger forgingPower = repository.getforgePower(minerCoinbase);
+        logger.info("forgingPower:", forgingPower);
+        System.out.println("wwwwwwwww" + forgingPower);
+        forgingPower = new BigInteger("1");
+        if (forgingPower.longValue() < 0) {
+            logger.error("Forging Power < 0!!!");
+            return;
+        }
 
         byte[] generationSignature = ProofOfTransaction.
                 calculateNextBlockGenerationSignature(bestPendingState.getGenerationSignature().toByteArray(), minerPubkey);
+        logger.info("generationSignature:", generationSignature);
 
         BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
+        logger.info("hit:", hit);
 
         long timeInterval = ProofOfTransaction.calculateForgingTimeInterval(hit, baseTarget, forgingPower);
+        logger.info("timeInterval:", timeInterval);
         long timeNow = System.currentTimeMillis() / 1000;
         long timePreBlock = new BigInteger(bestPendingState.getTimestamp()).longValue();
         if (timeNow < timePreBlock + timeInterval) {
@@ -208,52 +231,66 @@ public class BlockMiner {
             }
         }
 
+        BigInteger cumulativeDifficulty = ProofOfTransaction.
+                calculateCumulativeDifficulty(bestPendingState.getCumulativeDifficulty(), baseTarget);
+
         if (!stopForge) {
-            Block newMiningBlock = blockchain.createNewBlock(bestPendingState, getAllPendingTransactions());
+            miningBlock = blockchain.createNewBlock(bestPendingState, baseTarget,
+                    BigIntegers.fromUnsignedByteArray(generationSignature),
+                    cumulativeDifficulty, getAllPendingTransactions());
+            System.out.println(miningBlock.toString());
+            try {
+                // wow, block mined!
+                blockMined(miningBlock);
+            } catch (InterruptedException | CancellationException e) {
+                // OK, we've been cancelled, just exit
+            } catch (Exception e) {
+                logger.warn("Exception during mining: ", e);
+            }
         }
 
-        Block newMiningBlock = blockchain.createNewBlock(bestPendingState, getAllPendingTransactions());
-
-        synchronized(this) {
-            cancelCurrentBlock();
-           // miningBlock = newMiningBlock;
-            ethashTask = fullMining ?
-                    Ethash.getForBlock(miningBlock.getNumber()).mine(miningBlock, cpuThreads) :
-                    Ethash.getForBlock(miningBlock.getNumber()).mineLight(miningBlock, cpuThreads);
-            ethashTask.addListener(new Runnable() {
-                //            private final Future<Long> task = ethashTask;
-                @Override
-                public void run() {
-                    try {
-                        ethashTask.get();
-                        // wow, block mined!
-                        blockMined(miningBlock);
-                    } catch (InterruptedException | CancellationException e) {
-                        // OK, we've been cancelled, just exit
-                    } catch (Exception e) {
-                        logger.warn("Exception during mining: ", e);
-                    }
-                }
-            }, MoreExecutors.sameThreadExecutor());
-        }
+//        Block newMiningBlock = blockchain.createNewBlock(bestPendingState, getAllPendingTransactions());
+//
+//        synchronized(this) {
+//            cancelCurrentBlock();
+//           // miningBlock = newMiningBlock;
+//            ethashTask = fullMining ?
+//                    Ethash.getForBlock(miningBlock.getNumber()).mine(miningBlock, cpuThreads) :
+//                    Ethash.getForBlock(miningBlock.getNumber()).mineLight(miningBlock, cpuThreads);
+//            ethashTask.addListener(new Runnable() {
+//                //            private final Future<Long> task = ethashTask;
+//                @Override
+//                public void run() {
+//                    try {
+//                        ethashTask.get();
+//                        // wow, block mined!
+//                        blockMined(miningBlock);
+//                    } catch (InterruptedException | CancellationException e) {
+//                        // OK, we've been cancelled, just exit
+//                    } catch (Exception e) {
+//                        logger.warn("Exception during mining: ", e);
+//                    }
+//                }
+//            }, MoreExecutors.sameThreadExecutor());
+//        }
         fireBlockStarted(miningBlock);
-        logger.debug("New block mining started: {}", miningBlock.getShortHash());
+//        logger.debug("New block mining started: {}", miningBlock.getShortHash());
     }
 
     protected void blockMined(Block newBlock) throws InterruptedException {
 
-        long t = System.currentTimeMillis();
-        if (t - lastBlockMinedTime < minBlockTimeout) {
-            long sleepTime = minBlockTimeout - (t - lastBlockMinedTime);
-            logger.debug("Last block was mined " + (t - lastBlockMinedTime) + " ms ago. Sleeping " +
-                    sleepTime + " ms before importing...");
-            Thread.sleep(sleepTime);
-        }
+//        long t = System.currentTimeMillis();
+//        if (t - lastBlockMinedTime < minBlockTimeout) {
+//            long sleepTime = minBlockTimeout - (t - lastBlockMinedTime);
+//            logger.debug("Last block was mined " + (t - lastBlockMinedTime) + " ms ago. Sleeping " +
+//                    sleepTime + " ms before importing...");
+//            Thread.sleep(sleepTime);
+//        }
 
         fireBlockMined(newBlock);
         logger.info("Wow, block mined !!!: {}", newBlock.toString());
 
-        lastBlockMinedTime = t;
+//        lastBlockMinedTime = t;
         ethashTask = null;
         miningBlock = null;
 

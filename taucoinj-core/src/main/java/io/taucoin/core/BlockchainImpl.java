@@ -116,6 +116,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     private boolean fork = false;
 
     private byte[] minerCoinbase;
+    private byte[] minerPrikey;
     private byte[] minerPubkey;
     private byte[] minerExtraData;
 
@@ -139,6 +140,7 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
     @PostConstruct
     private void init() {
         minerCoinbase = config.getMinerCoinbase();
+        minerPrikey = config.getMinerPrikey();
         minerPubkey = config.getMinerPubkey();
         minerExtraData = config.getMineExtraData();
     }
@@ -372,7 +374,8 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
         return NO_PARENT;
     }
 
-    public synchronized Block createNewBlock(Block parent, List<Transaction> txs) {
+    public synchronized Block createNewBlock(Block parent, BigInteger baseTarget, BigInteger generationSignature,
+                                             BigInteger cumulativeDifficulty, List<Transaction> txs) {
 
         // adjust time to parent block this may happen due to system clocks difference
         Long time = System.currentTimeMillis() / 1000;
@@ -385,6 +388,11 @@ public class BlockchainImpl implements Blockchain, io.taucoin.facade.Blockchain 
                 minerPubkey,
                 option,
                 txs);
+        block.setNumber(parent.getNumber() + 1);
+        block.setBaseTarget(baseTarget);
+        block.setGenerationSignature(generationSignature);
+        block.setCumulativeDifficulty(cumulativeDifficulty);
+        block.sign(minerPrikey);
 
 //        pushState(parent.getHash());
 //

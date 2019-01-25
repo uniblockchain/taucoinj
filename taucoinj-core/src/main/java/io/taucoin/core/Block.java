@@ -421,6 +421,10 @@ public class Block {
     private List<byte[]> getFullBodyElements() {
         if (!parsed) parseRLP();
 
+        System.out.println("number:" + this.number);
+        System.out.println("baseTarget:" + this.baseTarget);
+        System.out.println("generationSignature:" + this.generationSignature);
+        System.out.println("cumulativeDifficulty:" + this.cumulativeDifficulty);
         byte[] number = RLP.encodeBigInteger(BigInteger.valueOf(this.number));
         byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget == null ? BigInteger.valueOf(0xffffffff): this.baseTarget);
         byte[] generationSignature = RLP.encodeBigInteger(this.generationSignature == null ? BigInteger.valueOf(0xffffff):this.generationSignature);
@@ -453,7 +457,7 @@ public class Block {
     public void sign(byte[] privKeyBytes) throws ECKey.MissingPrivateKeyException {
         byte[] hash = this.getRawHash();
         ECKey key = ECKey.fromPrivate(privKeyBytes).decompress();
-        ECDSASignature signature = key.sign(hash);
+        this.blockSignature = key.doSign(hash);
         this.rlpEncoded = null;
     }
 

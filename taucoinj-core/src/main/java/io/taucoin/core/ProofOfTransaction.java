@@ -10,7 +10,7 @@ import static java.lang.Math.log;
 public class ProofOfTransaction {
     private final static int MAXRATIO = 335;
     private final static int MINRATIO = 265;
-    private final static int AVERTIME = 300;
+    private final static int AVERTIME = 300; //5 min
     private final static double GAMMA = 0.64;
     private final static BigInteger DiffAdjustNumerator = new BigInteger("010000000000000000",16);
     private final static BigInteger DiffAdjustNumeratorHalf = new BigInteger("0100000000",16);

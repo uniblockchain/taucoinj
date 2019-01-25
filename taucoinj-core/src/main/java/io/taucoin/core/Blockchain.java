@@ -54,5 +54,6 @@ public interface Blockchain {
 
     Transaction getTransactionByHash(byte[] hash);
 
-    Block createNewBlock(Block parent, List<Transaction> transactions);
+    Block createNewBlock(Block parent, BigInteger baseTarget, BigInteger generationSignature,
+                         BigInteger cumulativeDifficulty, List<Transaction> transactions);
 }
