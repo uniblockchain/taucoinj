@@ -49,6 +49,8 @@ public class GenesisLoader {
             GenesisJson genesisJson  = new ObjectMapper().readValue(json, type);
 
             Genesis genesis = createBlockForJson(genesisJson);
+            //set block signature
+            genesis.setGenerationSignature(new BigInteger(genesisJson.getBlockSignature(),16));
             // Set genesis base target value and cumulative difficulty
             genesis.setBaseTarget(new BigInteger(
                     ByteUtil.removeHexPrefix(genesisJson.getGeneBasetarget()), 16));
