@@ -164,7 +164,7 @@ public class Block {
             // Parse option
             this.option = block.get(3).getRLPData()[0];
             // Parse Transactions
-            RLPList txTransactions = (RLPList) block.get(3);
+            RLPList txTransactions = (RLPList) block.get(4);
             this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
         }
 
