@@ -96,8 +96,8 @@ public class BlockMiner {
             }
         });
 
-        if (config.minerStart() && !config.isSyncEnabled()) {
-            logger.info("Sync disabled, start mining now...");
+        if (config.minerStart()) {
+            logger.info("Start mining now...");
             startMining();
         }
     }
