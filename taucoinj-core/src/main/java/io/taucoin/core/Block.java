@@ -182,6 +182,13 @@ public class Block {
         return isMsg;
     }
 
+    /**
+     * Indicate this block is from network
+     */
+    public void setIsMsg(boolean isMsg) {
+        this.isMsg = isMsg;
+    }
+
     public BlockHeader getHeader() {
         if (!parsed) parseRLP();
         return this.header;
@@ -445,7 +452,7 @@ public class Block {
         System.out.println("generationSignature:" + this.generationSignature);
         System.out.println("cumulativeDifficulty:" + this.cumulativeDifficulty);
         byte[] number = RLP.encodeBigInteger(BigInteger.valueOf(this.number));
-        byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget == null ? BigInteger.valueOf(0xffffffff): this.baseTarget);
+        byte[] baseTarget = RLP.encodeBigInteger(this.baseTarget == null ? BigInteger.valueOf(0x0ffffffff): this.baseTarget);
         byte[] generationSignature = RLP.encodeBigInteger(this.generationSignature == null ? BigInteger.valueOf(0xffffff):this.generationSignature);
         byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty == null ? BigInteger.valueOf(0xffffff):this.cumulativeDifficulty);
         byte[] signature = getSignatureEncoded();
@@ -491,16 +498,17 @@ public class Block {
 
         private BlockHeader header;
         private byte[] body;
-        private boolean isPure = true;
+        // Is from network or disk?
+        private boolean isMsg = false;
 
         public Builder withHeader(BlockHeader header) {
             this.header = header;
             return this;
         }
 
-        public Builder withBody(byte[] body ,boolean ispure) {
+        public Builder withBody(byte[] body ,boolean isMsg) {
             this.body = body;
-            this.isPure = ispure;
+            this.isMsg = isMsg;
             return this;
         }
 
@@ -509,9 +517,10 @@ public class Block {
                 return null;
             }
             //tempory support simplied pure block 
-            if(isPure){
+            if(this.isMsg){
                 Block block = new Block();
                 block.header = header;
+                block.setIsMsg(true);
                 block.parsed = true;
                 RLPList items = (RLPList) RLP.decode2(body).get(0);
                 RLPList signature = (RLPList) items.get(0);
