@@ -268,9 +268,10 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
         pendingState.addWireTransactions(txSet);
 
         // TODO: broadcast transactions only after tx is verified.
+        /*
         TransactionTask transactionTask = new TransactionTask(txList, channelManager, channel);
         TransactionExecutor.instance.submitTransaction(transactionTask);
-
+         */
     }
 
     public void sendNewBlock(Block block) {
