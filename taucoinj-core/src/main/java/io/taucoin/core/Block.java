@@ -165,8 +165,10 @@ public class Block {
             // Parse option
             this.option = block.get(2).getRLPData()[0];
             // Parse Transactions
-            RLPList txTransactions = (RLPList) block.get(3);
-            this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
+            if(block.size() > 3){
+                RLPList txTransactions = (RLPList) block.get(3);
+                this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
+            }
         }
 
         this.parsed = true;
@@ -370,7 +372,7 @@ public class Block {
 
     //encode block on net
     public byte[] getEncodedMsg() {
-        if (rlpEncoded == null) {
+        //if (rlpEncoded == null) {
             byte[] header = this.header.getEncoded();
 
             List<byte[]> block = getBodyElements();
@@ -378,7 +380,7 @@ public class Block {
             byte[][] elements = block.toArray(new byte[block.size()][]);
 
             this.rlpEncoded = RLP.encodeList(elements);
-        }
+        //}
         return rlpEncoded;
     }
 
@@ -514,9 +516,10 @@ public class Block {
                 RLPList transactions = (RLPList) RLP.decode2(body).get(2);
                 //RLPList transactions = (RLPList) items.get(0);
                 if(transactions.size() == 0){
-                   return null;
+
+                }else{
+                   block.parseTxs(transactions);
                 }
-                block.parseTxs(transactions);
                //delete txState may be stupid....
                //we avoid trie,because we think block header doesn't have large capacity
                 return block;
