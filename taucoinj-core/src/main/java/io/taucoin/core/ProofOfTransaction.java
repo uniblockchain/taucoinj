@@ -8,9 +8,9 @@ import static java.lang.Math.abs;
 import static java.lang.Math.log;
 
 public class ProofOfTransaction {
-    private final static int MAXRATIO = 335;
-    private final static int MINRATIO = 265;
-    private final static int AVERTIME = 300; //5 min
+    private final static int MAXRATIO = 67;//335;
+    private final static int MINRATIO = 53;//265;
+    private final static int AVERTIME = 60;//300; //5 min
     private final static double GAMMA = 0.64;
     private final static BigInteger DiffAdjustNumerator = new BigInteger("010000000000000000",16);
     private final static BigInteger DiffAdjustNumeratorHalf = new BigInteger("0100000000",16);
@@ -58,7 +58,7 @@ public class ProofOfTransaction {
             //long temp = Math.round(1000*doubletemp);
             //this.newRequiredBaseTarget = lastBlockbaseTarget.subtract(BigInteger.valueOf(temp).multiply(lastBlockbaseTarget).divide(BigInteger.valueOf(1000)));
             newRequiredBaseTarget = lastBlockbaseTarget.
-                    subtract(lastBlockbaseTarget.divide(BigInteger.valueOf(1875)).
+                    subtract(lastBlockbaseTarget.divide(BigInteger.valueOf(375)).//1875)).
                             multiply(BigInteger.valueOf(AVERTIME-max)).multiply(BigInteger.valueOf(4)));
         }
         return newRequiredBaseTarget;
