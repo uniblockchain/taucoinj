@@ -24,9 +24,10 @@ public class tau_newaccount extends JsonRpcServerMethod {
         account.init();
         taucoin.getWallet().addNewAccount(account);
         ArrayList<String> tmp = new ArrayList<String>();
-        tmp.add("private key: "+account.getEcKey().getPrivKey());
-        tmp.add("public key: "+ new BigInteger(account.getEcKey().getPubKey()));
+        tmp.add("private key: "+Hex.toHexString(account.getEcKey().getPrivKey().toByteArray()));
+        tmp.add("public key: "+ Hex.toHexString(account.getEcKey().getPubKey()));
         tmp.add("address: " + account.getEcKey().getAccountAddress().toBase58());
+        tmp.add("simple address: "+Hex.toHexString(account.getEcKey().getAddressBindAccount()));
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
 
