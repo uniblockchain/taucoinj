@@ -8,6 +8,8 @@ import io.taucoin.core.Account;
 import io.taucoin.core.Transaction;
 import io.taucoin.facade.Taucoin;
 import org.spongycastle.util.encoders.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +22,8 @@ import static io.taucoin.config.SystemProperties.CONFIG;
 TODO: get more information from Roman, he think about this right now about 20 - 32 result.
 */
 public class tau_sendTransaction extends JsonRpcServerMethod {
+
+    private static final Logger logger = LoggerFactory.getLogger("rpc");
 
     public tau_sendTransaction (Taucoin taucoin) {
         super(taucoin);
@@ -39,6 +43,8 @@ public class tau_sendTransaction extends JsonRpcServerMethod {
                 e.printStackTrace();
                 return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
             }
+
+            logger.info("send tx {}", tx.toString());
 
             try {
                 taucoin.submitTransaction(tx).get(CONFIG.transactionApproveTimeout(), TimeUnit.SECONDS);
