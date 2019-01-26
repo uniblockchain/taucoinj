@@ -338,7 +338,7 @@ public class Block {
 
     private byte[] getOptionEncoded() {
         byte[] option = RLP.encodeByte(this.option);
-        return RLP.encodeList(option);
+        return option;
     }
 
     private byte[] getTransactionsEncoded() {
