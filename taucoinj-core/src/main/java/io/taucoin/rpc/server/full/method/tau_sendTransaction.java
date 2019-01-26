@@ -44,8 +44,6 @@ public class tau_sendTransaction extends JsonRpcServerMethod {
                 return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
             }
 
-            logger.info("send tx {}", tx.toString());
-
             try {
                 taucoin.submitTransaction(tx).get(CONFIG.transactionApproveTimeout(), TimeUnit.SECONDS);
             } catch (Exception e) {

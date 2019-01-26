@@ -137,7 +137,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         BigInteger fee = BigInteger.ZERO;
         if (obj.containsKey("fee") && ((long)obj.get("fee")) > 0) {
-            value = BigInteger.valueOf((long) obj.get("fee"));
+            fee = BigInteger.valueOf((long) obj.get("fee"));
         }
 
         byte[] senderPrivkey = null;
@@ -158,7 +158,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         Transaction tx = taucoin.createTransaction(TransactionVersion.V01.getCode(),
                 TransactionOptions.TRANSACTION_OPTION_DEFAULT, ByteUtil.longToBytes(timeStamp),
-                to, ByteUtil.bigIntegerToBytes(value), ByteUtil.bigIntegerToBytes(fee));
+                to, value.toByteArray(), fee.toByteArray());
 
         tx.sign(senderPrivkey);
 
