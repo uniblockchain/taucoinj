@@ -309,7 +309,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         if (block.isMsg()) {
             block.setNumber(preBlock.getNumber() + 1);
 
-            BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(block, blockStore);
+            BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(preBlock, blockStore);
             block.setBaseTarget(baseTarget);
 
             byte[] gsBytes = ProofOfTransaction.
@@ -549,26 +549,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         }
 
         return isValid;
-    }
-
-
-    public static Set<ByteArrayWrapper> getAncestors(BlockStore blockStore, Block testedBlock, int limitNum, boolean isParentBlock) {
-        Set<ByteArrayWrapper> ret = new HashSet<>();
-        limitNum = (int) max(0, testedBlock.getNumber() - limitNum);
-        Block it = testedBlock;
-        if (!isParentBlock) {
-            it = blockStore.getBlockByHash(it.getPreviousHeaderHash());
-        }
-        while(it != null && it.getNumber() >= limitNum) {
-            ret.add(new ByteArrayWrapper(it.getHash()));
-            it = blockStore.getBlockByHash(it.getPreviousHeaderHash());
-        }
-        return ret;
-    }
-
-    public static Set<ByteArrayWrapper> getUsedUncles(BlockStore blockStore, Block testedBlock, boolean isParentBlock) {
-        Set<ByteArrayWrapper> ret = new HashSet<>();
-        return ret;
     }
 
     private List<Transaction> processBlock(Block block) {
@@ -835,6 +815,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             startNumber = blockNumber + skip + qty - 1;
         }
 
+        System.out.println("------------------------------------------------------_____+++++++++++++:" + startNumber);
         Block block = getBlockByNumber(startNumber);
 
         if (block == null) {

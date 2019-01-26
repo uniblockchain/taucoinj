@@ -280,7 +280,7 @@ public class Block {
         if (!parsed) parseRLP();
 
         toStringBuff.setLength(0);
-        toStringBuff.append(Hex.toHexString(this.getEncoded())).append("\n");
+        toStringBuff.append(Hex.toHexString(this.getEncodedMsg())).append("\n");
         toStringBuff.append("BlockData [ ");
         toStringBuff.append("hash=" + ByteUtil.toHexString(this.getHash())).append("\n");
         toStringBuff.append(header.toString());
