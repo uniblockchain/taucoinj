@@ -181,7 +181,10 @@ public class TaucoinImpl implements Taucoin {
     public io.taucoin.facade.Blockchain getBlockchain() {
         return (io.taucoin.facade.Blockchain)worldManager.getBlockchain();
     }
-
+    @Override
+    public io.taucoin.db.BlockStore getBlockStore(){
+        return (io.taucoin.db.BlockStore) worldManager.getBlockStore();
+    }
     public ImportResult addNewMinedBlock(Block block) {
         ImportResult importResult = worldManager.getBlockchain().tryToConnect(block);
         if (importResult == ImportResult.IMPORTED_BEST) {

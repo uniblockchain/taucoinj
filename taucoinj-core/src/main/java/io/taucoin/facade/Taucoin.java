@@ -2,6 +2,7 @@ package io.taucoin.facade;
 
 import io.taucoin.core.Transaction;
 import io.taucoin.core.Wallet;
+import io.taucoin.db.BlockStore;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.manager.AdminInfo;
 import io.taucoin.manager.BlockLoader;
@@ -76,6 +77,8 @@ public interface Taucoin {
     void connect(Node node);
 
     Blockchain getBlockchain();
+
+    BlockStore getBlockStore();
 
     void addListener(EthereumListener listener);
 

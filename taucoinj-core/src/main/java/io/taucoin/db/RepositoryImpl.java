@@ -205,12 +205,12 @@ public class RepositoryImpl implements Repository , io.taucoin.facade.Repository
     public void dumpState(Block block, long trFee, int txNumber, byte[] txHash) {
         dumpTrie(block);
         //TODO: getNumber() needed
-        if (!(CONFIG.dumpFull() /*CONFIG.dumpBlock() == block.getNumber()*/))
+        if (!(CONFIG.dumpFull() ||CONFIG.dumpBlock() == block.getNumber() ))
             return;
 
         // todo: dump block header and the relevant tx
 
-        if (txNumber == 0)
+        if (block.getNumber()==0 && txNumber == 0)
             if (CONFIG.dumpCleanOnRestart()) {
                 try{
                 	FileUtils.forceDelete(new File(CONFIG.dumpDir()));
@@ -224,10 +224,10 @@ public class RepositoryImpl implements Repository , io.taucoin.facade.Repository
         String fileName = "";
         if (txHash != null)
             // here block height is needed
-            fileName = String.format("%07d_%d_%s.dmp",/*block.getNumber()*/0, txNumber,
+            fileName = String.format("%07d_%d_%s.dmp",block.getNumber(), txNumber,
                     Hex.toHexString(txHash).substring(0, 8));
         else {
-            fileName = String.format("%07d_c.dmp", /*block.getNumber()*/0);
+            fileName = String.format("%07d_c.dmp", block.getNumber());
         }
 
         File dumpFile = new File(System.getProperty("user.dir") + "/" + dir + fileName);
@@ -276,7 +276,7 @@ public class RepositoryImpl implements Repository , io.taucoin.facade.Repository
 
     public void dumpTrie(Block block) {
         //todo: same as 206
-        if (!(CONFIG.dumpFull() /*CONFIG.dumpBlock() == block.getNumber()*/))
+        if (!(CONFIG.dumpFull() || CONFIG.dumpBlock() == block.getNumber()))
             return;
 
         String fileName = String.format("%07d_trie.dmp",/*block.getNumber()*/0);
@@ -316,10 +316,12 @@ public class RepositoryImpl implements Repository , io.taucoin.facade.Repository
             @Override
             public Set<byte[]> invoke() {
                 Set<byte[]> result = new HashSet<>();
-                //todo: need state Cache
-                //for (ByteArrayWrapper key : stateCache.keySet()) {
-                    //todo: all accountstate key needed probably
-                //}
+                //todo: here needless cache
+                for (ByteArrayWrapper key : stateDB.dumpKeys()) {
+                    if(isExist(key.getData())){
+                        result.add(key.getData());
+                    }
+                }
 
                 return result;
             }
