@@ -174,6 +174,10 @@ public class Block {
         this.parsed = true;
     }
 
+    public void parseBlock() {
+        parseRLP();
+    }
+
     public boolean isMsg() {
         return isMsg;
     }

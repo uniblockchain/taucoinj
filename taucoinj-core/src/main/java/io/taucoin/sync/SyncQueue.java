@@ -125,7 +125,7 @@ public class SyncQueue {
                 // In case we don't have a parent on the chain
                 // return the try and wait for more blocks to come.
                 if (importResult == NO_PARENT) {
-                    logger.info("No parent on the chain for block.number: {} block.hash: {}", wrapper.getNumber(), wrapper.getBlock().getShortHash());
+//                    logger.info("No parent on the chain for block.number: {} block.hash: {}", wrapper.getNumber(), wrapper.getBlock().getShortHash());
                     wrapper.importFailed();
                     syncManager.tryGapRecovery(wrapper);
                     blockQueue.add(wrapper);
@@ -230,9 +230,9 @@ public class SyncQueue {
 
         blockQueue.addOrReplace(wrapper);
 
-        logger.debug("Blocks waiting to be proceed:  queue.size: [{}] lastBlock.number: [{}]",
-                blockQueue.size(),
-                wrapper.getNumber());
+//        logger.debug("Blocks waiting to be proceed:  queue.size: [{}] lastBlock.number: [{}]",
+//                blockQueue.size(),
+//                wrapper.getNumber());
     }
 
     /**

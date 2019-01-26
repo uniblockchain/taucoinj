@@ -286,7 +286,7 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
 
         Block newBlock = newBlockMessage.getBlock();
 
-        loggerSync.info("New block received: block.index [{}]", newBlock.getNumber());
+//        loggerSync.info("New block received: block.index [{}]", newBlock.getNumber());
 
         // skip new block if TD is lower than ours
         if (isLessThan(newBlockMessage.getDifficultyAsBigInt(), blockchain.getTotalDifficulty())) {
@@ -306,9 +306,9 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
         // connect it to the chain
         queue.addNew(newBlock, channel.getNodeId());
 
-        if (newBlockLowerNumber == Long.MAX_VALUE) {
-            newBlockLowerNumber = newBlock.getNumber();
-        }
+//        if (newBlockLowerNumber == Long.MAX_VALUE) {
+//            newBlockLowerNumber = newBlock.getNumber();
+//        }
     }
 
     protected void sendMessage(TauMessage message) {
