@@ -229,7 +229,7 @@ public class Tau62 extends TauHandler {
 
             Block b = new Block.Builder()
                     .withHeader(header)
-                    .withBody(body, false)
+                    .withBody(body, true)
                     .create();
 
             if (b == null) {
@@ -389,6 +389,7 @@ public class Tau62 extends TauHandler {
         List<BlockHeader> headers = new ArrayList<>();
         while (it.hasNext()) {
             BlockHeader header = it.next();
+            logger.info("isBlockExist {}", Hex.toHexString(header.getHash()));
             if (blockchain.isBlockExist(header.getHash())) {
                 commonAncestorFound = true;
                 logger.trace(

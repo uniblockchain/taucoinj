@@ -509,15 +509,17 @@ public class Block {
                 Block block = new Block();
                 block.header = header;
                 block.parsed = true;
-                byte[] r = RLP.decode2(body).get(0).getRLPData();
-                byte[] s = RLP.decode2(body).get(1).getRLPData();
+                RLPList items = (RLPList) RLP.decode2(body).get(0);
+                RLPList signature = (RLPList) items.get(0);
+                byte[] r = signature.get(0).getRLPData();
+                byte[] s = signature.get(1).getRLPData();
                 block.blockSignature = ECDSASignature.fromComponents(r, s);
-                block.option = RLP.decode2(body).get(1).getRLPData()[0];
-                RLPList transactions = (RLPList) RLP.decode2(body).get(2);
+                block.option = items.get(1).getRLPData()[0];
+                RLPList transactions = (RLPList) items.get(2);
                 //RLPList transactions = (RLPList) items.get(0);
-                if(transactions.size() == 0){
+                if (transactions.size() == 0){
 
-                }else{
+                } else{
                    block.parseTxs(transactions);
                 }
                //delete txState may be stupid....
