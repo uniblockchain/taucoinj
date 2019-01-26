@@ -46,6 +46,7 @@ public class Block {
     private List<Transaction> transactionsList = new CopyOnWriteArrayList<>();
 
     protected byte[] rlpEncoded;
+    private byte[] rlpEncodedMsg;
     private byte[] rlpRaw;
     private boolean isMsg = false;
     private boolean parsed = false;
@@ -58,12 +59,22 @@ public class Block {
     public Block(byte[] rawData) {
         logger.debug("new from [" + Hex.toHexString(rawData) + "]");
         this.rlpEncoded = rawData;
+        this.rlpEncodedMsg = null;
+        this.rlpRaw = null;
         this.parsed = false;
     }
 
     public Block(byte[] rawData, boolean isMsg) {
         logger.debug("new from net [" + Hex.toHexString(rawData) + "]");
-        this.rlpEncoded = rawData;
+        if (isMsg) {
+            this.rlpEncoded = null;
+            this.rlpEncodedMsg = rawData;
+            this.rlpRaw = null;
+        } else {
+            this.rlpEncoded = rawData;
+            this.rlpEncodedMsg = null;
+            this.rlpRaw = null;
+        }
         this.parsed = false;
         this.isMsg = isMsg;
     }
@@ -122,13 +133,14 @@ public class Block {
 
     private void parseRLP() {
 
-        RLPList params = RLP.decode2(rlpEncoded);
-        RLPList block = (RLPList) params.get(0);
-
-        // Parse Header
-        RLPList header = (RLPList) block.get(0);
-        this.header = new BlockHeader(header);
         if (!isMsg) {
+            RLPList params = RLP.decode2(rlpEncoded);
+            RLPList block = (RLPList) params.get(0);
+
+            // Parse Header
+            RLPList header = (RLPList) block.get(0);
+            this.header = new BlockHeader(header);
+
             byte[] nrBytes = block.get(1).getRLPData();
             this.number = nrBytes == null ? 0 : (new BigInteger(1, nrBytes)).longValue();
 
@@ -157,6 +169,13 @@ public class Block {
                 this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
             }
         } else {
+            RLPList params = RLP.decode2(rlpEncodedMsg);
+            RLPList block = (RLPList) params.get(0);
+
+            // Parse Header
+            RLPList header = (RLPList) block.get(0);
+            this.header = new BlockHeader(header);
+
             // Parse blockSignature
             RLPList items = (RLPList) RLP.decode2(block.get(1).getRLPData()).get(0);
             byte[] r = items.get(0).getRLPData();
@@ -383,16 +402,16 @@ public class Block {
 
     //encode block on net
     public byte[] getEncodedMsg() {
-        //if (rlpEncoded == null) {
+        if (rlpEncodedMsg == null) {
             byte[] header = this.header.getEncoded();
 
             List<byte[]> block = getBodyElements();
             block.add(0, header);
             byte[][] elements = block.toArray(new byte[block.size()][]);
 
-            this.rlpEncoded = RLP.encodeList(elements);
-        //}
-        return rlpEncoded;
+            this.rlpEncodedMsg = RLP.encodeList(elements);
+        }
+        return rlpEncodedMsg;
     }
 
     //encode block for signature
@@ -487,6 +506,7 @@ public class Block {
         ECKey key = ECKey.fromPrivate(privKeyBytes).decompress();
         this.blockSignature = key.doSign(hash);
         this.rlpEncoded = null;
+        this.rlpEncodedMsg = null;
     }
 
     public String getShortDescr() {

@@ -815,7 +815,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             startNumber = blockNumber + skip + qty - 1;
         }
 
-        System.out.println("------------------------------------------------------_____+++++++++++++:" + startNumber);
         Block block = getBlockByNumber(startNumber);
 
         if (block == null) {
