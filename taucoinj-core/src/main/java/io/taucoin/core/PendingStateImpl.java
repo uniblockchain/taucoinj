@@ -72,7 +72,6 @@ public class PendingStateImpl implements PendingState {
     public PendingStateImpl() {
     }
 
-    //constructor
     @Autowired
     public PendingStateImpl(Repository repository) {
         this.repository = repository;
@@ -122,12 +121,12 @@ public class PendingStateImpl implements PendingState {
     }
 
     @Override
-    public void addWireTransactions(Set<Transaction> transactions) {
+    public List<Transaction> addWireTransactions(Set<Transaction> transactions) {
 
         final List<Transaction> newTxs = new ArrayList<>();
         int unknownTx = 0;
 
-        if (transactions.isEmpty()) return;
+        if (transactions.isEmpty()) return newTxs;
 
         for (Transaction tx : transactions) {
             logger.info("from network coming TX: {}" + tx.getHash());
@@ -160,6 +159,7 @@ public class PendingStateImpl implements PendingState {
 */
 
         logger.info("Wire transaction list added: {} new, {} valid of received {}, #of known txs: {}", unknownTx, newTxs.size(), transactions.size(), redceivedTxs.size());
+        return newTxs;
     }
 
     /*

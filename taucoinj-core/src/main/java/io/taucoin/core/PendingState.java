@@ -1,5 +1,6 @@
 package io.taucoin.core;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,7 +21,7 @@ public interface PendingState extends io.taucoin.facade.PendingState{
      *
      * @param transactions txs received from the net
      */
-    void addWireTransactions(Set<Transaction> transactions);
+    List<Transaction> addWireTransactions(Set<Transaction> transactions);
 
     /**
      * Adds transaction to the list of pending state txs  <br>
