@@ -14,6 +14,8 @@ import io.taucoin.net.submit.TransactionTask;
 import io.taucoin.sync.SyncManager;
 import io.taucoin.sync.SyncQueue;
 import io.taucoin.net.MessageQueue;
+import io.taucoin.net.submit.NewBlockHeaderBroadcaster;
+import io.taucoin.net.submit.NewBlockHeaderTask;
 import io.taucoin.net.submit.TransactionExecutor;
 import io.taucoin.net.submit.TransactionTask;
 import io.taucoin.net.tau.TauVersion;
@@ -334,6 +336,20 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
             // TODO: ban this channel
             return;
         }
+
+        List<BlockHeader> adding = new ArrayList<>();
+        adding.add(header);
+        loggerNet.debug("Adding " + adding.size() + " headers to the queue.");
+        List<BlockHeader> added = queue.addAndValidateHeaders(adding, channel.getNodeId());
+
+        if (!added.isEmpty()) {
+            // broadcast this new blockheader
+            NewBlockHeaderTask task = new NewBlockHeaderTask(header, channelManager, channel);
+            NewBlockHeaderBroadcaster.instance.submitNewBlockHeader(task);
+        }
+
+        // Added this block header into syncqueue and sync state machine will
+        // automatically get the block body.
         // New block header is designed to broadcast current forging basetarget,
         // forging power and other forge info.
         // TODO: update forging infomation.

@@ -4,6 +4,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import io.taucoin.config.NodeFilter;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Block;
+import io.taucoin.core.BlockHeader;
 import io.taucoin.core.BlockWrapper;
 import io.taucoin.core.Transaction;
 import io.taucoin.core.PendingState;
@@ -206,6 +207,24 @@ public class ChannelManager {
             }
         }
     }
+
+    /**
+     * Propagates the new block header message across active peers with exclusion of
+     * 'receivedFrom' peer.
+     * @param block  new Block to be sent
+     * @param receivedFrom the peer which sent original message or null if
+     *                     the block has been mined by us
+     */
+    public void sendNewBlockHeader(BlockHeader header, Channel receivedFrom) {
+        synchronized (activePeers) {
+            for (Channel channel : activePeers.values()) {
+                if (channel != receivedFrom) {
+                    channel.sendNewBlockHeader(header);
+                }
+            }
+        }
+    }
+
 
     /**
      * Called on new blocks received from other peers

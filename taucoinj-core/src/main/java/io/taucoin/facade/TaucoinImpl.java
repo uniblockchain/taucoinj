@@ -14,6 +14,8 @@ import io.taucoin.net.peerdiscovery.PeerInfo;
 import io.taucoin.net.rlpx.Node;
 import io.taucoin.net.server.ChannelManager;
 import io.taucoin.net.server.PeerServer;
+import io.taucoin.net.submit.NewBlockHeaderBroadcaster;
+import io.taucoin.net.submit.NewBlockHeaderTask;
 import io.taucoin.net.submit.TransactionExecutor;
 import io.taucoin.net.submit.TransactionTask;
 import io.taucoin.util.ByteUtil;
@@ -181,15 +183,30 @@ public class TaucoinImpl implements Taucoin {
     public io.taucoin.facade.Blockchain getBlockchain() {
         return (io.taucoin.facade.Blockchain)worldManager.getBlockchain();
     }
+
     @Override
     public io.taucoin.db.BlockStore getBlockStore(){
         return (io.taucoin.db.BlockStore) worldManager.getBlockStore();
     }
+
+    @Override
     public ImportResult addNewMinedBlock(Block block) {
         ImportResult importResult = worldManager.getBlockchain().tryToConnect(block);
         if (importResult == ImportResult.IMPORTED_BEST) {
             channelManager.sendNewBlock(block, null);
         }
+        return importResult;
+    }
+
+    @Override
+    public boolean addNewForgedBlockHeader(BlockHeader header) {
+        // TODO: import this block header into blockchain.
+        boolean importResult = false;
+        if (importResult) {
+            NewBlockHeaderTask task = new NewBlockHeaderTask(header, channelManager);
+            NewBlockHeaderBroadcaster.instance.submitNewBlockHeader(task);
+        }
+
         return importResult;
     }
 

@@ -1,5 +1,8 @@
 package io.taucoin.facade;
 
+import io.taucoin.core.Block;
+import io.taucoin.core.BlockHeader;
+import io.taucoin.core.ImportResult;
 import io.taucoin.core.Transaction;
 import io.taucoin.core.Wallet;
 import io.taucoin.db.BlockStore;
@@ -87,6 +90,16 @@ public interface Taucoin {
     boolean isConnected();
 
     void close();
+
+    /**
+     * Submit new forged block into wire network.
+     */
+    ImportResult addNewMinedBlock(Block block);
+
+    /**
+     * Submit new forged block header into wire network.
+     */
+    boolean addNewForgedBlockHeader(BlockHeader header);
 
     /**
      * Factory for general transaction

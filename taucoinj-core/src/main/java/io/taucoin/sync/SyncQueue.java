@@ -337,7 +337,8 @@ public class SyncQueue {
      * @param headers list of headers got from remote host
      * @param nodeId remote host nodeId
      */
-    public void addAndValidateHeaders(List<BlockHeader> headers, byte[] nodeId) {
+    public List<BlockHeader> addAndValidateHeaders(List<BlockHeader> headers, byte[] nodeId) {
+        List<BlockHeader> newHeaders = new ArrayList<BlockHeader>();
         List<BlockHeader> filtered = blockQueue.filterExistingHeaders(headers);
 
         for (BlockHeader header : headers) {
@@ -349,7 +350,9 @@ public class SyncQueue {
                 }
 
                 syncManager.reportBadAction(nodeId);
-                return;
+                return newHeaders;
+            } else {
+                newHeaders.add(header);
             }
 
         }
@@ -358,6 +361,8 @@ public class SyncQueue {
 
         if (logger.isDebugEnabled())
             logger.debug("{} headers filtered out, {} added", headers.size() - filtered.size(), filtered.size());
+
+        return newHeaders;
     }
 
     /**

@@ -6,6 +6,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.Block;
+import io.taucoin.core.BlockHeader;
 import io.taucoin.core.Transaction;
 import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.net.MessageQueue;
@@ -347,6 +348,10 @@ public class Channel {
 
     public void sendNewBlock(Block block) {
         eth.sendNewBlock(block);
+    }
+
+    public void sendNewBlockHeader(BlockHeader header) {
+        eth.sendNewBlockHeader(header);
     }
 
     public TauVersion getTauVersion() {
