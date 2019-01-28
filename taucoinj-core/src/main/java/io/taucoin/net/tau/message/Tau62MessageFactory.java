@@ -32,6 +32,8 @@ public class Tau62MessageFactory implements MessageFactory {
                 return new BlockBodiesMessage(encoded);
             case NEW_BLOCK:
                 return new NewBlockMessage(encoded);
+            case NEW_BLOCK_HEADER:
+                return new NewBlockHeaderMessage(encoded);
             default:
                 throw new IllegalArgumentException("No such message");
         }

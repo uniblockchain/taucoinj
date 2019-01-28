@@ -1,6 +1,7 @@
 package io.taucoin.net.tau.handler;
 
 import io.taucoin.core.Block;
+import io.taucoin.core.BlockHeader;
 import io.taucoin.core.Transaction;
 import io.taucoin.net.tau.TauVersion;
 import io.taucoin.sync.SyncStateName;
@@ -109,6 +110,10 @@ public class TauAdapter implements Tau {
 
     @Override
     public void sendNewBlock(Block newBlock) {
+    }
+
+    @Override
+    public void sendNewBlockHeader(BlockHeader header) {
     }
 
     @Override
