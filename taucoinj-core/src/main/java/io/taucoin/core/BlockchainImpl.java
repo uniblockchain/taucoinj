@@ -1,7 +1,6 @@
 package io.taucoin.core;
 
 import io.taucoin.config.SystemProperties;
-import io.taucoin.core.Transaction;
 import io.taucoin.crypto.ECKey;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.crypto.SHA3Helper;
@@ -36,7 +35,6 @@ import static java.lang.Runtime.getRuntime;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 import static java.util.Collections.emptyList;
-import static io.taucoin.core.Denomination.SZABO;
 import static io.taucoin.core.ImportResult.*;
 import static io.taucoin.util.BIUtil.isMoreThan;
 
@@ -75,9 +73,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     private static final Logger logger = LoggerFactory.getLogger("blockchain");
     private static final Logger stateLogger = LoggerFactory.getLogger("state");
-
-    // to avoid using minGasPrice=0 from Genesis for the wallet
-    private static final long INITIAL_MIN_GAS_PRICE = 10 * SZABO.longValue();
 
     @Autowired
     private Repository repository;
@@ -119,7 +114,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     private byte[] minerCoinbase;
     private byte[] minerPrikey;
     private byte[] minerPubkey;
-    private byte[] minerExtraData;
 
     private Stack<State> stateStack = new Stack<>();
 
@@ -143,7 +137,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         minerCoinbase = config.getMinerCoinbase();
         minerPrikey = config.getMinerPrikey();
         minerPubkey = config.getMinerPubkey();
-        minerExtraData = config.getMineExtraData();
     }
 
     @Override
@@ -385,8 +378,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         // adjust time to parent block this may happen due to system clocks difference
         Long time = System.currentTimeMillis() / 1000;
         byte[] timeStamp = new BigInteger(time.toString()).toByteArray();
-        byte version = 1;
-        byte option = 1;
+        byte version = (byte)1;
+        byte option = (byte)1;
         Block block = new Block(version,
                 timeStamp,
                 parent.getHash(),
@@ -477,18 +470,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return getRuntime().freeMemory() < (getRuntime().totalMemory() * (1 - maxMemoryPercents));
     }
 
-    public static byte[] calcReceiptsTrie(List<Transaction> receipts) {
-        //TODO Fix Trie hash for receipts - doesnt match cpp
-        Trie receiptsTrie = new TrieImpl(null);
-
-        if (receipts == null || receipts.isEmpty())
-            return HashUtil.EMPTY_TRIE_HASH;
-
-        for (int i = 0; i < receipts.size(); i++) {
-            receiptsTrie.update(RLP.encodeInt(i), receipts.get(i).getEncoded());
-        }
-        return receiptsTrie.getRootHash();
-    }
 
     public Block getParent(BlockHeader header) {
 
@@ -576,7 +557,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         for (Transaction tx : block.getTransactionsList()) {
             stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), i);
 
-            TransactionExecutor executor = new TransactionExecutor(tx,track);
+            TransactionExecutor executor = new TransactionExecutor(tx, track);
+            executor.setCoinbase(HashUtil.sha256(block.getGeneratorPublicKey()));
 
             executor.init();
             executor.execute();
@@ -733,10 +715,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     public void setMinerPubkey(byte[] minerPubkey) {
         this.minerPubkey = minerPubkey;
-    }
-
-    public void setMinerExtraData(byte[] minerExtraData) {
-        this.minerExtraData = minerExtraData;
     }
 
     public boolean isBlockExist(byte[] hash) {
