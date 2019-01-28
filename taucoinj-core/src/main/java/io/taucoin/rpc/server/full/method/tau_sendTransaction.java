@@ -39,6 +39,10 @@ public class tau_sendTransaction extends JsonRpcServerMethod {
             Transaction tx;
             try {
                 tx = jsToTransaction(obj);
+                // verify transaction
+                if (!tx.validate()) {
+                    throw new Exception("Invalid params");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());

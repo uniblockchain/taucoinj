@@ -128,7 +128,7 @@ public class Transaction {
     public synchronized boolean checkTime() {
         //get current unix time
         long diffTime = timeNows()- toBI(timeStamp).longValue();
-        if(diffTime> TTIME){
+        if (diffTime > TTIME){
             return false;
 		}
         return true;
@@ -161,7 +161,7 @@ public class Transaction {
         this.hash = getHash();
     }
 
-    private boolean validate() {
+    public boolean validate() {
         if (toAddress != null && toAddress.length != 0 && toAddress.length != ADDRESS_LENGTH)
             return false;
 
@@ -260,8 +260,8 @@ public class Transaction {
                 ", option=" + ByteUtil.toHexString(new byte[]{option}) +
                 ", time=" + ByteUtil.toHexString(timeStamp) +
                 ", receiveAddress=" + ByteUtil.toHexString(toAddress) +
-                ", amount=" + ByteUtil.toHexString(amount) +
-                ", fee=" + ByteUtil.toHexString(fee) +
+                ", amount=" + "0x" + ByteUtil.toHexString(amount) +
+                ", fee=" + "0x" + ByteUtil.toHexString(fee) +
                 ", signatureV=" + (signature == null ? "" : signature.v) +
                 ", signatureR=" + (signature == null ? "" : ByteUtil.toHexString(BigIntegers.asUnsignedByteArray(signature.r))) +
                 ", signatureS=" + (signature == null ? "" : ByteUtil.toHexString(BigIntegers.asUnsignedByteArray(signature.s))) +
