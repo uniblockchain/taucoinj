@@ -151,4 +151,7 @@ public class AccountState implements Serializable {
                 "  Balance: " + getBalance() + "\n";
         return ret;
     }
+    public HashMap<Integer,Long> getTranHistory(){
+        return tranHistory;
+    }
 }

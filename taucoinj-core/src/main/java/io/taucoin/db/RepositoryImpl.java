@@ -42,7 +42,7 @@ import static io.taucoin.util.ByteUtil.wrap;
  * @author taucoin core
  * @since 01.07.2019
  */
-public class RepositoryImpl implements Repository , io.taucoin.facade.Repository{
+public class RepositoryImpl implements io.taucoin.facade.Repository{
 
     public final static String STATE_DB = "state";
 

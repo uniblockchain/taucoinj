@@ -74,13 +74,13 @@ public class Wallet {
     public void addNewAccount() {
         Account account = new Account();
         account.init();
-        String address = Hex.toHexString(account.getEcKey().getAddressBindAccount());
+        String address = Hex.toHexString(account.getEcKey().getAddress());
         rows.put(address, account);
         for (WalletListener listener : listeners)
             listener.valueChanged();
     }
     public void addNewAccount(Account account) {
-        String address = Hex.toHexString(account.getEcKey().getAddressBindAccount());
+        String address = Hex.toHexString(account.getEcKey().getAddress());
         rows.put(address, account);
         for (WalletListener listener : listeners)
             listener.valueChanged();
@@ -88,7 +88,7 @@ public class Wallet {
     public void importKey(byte[] privKey) {
         Account account = context.getBean(Account.class);
         account.init(ECKey.fromPrivate(privKey));
-        String address = Hex.toHexString(account.getEcKey().getAddressBindAccount());
+        String address = Hex.toHexString(account.getEcKey().getAddress());
         rows.put(address, account);
         notifyListeners();
     }

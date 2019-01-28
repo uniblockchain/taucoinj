@@ -296,16 +296,19 @@ public class ECKey implements Serializable {
      * @return -
      */
     public byte[] getAddress() {
-        if (pubKeyHash == null) {
-            byte[] pubBytes = this.pub.getEncoded(false);
-            pubKeyHash = HashUtil.sha3omit12(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
-        }
-        return pubKeyHash;
+//        if (pubKeyHash == null) {
+////            byte[] pubBytes = this.pub.getEncoded(false);
+////            pubKeyHash = HashUtil.sha3omit12(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
+//            byte[] pubBytes = this.pub.getEncoded(true);
+//            //pubKeyHash = HashUtil.sha3omit12(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
+//            pubKeyHash = Utils.sha256hash160(pubBytes);
+//        }
+        return getAddressBindAccount();
     }
      /*
      *Gets the sha256sha160 form of the public key(compressed as seen in taucoin net)
       **/
-     public byte[] getAddressBindAccount(){
+     private byte[] getAddressBindAccount(){
          if (pubKeyHash == null){
              pubKeyHash = Utils.sha256hash160(this.pub.getEncoded(true));
          }
