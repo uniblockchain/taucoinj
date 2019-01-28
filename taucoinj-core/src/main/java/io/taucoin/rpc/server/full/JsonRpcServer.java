@@ -61,10 +61,8 @@ public final class JsonRpcServer extends io.taucoin.rpc.server.JsonRpcServer{
         this.dispatcher.register(new tau_importprikey(this.taucoin));
 
         //transactions
-        this.dispatcher.register(new tau_getTransactionCount(this.taucoin));
-        this.dispatcher.register(new tau_getBlockTransactionCountByHash(this.taucoin));
-        this.dispatcher.register(new tau_getBlockTransactionCountByNumber(this.taucoin));
-        this.dispatcher.register(new tau_getTransactionByHash(this.taucoin));
+		//getTransactionByHash, Not supported now for no TransactionStore
+        //this.dispatcher.register(new tau_getTransactionByHash(this.taucoin));
         this.dispatcher.register(new tau_sign(this.taucoin));
         this.dispatcher.register(new tau_sendTransaction(this.taucoin));
 
