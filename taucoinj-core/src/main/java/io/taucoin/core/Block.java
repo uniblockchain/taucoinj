@@ -509,6 +509,16 @@ public class Block {
         this.rlpEncodedMsg = null;
     }
 
+    /**
+     * verify block signature with public key and signature
+     * @return
+     */
+    public boolean verifyBlockSignature() {
+        ECKey key = ECKey.fromPublicOnly(getGeneratorPublicKey());
+        ECKey.ECDSASignature sig = getblockSignature();
+        return key.verify(getRawHash(), sig);
+    }
+
     public String getShortDescr() {
         return "#" + getNumber() + " (" + Hex.toHexString(getHash()).substring(0,6) + " <~ "
                 + Hex.toHexString(getPreviousHeaderHash()).substring(0,6) + ") Txs:" + getTransactionsList().size();

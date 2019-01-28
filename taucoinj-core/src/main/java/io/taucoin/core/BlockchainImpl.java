@@ -449,8 +449,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         listener.trace(String.format("Block chain size: [ %d ]", this.getSize()));
 
-
-        List<Transaction> receipts = null;
         listener.onBlock(block);
 
         return true;
@@ -493,14 +491,30 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     }
 
     /**
+     * verify block version
+     * @param version
+     * @return
+     */
+    private boolean verifyVersion(byte version) {
+        return version == (byte) 1;
+    }
+
+    /**
+     * verify block option
+     * @param option
+     * @return
+     */
+    private boolean verifyOption(byte option) {
+        return option == (byte) 1;
+    }
+
+    /**
      * verify block signature with public key and signature
      * @param block
      * @return
      */
     private boolean verifyBlockSignature(Block block) {
-        ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
-        ECKey.ECDSASignature sig = block.getblockSignature();
-        return key.verify(block.getRawHash(), sig);
+        return block.verifyBlockSignature();
     }
 
     /**
@@ -512,24 +526,38 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
      */
     private boolean isValid(Block block) {
 
-        boolean isValid = true;
-
         if (!block.isGenesis()) {
+            if (!verifyVersion(block.getVersion())) {
+                logger.error("Block version is invalid, block number {}, version {}",
+                        block.getNumber(), block.getVersion());
+                return false;
+            }
+
+            if (!verifyOption(block.getOption())) {
+                logger.error("Block version is invalid, block number {}, version {}",
+                        block.getNumber(), block.getOption());
+                return false;
+            }
+
             if (!verifyBlockSignature(block)) {
-                isValid = false;
                 logger.error("Block signature is invalid, block number {}", block.getNumber());
+                return false;
             }
 
             if (!isValid(block.getHeader())) {
-                isValid = false;
+                return false;
             }
 
             List<Transaction> txs = block.getTransactionsList();
+            if (txs.size() > 50) {
+                logger.error("Too many transactions, block number {}", block.getNumber());
+                return false;
+            }
             if (!txs.isEmpty()) {
             }
         }
 
-        return isValid;
+        return true;
     }
 
     private List<Transaction> processBlock(Block block) {

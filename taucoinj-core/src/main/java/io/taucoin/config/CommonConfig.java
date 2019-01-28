@@ -151,10 +151,6 @@ public class CommonConfig {
         List<BlockHeaderRule> rules = new ArrayList<>();
         rules.add(new ProofOfTransactionRule());
 
-        if (!config.isFrontier()) {
-            //rules.add(new GasLimitRule());
-        }
-
         return new BlockHeaderValidator(rules);
     }
 
@@ -165,9 +161,6 @@ public class CommonConfig {
                 new ParentNumberRule(),
                 new DifficultyRule()
         ));
-
-        if (!config.isFrontier()) {
-        }
 
         return new ParentBlockHeaderValidator(rules);
     }
