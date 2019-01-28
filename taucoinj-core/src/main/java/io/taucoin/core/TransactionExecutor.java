@@ -108,4 +108,11 @@ public class TransactionExecutor {
 
         logger.info("Pay fees to miner: [{}], feesEarned: [{}]", Hex.toHexString(coinbase), basicTxFee);
     }
+
+	/**
+	 * Set Miner Address
+	 */
+	public void setCoinbase(byte [] address){
+        this.coinbase= address;
+    }
 }
