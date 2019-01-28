@@ -6,11 +6,16 @@ import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.core.AccountState;
 import io.taucoin.core.Repository;
 import io.taucoin.facade.Taucoin;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 import java.math.BigInteger;
 import java.util.List;
 
 public class tau_getBalance extends JsonRpcServerMethod {
+
+    private static final Logger logger = LoggerFactory.getLogger("rpc");
 
     public tau_getBalance (Taucoin taucoin) {
         super(taucoin);
@@ -26,15 +31,11 @@ public class tau_getBalance extends JsonRpcServerMethod {
             String height = (String)params.get(1);
 
             long blockNumber = getBlockNumber(height);
-
-            /*
-            byte[] root = taucoin.getBlockchain().getBestBlock().getStateRoot();
+            logger.info("block Num is: {}", blockNumber) ;
 
             if (blockNumber >= 0) {
                 Repository repository = (Repository)taucoin.getRepository();
-                repository.syncToRoot(taucoin.getBlockchain().getBlockByNumber(blockNumber).getStateRoot());
             }
-            */
 
             BigInteger balance = taucoin.getRepository().getBalance(address);
 
@@ -45,7 +46,6 @@ public class tau_getBalance extends JsonRpcServerMethod {
 
             if (blockNumber >= 0) {
                 Repository repository = (Repository)taucoin.getRepository();
-                //repository.syncToRoot(root);
             }
 
             String tmp = "0x" + balance.toString(16);

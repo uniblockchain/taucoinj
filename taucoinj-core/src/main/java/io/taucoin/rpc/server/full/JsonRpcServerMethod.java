@@ -177,44 +177,11 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("parentHash", "0x" + Hex.toHexString(block.getPreviousHeaderHash()));
 
-        //res.put("nonce", "0x" + Hex.toHexString(block.getNonce()));
-
-       // res.put("sha3Uncles", "0x" + Hex.toHexString(block.getUnclesHash()));
-
-        //res.put("logsBloom", "0x" + Hex.toHexString(block.getLogBloom()));
-
-        //res.put("transactionsRoot", "0x" + Hex.toHexString(block.getHeader().getTxTrieRoot()));
-
-        //res.put("stateRoot", "0x" + Hex.toHexString(block.getStateRoot()));
-
-        //res.put("miner", "0x" + Hex.toHexString(block.getCoinbase()));
-
-        //res.put("difficulty", "0x" + block.getDifficultyBI().toString(16));
-
         res.put("totalDifficulty", "0x" + block.getCumulativeDifficulty().toString(16));
-
-        //res.put("extraData", "0x" + Hex.toHexString(block.getExtraData()));
 
         // No way to get size of block in bytes, so I try calculate it using formula from  getEncoded
         byte[] header = block.getHeader().getEncoded();
         byte[] transactions = RLP.encodeList();
-        //byte[][] unclesEncoded = new byte[block.getUncleList().size()][];
-        /*
-        int i = 0;
-        for (BlockHeader uncle : block.getUncleList()) {
-            unclesEncoded[i] = uncle.getEncoded();
-            ++i;
-        }
-        byte[] uncles = RLP.encodeList(unclesEncoded);
-        byte[] rlpEncoded = RLP.encodeList(header, transactions, uncles);
-        res.put("size", "0x" + Integer.toHexString(rlpEncoded.length));
-
-        res.put("gasLimit", "0x" /*+ Long.toHexString(block.getGasLimit())*//*);
-
-        res.put("gasUsed", "0x" + Long.toHexString(block.getGasUsed())); */
-        
-
-        //res.put("timestamp", "0x" + Long.toHexString(block.getTimestamp()));
 
         JSONArray transactionsJA = new JSONArray();
         int i = 0;
@@ -232,14 +199,6 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
         }
         res.put("transactions", transactionsJA);
 
-        /*
-        JSONArray unclesJA = new JSONArray();
-        for (BlockHeader uncle : block.getUncleList()) {
-            unclesJA.add("0x" + Hex.toHexString(HashUtil.sha3(uncle.getEncoded())));
-        }
-        res.put("uncles", unclesJA);
-        */
-
         return res;
     }
 
@@ -248,19 +207,9 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("hash", "0x" + Hex.toHexString(transaction.getHash()));
 
-        //res.put("nonce", "0x" + Hex.toHexString(transaction.getNonce()));
-
         res.put("from", "0x" + Hex.toHexString(transaction.getSender()));
 
         res.put("to", "0x" + Hex.toHexString(transaction.getReceiveAddress()));
-
-        //res.put("value", "0x" + Hex.toHexString(transaction.getValue()));
-
-        //res.put("gasPrice", "0x" + Hex.toHexString(transaction.getGasPrice()));
-
-        //res.put("gas", "0x" + Hex.toHexString(transaction.getGasLimit()));
-
-        //res.put("input", "0x" + Hex.toHexString(transaction.getData()));
 
         /*
         if (block == null) {

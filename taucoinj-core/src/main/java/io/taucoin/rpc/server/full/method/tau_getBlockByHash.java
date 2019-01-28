@@ -22,12 +22,13 @@ public class tau_getBlockByHash extends JsonRpcServerMethod {
         if (params.size() != 2) {
             return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
         } else {
-            byte[] address = jsToAddress((String) params.get(0));
+            byte[] blockHash = jsToAddress((String) params.get(0));
             Boolean detailed = (Boolean)params.get(1);
 
-            Block block = taucoin.getBlockchain().getBlockByHash(address);
+            Block block = taucoin.getBlockchain().getBlockByHash(blockHash);
 
             JSONRPC2Response res = new JSONRPC2Response(blockToJS(block, detailed), req.getID());
+
             return res;
         }
 

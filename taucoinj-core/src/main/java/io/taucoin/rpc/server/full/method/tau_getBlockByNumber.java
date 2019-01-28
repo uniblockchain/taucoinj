@@ -22,17 +22,8 @@ public class tau_getBlockByNumber extends JsonRpcServerMethod {
         if (params.size() != 2) {
             return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
         } else {
-            String height = (String)params.get(0);
-            long blockNumber = getBlockNumber(height);
+            long blockNumber = (long)params.get(0);
             Boolean detailed = (Boolean)params.get(1);
-
-            if (blockNumber == -1) {
-                blockNumber = taucoin.getBlockchain().getBestBlock().getNumber();
-            }
-
-            if (blockNumber == -2) {
-                return new JSONRPC2Response(null, req.getID());
-            }
 
             Block block = taucoin.getBlockchain().getBlockByNumber(blockNumber);
 
