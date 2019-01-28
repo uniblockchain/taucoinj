@@ -163,7 +163,16 @@ public enum TauMessageCodes {
      * detailing a number of the first block hash and a total of hashes to be sent.
      * Returned hash list must be ordered by block number in ascending order.
      */
-    GET_BLOCK_HASHES_BY_NUMBER(0x08);
+    GET_BLOCK_HASHES_BY_NUMBER(0x08),
+
+
+    /**
+     * {@code [+0x09, newBlockHeader] } <br>
+     *
+     * Supported in TAU V62.
+     * When new block is generated, broadcast block header as soon as possile.
+     */
+    NEW_BLOCK_HEADER(0x09);
 
 
     private int cmd;
@@ -204,7 +213,8 @@ public enum TauMessageCodes {
                 BLOCK_HEADERS,
                 GET_BLOCK_BODIES,
                 BLOCK_BODIES,
-                NEW_BLOCK
+                NEW_BLOCK,
+                NEW_BLOCK_HEADER
         });
 
         for (TauVersion v : TauVersion.values()) {

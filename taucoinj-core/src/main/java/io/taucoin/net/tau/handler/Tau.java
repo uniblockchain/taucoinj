@@ -1,6 +1,7 @@
 package io.taucoin.net.tau.handler;
 
 import io.taucoin.core.Block;
+import io.taucoin.core.BlockHeader;
 import io.taucoin.core.Transaction;
 import io.taucoin.net.tau.TauVersion;
 import io.taucoin.sync.SyncStateName;
@@ -121,6 +122,11 @@ public interface Tau {
      * Sends new block to the wire
      */
     void sendNewBlock(Block newBlock);
+
+    /**
+     * Sends new block header to the wire
+     */
+    void sendNewBlockHeader(BlockHeader header);
 
     /**
      * @return protocol version

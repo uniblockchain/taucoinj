@@ -166,6 +166,9 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
             case NEW_BLOCK:
                 processNewBlock((NewBlockMessage) msg);
                 break;
+            case NEW_BLOCK_HEADER:
+                processNewBlockHeader((NewBlockHeaderMessage)msg);
+                break;
             default:
                 break;
         }
@@ -281,6 +284,11 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
         sendMessage(msg);
     }
 
+    public void sendNewBlockHeader(BlockHeader header) {
+        NewBlockHeaderMessage msg = new NewBlockHeaderMessage(header);
+        sendMessage(msg);
+    }
+
     public abstract void sendNewBlockHashes(Block block);
 
     private void processNewBlock(NewBlockMessage newBlockMessage) {
@@ -310,6 +318,25 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
 //        if (newBlockLowerNumber == Long.MAX_VALUE) {
 //            newBlockLowerNumber = newBlock.getNumber();
 //        }
+    }
+
+    private void processNewBlockHeader(NewBlockHeaderMessage msg) {
+
+        if(loggerNet.isTraceEnabled()) loggerNet.trace(
+                "Peer {}: processing NewBlockHashes, size [{}]",
+                channel.getPeerIdShort(),
+                msg.getBlockHeader().toFlatString()
+        );
+
+        BlockHeader header = msg.getBlockHeader();
+        if (header == null) {
+            loggerNet.error("Peer {}: empty new block header");
+            // TODO: ban this channel
+            return;
+        }
+        // New block header is designed to broadcast current forging basetarget,
+        // forging power and other forge info.
+        // TODO: update forging infomation.
     }
 
     protected void sendMessage(TauMessage message) {
