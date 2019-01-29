@@ -217,9 +217,13 @@ public class PendingStateImpl implements PendingState {
     }
 
     @Override
-    public void addPendingTransaction(Transaction tx) {
-        if (addNewTxIfNotExist(tx))
+    public boolean addPendingTransaction(Transaction tx) {
+        if (addNewTxIfNotExist(tx)) {
             pendingStateTransactions.add(tx);
+            return isValid(tx);
+        }
+
+        return false;
     }
 
     @Override

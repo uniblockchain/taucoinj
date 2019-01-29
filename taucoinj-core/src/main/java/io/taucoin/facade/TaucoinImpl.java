@@ -257,19 +257,22 @@ public class TaucoinImpl implements Taucoin {
     @Override
     public Future<Transaction> submitTransaction(Transaction transaction) {
 
-        TransactionTask transactionTask = new TransactionTask(transaction, channelManager);
+        boolean submitResult = pendingState.addPendingTransaction(transaction);
+        if (submitResult) {
+            TransactionTask transactionTask = new TransactionTask(transaction, channelManager);
 
-        final Future<List<Transaction>> listFuture =
-                TransactionExecutor.instance.submitTransaction(transactionTask);
+            final Future<List<Transaction>> listFuture =
+                    TransactionExecutor.instance.submitTransaction(transactionTask);
 
-        pendingState.addPendingTransaction(transaction);
+            return new FutureAdapter<Transaction, List<Transaction>>(listFuture) {
+                @Override
+                protected Transaction adapt(List<Transaction> adapteeResult) throws ExecutionException {
+                    return adapteeResult.get(0);
+                }
+            };
+        }
 
-        return new FutureAdapter<Transaction, List<Transaction>>(listFuture) {
-            @Override
-            protected Transaction adapt(List<Transaction> adapteeResult) throws ExecutionException {
-                return adapteeResult.get(0);
-            }
-        };
+        return null;
     }
 
     @Override

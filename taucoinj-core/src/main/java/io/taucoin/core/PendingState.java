@@ -30,7 +30,7 @@ public interface PendingState extends io.taucoin.facade.PendingState{
      *
      * @param tx transaction
      */
-    void addPendingTransaction(Transaction tx);
+    boolean addPendingTransaction(Transaction tx);
 
     /**
      * It should be called on each block imported as <b>BEST</b> <br>
