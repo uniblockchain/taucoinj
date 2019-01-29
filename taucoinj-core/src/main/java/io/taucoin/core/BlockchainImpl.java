@@ -548,6 +548,42 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     }
 
     /**
+     * verify Proof of Transaction
+     * @param block
+     * @return
+     */
+    private boolean verifyProofOfTransaction(Block block) {
+        if (block.getNumber() == 0)
+            return true;
+
+        //block.toString();
+        ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
+        byte[] address = key.getAddress();
+        BigInteger forgingPower = repository.getforgePower(address);
+        logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
+
+        long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
+//        Block preBlock = blockStore.getBlockByHash(block.getHash());
+        Block preBlock = blockStore.getChainBlockByNumber(block.getNumber() - 1);
+        if (preBlock == null) {
+            return false;
+        }
+        long preBlockTime = ByteUtil.byteArrayToLong(preBlock.getTimestamp());
+
+        BigInteger targetValue = ProofOfTransaction.
+                calculateMinerTargetValue(block.getBaseTarget(), forgingPower, blockTime - preBlockTime);
+
+        BigInteger hit = ProofOfTransaction.calculateRandomHit(block.getGenerationSignature().toByteArray());
+        logger.info("verify block target value {}, hit {}", targetValue, hit);
+
+        if (targetValue.compareTo(hit) < 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * This mechanism enforces a homeostasis in terms of the time between blocks;
      * a smaller period between the last two blocks results in an increase in the
      * difficulty level and thus additional computation required, lengthening the
@@ -574,6 +610,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 return false;
             }
 
+            if (!verifyProofOfTransaction(block)) {
+                logger.error("Verify ProofOfTransaction fail, block number {}", block.getNumber());
+                return false;
+            }
+
             if (!isValid(block.getHeader())) {
                 return false;
             }
@@ -591,6 +632,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     }
                 }
             }
+
         }
 
         return true;
