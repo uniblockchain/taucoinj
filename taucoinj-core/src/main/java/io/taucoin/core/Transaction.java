@@ -210,6 +210,11 @@ public class Transaction {
         return fee;
     }
 
+    public BigInteger getTotoalCost() {
+        if (!parsed) rlpParse();
+        return (new BigInteger(amount)).add(new BigInteger(fee));
+    }
+
     public byte[] getReceiveAddress() {
         if (!parsed) rlpParse();
         return toAddress;
