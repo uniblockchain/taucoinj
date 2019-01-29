@@ -86,11 +86,10 @@ public class TransactionExecutor {
     }
 
     /**
-     * Do the executation
-     * 1. add balance to received address 
-     * 2. add transaction fee to actually miner 
+     * Do the executation, Sender
+     * 1. Subtract from sender
      */
-    public void execute() {
+    public void executeSender() {
         if (!readyToExecute) return;
 
 		// Sender subtract balance
@@ -98,6 +97,16 @@ public class TransactionExecutor {
         logger.info("in executation sender is "+Hex.toHexString(tx.getSender()));
 
         track.addBalance(tx.getSender(), totalCost.negate());
+
+    }
+
+    /**
+     * Do the executation
+     * 1. add balance to received address 
+     * 2. add transaction fee to actually miner 
+     */
+    public void executeFinal() {
+        if (!readyToExecute) return;
 
 		// Receiver add balance
         track.addBalance(tx.getReceiveAddress(), toBI(tx.getAmount()));
@@ -109,6 +118,20 @@ public class TransactionExecutor {
         track.increaseforgePower(tx.getSender());
 
         logger.info("Pay fees to miner: [{}], feesEarned: [{}]", Hex.toHexString(coinbase), basicTxFee);
+    }
+
+    /**
+     * Do the executation, Sender
+     * 1. Add balace to sender, for transactions removed from memory pool
+     */
+    public void executeSenderBack() {
+        if (!readyToExecute) return;
+
+		// Sender subtract balance
+        BigInteger totalCost = toBI(tx.getAmount()).add(toBI(tx.transactionCost()));
+        logger.info("in executation sender is "+Hex.toHexString(tx.getSender()));
+
+        track.addBalance(tx.getSender(), totalCost);
     }
 
 	/**

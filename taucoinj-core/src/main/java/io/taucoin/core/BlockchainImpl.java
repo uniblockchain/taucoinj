@@ -623,10 +623,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
             TransactionExecutor executor = new TransactionExecutor(tx, track);
             ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
-            executor.setCoinbase(key.getAddress());
-
             executor.init();
-            executor.execute();
+            executor.setCoinbase(key.getAddress());
+            if(pendingState.pendingStateContains(tx)){
+                executor.executeFinal();
+            } else {
+                executor.executeSender();
+                executor.executeFinal();
+            }
 
             track.commit();
         }

@@ -44,4 +44,7 @@ public interface PendingState extends io.taucoin.facade.PendingState{
      * @param block block imported into blockchain as a <b>BEST</b> one
      */
     void processBest(Block block);
+
+	//PendingState Contains Tx
+    boolean pendingStateContains(Transaction tx);
 }

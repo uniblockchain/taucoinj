@@ -133,6 +133,8 @@ public class PendingStateImpl implements PendingState {
             if (addNewTxIfNotExist(tx)) {
                 unknownTx++;
                 if (isValid(tx)) {
+                    //Sender balance check;
+                    executeTxSender(tx);
                     newTxs.add(tx);
                 } else {
                     logger.info("Non valid TX: {} " + tx.getHash());
@@ -193,7 +195,7 @@ public class PendingStateImpl implements PendingState {
     @Override
     public void addPendingTransaction(Transaction tx) {
         pendingStateTransactions.add(tx);
-        executeTx(tx);
+        executeTxSender(tx);
     }
 
     @Override
@@ -206,11 +208,11 @@ public class PendingStateImpl implements PendingState {
 
         clearWire(block.getTransactionsList());
 
-        clearOutdated();
-
         clearPendingState(block.getTransactionsList());
 
-        updateState();
+        clearOutdated();
+
+        // updateState();
     }
 
     //Block Number -> Time
@@ -221,8 +223,10 @@ public class PendingStateImpl implements PendingState {
         //clear wired transactions
         synchronized (wireTransactions) {
             for (Transaction tx : wireTransactions)
-                if (!tx.checkTime())
+                if (!tx.checkTime()){
+                    executeTxSenderBack(tx);
                     outdated.add(tx);
+			    }
         }
 		if(!outdated.isEmpty())
             wireTransactions.removeAll(outdated);
@@ -232,8 +236,10 @@ public class PendingStateImpl implements PendingState {
         //clear pending transactions
         synchronized (pendingStateTransactions) {
             for (Transaction tx : pendingStateTransactions)
-                if (!tx.checkTime())
+                if (!tx.checkTime()){
+                    executeTxSenderBack(tx);
                     outdated.add(tx);
+                }
         }
 		if(!outdated.isEmpty())
             pendingStateTransactions.removeAll(outdated);
@@ -259,6 +265,7 @@ public class PendingStateImpl implements PendingState {
         pendingStateTransactions.removeAll(txs);
     }
 
+    /*
     private void updateState() {
 
         pendingState = repository.startTracking();
@@ -267,13 +274,13 @@ public class PendingStateImpl implements PendingState {
             for (Transaction tx : pendingStateTransactions) executeTx(tx);
         }
     }
+    */
 
     /*
      * Transaction execution, which can be seen in transactionExecutor.java
-     * 1. validation of sender's balance
-     * 2. update of receiver and miner's balance
+     * 1. validation of sender's balance, subtract
     */
-    private void executeTx(Transaction tx) {
+    private void executeTxSender(Transaction tx) {
 
         logger.info("Apply pending state tx: {}", Hex.toHexString(tx.getHash()));
 
@@ -281,12 +288,33 @@ public class PendingStateImpl implements PendingState {
 
         executor.init();
 
-        executor.execute();
+        executor.executeSender();
 
+    }
+
+    /*
+     * Transaction execution, which can be seen in transactionExecutor.java
+     * 1. validation of sender's balance, subtract
+    */
+    private void executeTxSenderBack(Transaction tx) {
+
+        logger.info("Apply pending state tx: {}", Hex.toHexString(tx.getHash()));
+
+        TransactionExecutor executor = new TransactionExecutor(tx, getRepository());
+
+        executor.init();
+
+        executor.executeSenderBack();
     }
 
     public void setBlockchain(Blockchain blockchain) {
         this.blockchain = blockchain;
+    }
+
+    public boolean pendingStateContains(Transaction tx) {
+        if (pendingStateTransactions.contains(tx)||wireTransactions.contains(tx))
+            return true;
+		return false;
     }
 
 }
