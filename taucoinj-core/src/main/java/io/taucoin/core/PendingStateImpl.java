@@ -2,6 +2,7 @@ package io.taucoin.core;
 
 //import io.taucoin.listener.TaucoinListener;
 import io.taucoin.util.FastByteComparisons;
+import io.taucoin.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
@@ -25,6 +27,7 @@ import static java.math.BigInteger.ZERO;
 import org.apache.commons.collections4.map.LRUMap;
 import static io.taucoin.config.SystemProperties.CONFIG;
 import static io.taucoin.util.BIUtil.toBI;
+import static io.taucoin.util.BIUtil.*;
 import io.taucoin.db.ByteArrayWrapper;
 
 /**
@@ -61,6 +64,8 @@ public class PendingStateImpl implements PendingState {
     // To filter out the transactions we have already processed
     // transactions could be sent by peers even if they were already included into blocks
     private final Map<ByteArrayWrapper, Object> redceivedTxs = new LRUMap<>(500000);
+
+    private final Map<String, BigInteger> expendList = new HashMap<String, BigInteger>(500000);
 
     //@Resource
     private final List<Transaction> pendingStateTransactions = new ArrayList<>();
@@ -108,18 +113,6 @@ public class PendingStateImpl implements PendingState {
         return best;
     }
 
-    private boolean addNewTxIfNotExist(Transaction tx) {
-        ByteArrayWrapper hash = new ByteArrayWrapper(tx.getHash());
-        synchronized (redceivedTxs) {
-            if (!redceivedTxs.containsKey(hash)) {
-                redceivedTxs.put(hash, null);
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
     @Override
     public List<Transaction> addWireTransactions(Set<Transaction> transactions) {
 
@@ -133,8 +126,6 @@ public class PendingStateImpl implements PendingState {
             if (addNewTxIfNotExist(tx)) {
                 unknownTx++;
                 if (isValid(tx)) {
-                    //Sender balance check;
-                    executeTxSender(tx);
                     newTxs.add(tx);
                 } else {
                     logger.info("Non valid TX: {} " + tx.getHash());
@@ -192,10 +183,43 @@ public class PendingStateImpl implements PendingState {
         return true;
     }
 
+    private boolean addNewTxIfNotExist(Transaction tx) {
+        ByteArrayWrapper hash = new ByteArrayWrapper(tx.getHash());
+
+        //update transaction balance list
+        synchronized (expendList) {
+            String senderTmp= ByteUtil.toHexString(tx.getSender());
+            if (!expendList.containsKey(senderTmp)) {
+                expendList.put(senderTmp, tx.getTotoalCost());
+            } else {
+                expendList.put(senderTmp, expendList.get(senderTmp).add(tx.getTotoalCost()));
+            }
+
+            BigInteger senderBalance = pendingState.getBalance(tx.getSender());
+            if (!isCovers(senderBalance, expendList.get(senderTmp))) {
+                if (logger.isWarnEnabled())
+                    logger.warn("No enough balance: Require: {}, Sender's balance: {}", expendList.get(senderTmp), senderBalance);
+
+                // TODO: save reason for failure
+                return false;
+            }
+        }
+
+        //update transaction memory pool
+        synchronized (redceivedTxs) {
+            if (!redceivedTxs.containsKey(hash)) {
+                redceivedTxs.put(hash, null);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     @Override
     public void addPendingTransaction(Transaction tx) {
-        pendingStateTransactions.add(tx);
-        executeTxSender(tx);
+        if (addNewTxIfNotExist(tx))
+            pendingStateTransactions.add(tx);
     }
 
     @Override
@@ -212,7 +236,7 @@ public class PendingStateImpl implements PendingState {
 
         clearOutdated();
 
-        // updateState();
+        //updateState(Block block);
     }
 
     //Block Number -> Time
@@ -224,7 +248,7 @@ public class PendingStateImpl implements PendingState {
         synchronized (wireTransactions) {
             for (Transaction tx : wireTransactions)
                 if (!tx.checkTime()){
-                    executeTxSenderBack(tx);
+                    removeExpendList(tx);
                     outdated.add(tx);
 			    }
         }
@@ -237,7 +261,7 @@ public class PendingStateImpl implements PendingState {
         synchronized (pendingStateTransactions) {
             for (Transaction tx : pendingStateTransactions)
                 if (!tx.checkTime()){
-                    executeTxSenderBack(tx);
+                    removeExpendList(tx);
                     outdated.add(tx);
                 }
         }
@@ -251,27 +275,24 @@ public class PendingStateImpl implements PendingState {
             if (logger.isInfoEnabled() && wireTransactions.contains(tx))
                 logger.info("Clear wire transaction, hash: [{}]", Hex.toHexString(tx.getHash()));
 
+            removeExpendList(tx);
             wireTransactions.remove(tx);
         }
     }
 
     private void clearPendingState(List<Transaction> txs) {
-        if (logger.isInfoEnabled()) {
-            for (Transaction tx : txs)
-                if (pendingStateTransactions.contains(tx))
+            for (Transaction tx : txs){
+                if (logger.isInfoEnabled() && pendingStateTransactions.contains(tx))
                     logger.info("Clear pending state transaction, hash: [{}]", Hex.toHexString(tx.getHash()));
+            removeExpendList(tx);
+            pendingStateTransactions.remove(tx);
         }
-
-        pendingStateTransactions.removeAll(txs);
     }
 
     /*
-    private void updateState() {
+    private void updateState(Block block) {
 
-        pendingState = repository.startTracking();
-
-        synchronized (pendingStateTransactions) {
-            for (Transaction tx : pendingStateTransactions) executeTx(tx);
+        for (Transaction tx : block.getTransactionsList()) {
         }
     }
     */
@@ -280,31 +301,15 @@ public class PendingStateImpl implements PendingState {
      * Transaction execution, which can be seen in transactionExecutor.java
      * 1. validation of sender's balance, subtract
     */
-    private void executeTxSender(Transaction tx) {
-
-        logger.info("Apply pending state tx: {}", Hex.toHexString(tx.getHash()));
-
-        TransactionExecutor executor = new TransactionExecutor(tx, getRepository());
-
-        executor.init();
-
-        executor.executeSender();
-
-    }
-
-    /*
-     * Transaction execution, which can be seen in transactionExecutor.java
-     * 1. validation of sender's balance, subtract
-    */
-    private void executeTxSenderBack(Transaction tx) {
-
-        logger.info("Apply pending state tx: {}", Hex.toHexString(tx.getHash()));
-
-        TransactionExecutor executor = new TransactionExecutor(tx, getRepository());
-
-        executor.init();
-
-        executor.executeSenderBack();
+    private void removeExpendList(Transaction tx) {
+        
+        //update transaction balance list
+        synchronized (expendList) {
+            String senderTmp= ByteUtil.toHexString(tx.getSender());
+            if(expendList.containsKey(senderTmp)) {
+                expendList.put(senderTmp, expendList.get(senderTmp).add(tx.getTotoalCost()));
+            }
+        }
     }
 
     public void setBlockchain(Blockchain blockchain) {
