@@ -43,7 +43,7 @@ public class SyncManager {
 
     private final static Logger logger = LoggerFactory.getLogger("sync");
 
-    private static final long WORKER_TIMEOUT = secondsToMillis(2);
+    private static final long WORKER_TIMEOUT = secondsToMillis(30);
     private static final long PEER_STUCK_TIMEOUT = secondsToMillis(60);
     private static final long GAP_RECOVERY_TIMEOUT = secondsToMillis(2);
 
@@ -140,7 +140,7 @@ public class SyncManager {
                             logger.error("Exception in main sync worker", t);
                         }
                     }
-                }, WORKER_TIMEOUT, WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
+                }, 10 * 1000, WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
 
                 if (logger.isInfoEnabled()) {
                     startLogWorker();
