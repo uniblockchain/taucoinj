@@ -121,7 +121,6 @@ public class BlockForger {
     public void onForgingStopped() {
         this.isForging = false;
         this.stopForge = true;
-        executor.shutdownNow();
         fireForgerStopped();
     }
 
