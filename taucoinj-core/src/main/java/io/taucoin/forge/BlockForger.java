@@ -151,7 +151,6 @@ public class BlockForger {
 
         BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
         BigInteger forgingPower = repository.getforgePower(minerCoinbase);
-        forgingPower = new BigInteger("1");
         if (forgingPower.longValue() < 0) {
             logger.error("Forging Power < 0!!!");
             return;
