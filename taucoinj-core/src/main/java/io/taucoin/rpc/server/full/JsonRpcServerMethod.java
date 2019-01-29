@@ -154,7 +154,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
             throw new Exception("Not enough balance");
         }
 
-        long timeStamp = System.currentTimeMillis();
+        long timeStamp = System.currentTimeMillis() / 1000;
 
         Transaction tx = taucoin.createTransaction(TransactionVersion.V01.getCode(),
                 TransactionOptions.TRANSACTION_OPTION_DEFAULT, ByteUtil.longToBytes(timeStamp),
