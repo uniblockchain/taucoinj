@@ -675,64 +675,49 @@ public class SystemProperties {
     }
 
     @ValidateMe
-    public boolean minerStart() {
-        return config.getBoolean("mine.start");
+    public boolean forgerStart() {
+        return config.getBoolean("forge.start");
     }
 
     @ValidateMe
-    public byte[] getMinerPrikey() {
-        String sc = config.getString("mine.prikey");
+    public int getForgedAmount() {
+        return config.getInt("forge.forgedAmount");
+    }
+
+    @ValidateMe
+    public byte[] getForgerPrikey() {
+        String sc = config.getString("forge.prikey");
         byte[] c = Hex.decode(sc);
         //if (c.length != 32 && c.length != 33) throw new RuntimeException("mine.coinbase has invalid value: '" + sc + "'");
         return c;
     }
 
     @ValidateMe
-    public byte[] getMinerPubkey() {
-        String sc = config.getString("mine.pubkey");
+    public byte[] getForgerPubkey() {
+        String sc = config.getString("forge.pubkey");
         byte[] c = Hex.decode(sc);
         //if (c.length != 32 && c.length != 33) throw new RuntimeException("mine.coinbase has invalid value: '" + sc + "'");
         return c;
     }
 
     @ValidateMe
-    public byte[] getMinerCoinbase() {
-        String sc = config.getString("mine.coinbase");
+    public byte[] getForgerCoinbase() {
+        String sc = config.getString("forge.coinbase");
         byte[] c = Hex.decode(sc);
-        if (c.length != 20) throw new RuntimeException("mine.coinbase has invalid value: '" + sc + "'");
+        if (c.length != 20) throw new RuntimeException("forge.coinbase has invalid value: '" + sc + "'");
         return c;
     }
 
     @ValidateMe
-    public byte[] getMineExtraData() {
+    public byte[] getForgeExtraData() {
         byte[] bytes;
-        if (config.hasPath("mine.extraDataHex")) {
-            bytes = Hex.decode(config.getString("mine.extraDataHex"));
+        if (config.hasPath("forge.extraDataHex")) {
+            bytes = Hex.decode(config.getString("forge.extraDataHex"));
         } else {
-            bytes = config.getString("mine.extraData").getBytes();
+            bytes = config.getString("forge.extraData").getBytes();
         }
-        if (bytes.length > 32) throw new RuntimeException("mine.extraData exceed 32 bytes length: " + bytes.length);
+        if (bytes.length > 32) throw new RuntimeException("forge.extraData exceed 32 bytes length: " + bytes.length);
         return bytes;
-    }
-
-    @ValidateMe
-    public BigInteger getMineMinGasPrice() {
-        return new BigInteger(config.getString("mine.minGasPrice"));
-    }
-
-    @ValidateMe
-    public long getMineMinBlockTimeoutMsec() {
-        return config.getLong("mine.minBlockTimeoutMsec");
-    }
-
-    @ValidateMe
-    public int getMineCpuThreads() {
-        return config.getInt("mine.cpuMineThreads");
-    }
-
-    @ValidateMe
-    public boolean isMineFullDataset() {
-        return config.getBoolean("mine.fullDataSet");
     }
 
     public Genesis getGenesis() {

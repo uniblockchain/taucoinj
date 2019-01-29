@@ -4,7 +4,7 @@ import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
-import io.taucoin.forge.BlockMiner;
+import io.taucoin.forge.BlockForger;
 import net.minidev.json.JSONObject;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public class tau_forging extends JsonRpcServerMethod {
 
     private String startForging(JSONObject request) {
         // Firstly  get forger
-        BlockMiner forger = taucoin.getBlockMiner();
+        BlockForger forger = taucoin.getBlockForger();
         if (forger == null) {
             return FORGER_ERROR;
         }

@@ -8,7 +8,7 @@ import io.taucoin.listener.EthereumListener;
 import io.taucoin.manager.AdminInfo;
 import io.taucoin.manager.BlockLoader;
 import io.taucoin.manager.WorldManager;
-import io.taucoin.forge.BlockMiner;
+import io.taucoin.forge.BlockForger;
 import io.taucoin.net.client.PeerClient;
 import io.taucoin.net.peerdiscovery.PeerInfo;
 import io.taucoin.net.rlpx.Node;
@@ -211,8 +211,8 @@ public class TaucoinImpl implements Taucoin {
     }
 
     @Override
-    public BlockMiner getBlockMiner() {
-        return ctx.getBean(BlockMiner.class);
+    public BlockForger getBlockForger() {
+        return ctx.getBean(BlockForger.class);
     }
 
     @Override

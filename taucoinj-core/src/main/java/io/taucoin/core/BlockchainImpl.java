@@ -134,9 +134,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     @PostConstruct
     private void init() {
-        minerCoinbase = config.getMinerCoinbase();
-        minerPrikey = config.getMinerPrikey();
-        minerPubkey = config.getMinerPubkey();
+        minerCoinbase = config.getForgerCoinbase();
+        minerPrikey = config.getForgerPrikey();
+        minerPubkey = config.getForgerPubkey();
     }
 
     @Override

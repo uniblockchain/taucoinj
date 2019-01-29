@@ -9,7 +9,7 @@ import io.taucoin.db.BlockStore;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.manager.AdminInfo;
 import io.taucoin.manager.BlockLoader;
-import io.taucoin.forge.BlockMiner;
+import io.taucoin.forge.BlockForger;
 import io.taucoin.net.client.PeerClient;
 import io.taucoin.net.peerdiscovery.PeerInfo;
 import io.taucoin.net.rlpx.Node;
@@ -170,5 +170,5 @@ public interface Taucoin {
     /**
      *  Gets the Miner component
      */
-    BlockMiner getBlockMiner();
+    BlockForger getBlockForger();
 }
