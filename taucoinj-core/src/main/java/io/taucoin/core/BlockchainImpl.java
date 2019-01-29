@@ -518,6 +518,36 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     }
 
     /**
+     * verify transaction time
+     * @param tx
+     * @param block
+     * @return
+     */
+    private boolean verifyTransactionTime(Transaction tx, Block block) {
+        long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
+
+        long txTime = ByteUtil.byteArrayToLong(tx.getTime());
+        if (txTime - Constants.MAX_TIMEDRIFT > blockTime) {
+            return false;
+        }
+
+        long referenceTime;
+        if (bestBlock.getNumber() < Constants.TX_EXPIRATIONHEIGHT) {
+            referenceTime = ByteUtil.byteArrayToLong(blockStore.
+                    getChainBlockByNumber(0).getTimestamp());
+        } else {
+            referenceTime = ByteUtil.byteArrayToLong(blockStore.
+                    getChainBlockByNumber(bestBlock.getNumber() - Constants.TX_EXPIRATIONHEIGHT).getTimestamp());
+        }
+
+        if (txTime < referenceTime) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * This mechanism enforces a homeostasis in terms of the time between blocks;
      * a smaller period between the last two blocks results in an increase in the
      * difficulty level and thus additional computation required, lengthening the
@@ -549,11 +579,17 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             }
 
             List<Transaction> txs = block.getTransactionsList();
-            if (txs.size() > 50) {
+            if (txs.size() > Constants.MAX_BLOCKTXSIZE) {
                 logger.error("Too many transactions, block number {}", block.getNumber());
                 return false;
             }
             if (!txs.isEmpty()) {
+                for (Transaction tx: txs) {
+                    if (!verifyTransactionTime(tx, block)) {
+                        logger.error("Block contains expiration transaction, block number {}", block.getNumber());
+                        return false;
+                    }
+                }
             }
         }
 
