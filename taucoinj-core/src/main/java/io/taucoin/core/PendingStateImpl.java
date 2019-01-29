@@ -195,7 +195,7 @@ public class PendingStateImpl implements PendingState {
                 expendList.put(senderTmp, expendList.get(senderTmp).add(tx.getTotoalCost()));
             }
 
-            BigInteger senderBalance = pendingState.getBalance(tx.getSender());
+            BigInteger senderBalance = getRepository().getBalance(tx.getSender());
             if (!isCovers(senderBalance, expendList.get(senderTmp))) {
                 if (logger.isWarnEnabled())
                     logger.warn("No enough balance: Require: {}, Sender's balance: {}", expendList.get(senderTmp), senderBalance);
