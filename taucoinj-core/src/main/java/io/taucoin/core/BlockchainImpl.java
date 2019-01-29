@@ -563,8 +563,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
 
         long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
-//        Block preBlock = blockStore.getBlockByHash(block.getHash());
-        Block preBlock = blockStore.getChainBlockByNumber(block.getNumber() - 1);
+        Block preBlock = blockStore.getBlockByHash(block.getPreviousHeaderHash());
+//        Block preBlock = blockStore.getChainBlockByNumber(block.getNumber() - 1);
         if (preBlock == null) {
             return false;
         }
