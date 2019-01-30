@@ -49,7 +49,7 @@ public class tau_sendTransaction extends JsonRpcServerMethod {
             }
 
             try {
-                taucoin.submitTransaction(tx).get(CONFIG.transactionApproveTimeout(), TimeUnit.SECONDS);
+                taucoin.submitTransaction(tx);//.get(CONFIG.transactionApproveTimeout(), TimeUnit.SECONDS);
             } catch (Exception e) {
                 e.printStackTrace();
                 return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, req.getID());
