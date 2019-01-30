@@ -42,6 +42,9 @@ public class Block {
     private BigInteger generationSignature;
     private BigInteger cumulativeDifficulty = BigInteger.ZERO; //this is total chain difficulty
 
+    // Store stateRoot into just local block not network block.
+    private byte[] stateRoot;
+
     /* Transactions */
     private List<Transaction> transactionsList = new CopyOnWriteArrayList<>();
 
@@ -162,7 +165,10 @@ public class Block {
             this.blockSignature = ECDSASignature.fromComponents(r, s);
             // Parse option
             this.option = block.get(6).getRLPData()[0];
-            if(block.size() > 7) {
+
+            this.stateRoot = block.get(7).getRLPData();
+
+            if(block.size() > 8) {
                 // Parse Transactions
                 RLPList txTransactions = (RLPList) block.get(7);
                 // here may need original trie
@@ -280,6 +286,23 @@ public class Block {
 
     public BigInteger getCumulativeDifficulty() {
         return cumulativeDifficulty;
+    }
+
+    /**
+     * Set block state root.
+     *
+     * This method is often called when connecting block into blockchain successfully.
+     * @param Repository Trie state root.
+     */
+    public void setStateRoot(byte[] stateRoot) {
+        this.stateRoot = stateRoot;
+    }
+
+    /**
+     * Get block state root.
+     */
+    public byte[] getStateRoot() {
+        return this.stateRoot;
     }
 
     public List<Transaction> getTransactionsList() {
@@ -476,6 +499,7 @@ public class Block {
         byte[] cumulativeDifficulty = RLP.encodeBigInteger(this.cumulativeDifficulty == null ? BigInteger.valueOf(0xffffff):this.cumulativeDifficulty);
         byte[] signature = getSignatureEncoded();
         byte[] option = getOptionEncoded();
+        byte[] stateRootEncoded = RLP.encodeElement(this.stateRoot);
         byte[] transactions = getTransactionsEncoded();
 
         List<byte[]> body = new ArrayList<>();
@@ -485,6 +509,7 @@ public class Block {
         body.add(cumulativeDifficulty);
         body.add(signature);
         body.add(option);
+        body.add(stateRootEncoded);
         body.add(transactions);
 
         return body;
