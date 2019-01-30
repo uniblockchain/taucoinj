@@ -17,34 +17,39 @@ public class ProofOfTransaction {
     private final static BigInteger DiffAdjustNumeratorCoe = new BigInteger("800000000000000",16); //2^59
 
 
-    /*
-        get required base target
+
+    /**
+     * get required base target
+     * @param previousBlock
+     * @param blockStore
+     * @return
      */
-    public static BigInteger calculateRequiredBaseTarget(Block parent, BlockStore blockStore) {
-        long blockNumber = parent.getNumber();
+    public static BigInteger calculateRequiredBaseTarget(Block previousBlock, BlockStore blockStore) {
+        long blockNumber = previousBlock.getNumber();
         if(blockNumber <= 3) {
             return (new BigInteger("369D0369D036978",16));
         }
 
-        Block block2 = blockStore.getChainBlockByNumber(blockNumber - 1);
-        Block block3 = blockStore.getChainBlockByNumber(blockNumber - 2);
-        BigInteger lastBlockbaseTarget = block2.getBaseTarget();
-        long pastTimeFromLatestBlock = new BigInteger(block3.getTimestamp()).longValue() -
-                new BigInteger(parent.getTimestamp()).longValue();
+        Block ancestor = blockStore.getChainBlockByNumber(blockNumber - 3);
+        BigInteger previousBlockBaseTarget = previousBlock.getBaseTarget();
+        long pastTimeFromLatestBlock = new BigInteger(previousBlock.getTimestamp()).longValue() -
+                new BigInteger(ancestor.getTimestamp()).longValue();
 
         if (pastTimeFromLatestBlock < 0)
             pastTimeFromLatestBlock = 0;
-        long pastTimeAver = pastTimeFromLatestBlock/3;
+        long pastTimeAver = pastTimeFromLatestBlock / 3;
 
         BigInteger newRequiredBaseTarget;
         if( pastTimeAver > AVERTIME ) {
             long min = 0;
+
             if (pastTimeAver < MAXRATIO){
                 min = pastTimeAver;
             }else {
                 min = MAXRATIO;
             }
-            newRequiredBaseTarget = lastBlockbaseTarget.multiply(BigInteger.valueOf(min).divide(BigInteger.valueOf(AVERTIME)));
+
+            newRequiredBaseTarget = previousBlockBaseTarget.multiply(BigInteger.valueOf(min).divide(BigInteger.valueOf(AVERTIME)));
         }else{
             long max = 0;
 
@@ -53,20 +58,21 @@ public class ProofOfTransaction {
             }else{
                 max = MINRATIO;
             }
-            //if GAMMA=0.64 then devide 60 ,when 64 then 6000
-            //double doubletemp =  (60-max)*GAMMA/60;
-            //long temp = Math.round(1000*doubletemp);
-            //this.newRequiredBaseTarget = lastBlockbaseTarget.subtract(BigInteger.valueOf(temp).multiply(lastBlockbaseTarget).divide(BigInteger.valueOf(1000)));
-            newRequiredBaseTarget = lastBlockbaseTarget.
-                    subtract(lastBlockbaseTarget.divide(BigInteger.valueOf(375)).//1875)).
+
+            newRequiredBaseTarget = previousBlockBaseTarget.
+                    subtract(previousBlockBaseTarget.divide(BigInteger.valueOf(375)).//1875)).
                             multiply(BigInteger.valueOf(AVERTIME-max)).multiply(BigInteger.valueOf(4)));
         }
         return newRequiredBaseTarget;
     }
 
-    /*
-        get next block generation signature
-        Gn+1 = hash(Gn, pubkey)
+
+    /**
+     * get next block generation signature
+     *     Gn+1 = hash(Gn, pubkey)
+     * @param preGenerationSignature
+     * @param pubkey
+     * @return
      */
     public static byte[] calculateNextBlockGenerationSignature(byte[] preGenerationSignature, byte[] pubkey){
         byte[] data = new byte[preGenerationSignature.length + pubkey.length];
@@ -76,9 +82,14 @@ public class ProofOfTransaction {
         return nextGenerationSignature;
     }
 
-    /*
-        get miner target value
-        target = base target * mining power * time
+
+    /**
+     * get miner target value
+     * target = base target * mining power * time
+     * @param baseTarget
+     * @param forgingPower
+     * @param time
+     * @return
      */
     public static BigInteger calculateMinerTargetValue(BigInteger baseTarget, BigInteger forgingPower, long time){
         BigInteger targetValue = baseTarget.multiply(forgingPower).
@@ -86,8 +97,11 @@ public class ProofOfTransaction {
         return targetValue;
     }
 
-    /*
-        get hit value
+
+    /**
+     * calculate hit
+     * @param generationSignature
+     * @return
      */
     public static BigInteger calculateRandomHit(byte[] generationSignature){
         byte[] headBytes = new byte[8];
@@ -105,12 +119,25 @@ public class ProofOfTransaction {
         return adjustHit;
     }
 
+    /**
+     * calculate cumulative difficulty
+     * @param lastCumulativeDifficulty
+     * @param baseTarget
+     * @return
+     */
     public static BigInteger calculateCumulativeDifficulty(BigInteger lastCumulativeDifficulty, BigInteger baseTarget){
         BigInteger delta = DiffAdjustNumerator.divide(baseTarget);
         BigInteger cumulativeDifficulty = lastCumulativeDifficulty.add(delta);
         return cumulativeDifficulty;
     }
 
+    /**
+     * calculate forging time interval
+     * @param hit
+     * @param baseTarget
+     * @param forgingPower
+     * @return
+     */
     public static long calculateForgingTimeInterval(BigInteger hit, BigInteger baseTarget, BigInteger forgingPower) {
         long timeInterval =
                 hit.divide(baseTarget).divide(forgingPower).add(BigInteger.ONE).longValue();
