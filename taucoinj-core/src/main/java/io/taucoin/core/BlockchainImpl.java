@@ -435,6 +435,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         processBlock(block);
 
         track.commit();
+        // Setting state root before storing block.
+        block.setStateRoot(repository.getRoot());
+
         storeBlock(block);
 
 

@@ -167,6 +167,9 @@ public class WorldManager {
             logger.info("genesis block hash: {}",Hex.toHexString(Genesis.getInstance(config).getHash()));
             Object object= blockStore.getClass();
             logger.info("blockStore class : {}",((Class) object).getName());
+
+            // Before store genesis block, setting genesis's state root.
+            genesis.setStateRoot(repository.getRoot());
             blockStore.saveBlock(Genesis.getInstance(config), Genesis.getInstance(config).getCumulativeDifficulty(), true);
             blockchain.setBestBlock(Genesis.getInstance(config));
             blockchain.setTotalDifficulty(Genesis.getInstance(config).getCumulativeDifficulty());
@@ -202,7 +205,7 @@ public class WorldManager {
             // to word state we should be watch out...
             // todo this is just a workaround, move EMPTY_TRIE_HASH logic to Trie implementation
             if (!Arrays.equals(blockchain.getBestBlock().getHash(), EMPTY_TRIE_HASH)) {
-                //this.repository.syncToRoot(blockchain.getBestBlock().getHash());
+                this.repository.syncToRoot(blockchain.getBestBlock().getStateRoot());
                 this.repository.flushNoReconnect();
             }
         }
