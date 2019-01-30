@@ -170,7 +170,7 @@ public class Block {
 
             if(block.size() > 8) {
                 // Parse Transactions
-                RLPList txTransactions = (RLPList) block.get(7);
+                RLPList txTransactions = (RLPList) block.get(8);
                 // here may need original trie
                 this.parseTxs(/*this.header.getTxTrieRoot()*/ txTransactions);
             }
@@ -292,7 +292,7 @@ public class Block {
      * Set block state root.
      *
      * This method is often called when connecting block into blockchain successfully.
-     * @param Repository Trie state root.
+     * @param //Repository Trie state root.
      */
     public void setStateRoot(byte[] stateRoot) {
         this.stateRoot = stateRoot;
