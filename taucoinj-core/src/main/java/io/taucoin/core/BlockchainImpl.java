@@ -556,10 +556,16 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
      * @return
      */
     private boolean verifyProofOfTransaction(Block block) {
-        if (block.getNumber() == 0)
-            return true;
+        if (block.getNumber() == 0 ) {
+            byte[] genesisHash = Hex.decode(Constants.GENESIS_BLOCK_HASH);
+            if (Arrays.equals(block.getHash(), genesisHash)) {
+                return true;
+            } else {
+                logger.info("Genesis block hash is not right!!! ({})", block.getGenerationSignature());
+                return false;
+            }
+        }
 
-        //block.toString();
         ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
         byte[] address = key.getAddress();
         BigInteger forgingPower = repository.getforgePower(address);

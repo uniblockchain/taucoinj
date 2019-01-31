@@ -79,10 +79,11 @@ public class ProofOfTransaction {
      */
     public static byte[] calculateNextBlockGenerationSignature(byte[] preGenerationSignature, byte[] pubkey){
         byte[] data = new byte[preGenerationSignature.length + pubkey.length];
+
         System.arraycopy(preGenerationSignature, 0, data, 0, preGenerationSignature.length);
         System.arraycopy(pubkey, 0, data, preGenerationSignature.length, pubkey.length);
-        byte[] nextGenerationSignature = Sha256Hash.hash(data);
-        return nextGenerationSignature;
+
+        return Sha256Hash.hash(data);
     }
 
 
@@ -108,22 +109,24 @@ public class ProofOfTransaction {
      */
     public static BigInteger calculateRandomHit(byte[] generationSignature){
         byte[] headBytes = new byte[8];
-        /*
-        for (int i = 0; i < 8; i++) {
-            headBytes[i] = temp[i];
-        }*/
         System.arraycopy(generationSignature,0,headBytes,0,8);
+
         BigInteger bhit = new BigInteger(1, headBytes);
         logger.info("bhit:{}", bhit);
+
         BigInteger bhitUzero = bhit.add(BigInteger.ONE);
         logger.info("bhitUzero:{}", bhitUzero);
+
         double logarithm = abs(log(bhitUzero.doubleValue()) - 2 * log(DiffAdjustNumeratorHalf.doubleValue()));
         logarithm = logarithm * 1000;
         logger.info("logarithm:{}", logarithm);
+
         long ulogarithm = (new Double(logarithm)).longValue();
         logger.info("ulogarithm:{}", ulogarithm);
+
         BigInteger adjustHit = DiffAdjustNumeratorCoe.multiply(BigInteger.valueOf(ulogarithm)).divide(BigInteger.valueOf(1000));
         logger.info("adjustHit:{}", adjustHit);
+
         return adjustHit;
     }
 
