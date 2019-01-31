@@ -70,6 +70,8 @@ public class BlockForger {
 
     private volatile boolean isForging = false;
 
+    private static final int TNO = 50;
+
     @PostConstruct
     private void init() {
         minerPubkey = config.getForgerPubkey();
@@ -133,10 +135,12 @@ public class BlockForger {
         txList.addAll(pendingState.getPendingTransactions());
         txList.addAll(pendingState.getWireTransactions());
 
-        if (txList.size() > 50) {
-            return txList.subList(0, 50);
-        } else {
+        if (txList.size() <= TNO) {
             return txList;
+        } else {
+            // Order, Transaction Fee, Time
+            Collections.sort(txList);
+            return txList.subList(0, TNO);
         }
     }
 

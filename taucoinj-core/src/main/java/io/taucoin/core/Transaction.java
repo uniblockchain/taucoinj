@@ -31,7 +31,7 @@ import static io.taucoin.util.TimeUtils.timeNows;
  * There are two types of transactions: those which result in message calls
  * and those which result in the creation of new contracts.
  */
-public class Transaction {
+public class Transaction implements Comparable<Transaction>{
 
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
@@ -210,6 +210,11 @@ public class Transaction {
         return fee;
     }
 
+    private BigInteger getBigIntegerFee() {
+        if (!parsed) rlpParse();
+        return new BigInteger(fee);
+    }
+
     public BigInteger getTotoalCost() {
         if (!parsed) rlpParse();
         return (new BigInteger(amount)).add(new BigInteger(fee));
@@ -353,5 +358,10 @@ public class Transaction {
                 Hex.decode(to),
                 BigIntegers.asUnsignedByteArray(amount),
                 BigIntegers.asUnsignedByteArray(fee));
+    }
+
+    @Override
+    public int compareTo(Transaction t){
+        return this.getBigIntegerFee().compareTo(t.getBigIntegerFee());
     }
 }
