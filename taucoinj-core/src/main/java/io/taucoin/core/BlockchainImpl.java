@@ -305,9 +305,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(preBlock, blockStore);
             block.setBaseTarget(baseTarget);
 
-            byte[] gsBytes = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature().toByteArray(), minerPubkey);
-            BigInteger generationSignature = new BigInteger(1, gsBytes);
+            byte[] generationSignature = ProofOfTransaction.
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), minerPubkey);
             block.setGenerationSignature(generationSignature);
 
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();
@@ -372,7 +371,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return NO_PARENT;
     }
 
-    public synchronized Block createNewBlock(Block parent, BigInteger baseTarget, BigInteger generationSignature,
+    public synchronized Block createNewBlock(Block parent, BigInteger baseTarget, byte[] generationSignature,
                                              BigInteger cumulativeDifficulty, List<Transaction> txs) {
 
         // adjust time to parent block this may happen due to system clocks difference
@@ -576,7 +575,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         BigInteger targetValue = ProofOfTransaction.
                 calculateMinerTargetValue(block.getBaseTarget(), forgingPower, blockTime - preBlockTime);
 
-        BigInteger hit = ProofOfTransaction.calculateRandomHit(block.getGenerationSignature().toByteArray());
+        logger.info("Generation Signature {}", block.getGenerationSignature());
+        BigInteger hit = ProofOfTransaction.calculateRandomHit(block.getGenerationSignature());
         logger.info("verify block target value {}, hit {}", targetValue, hit);
 
         if (targetValue.compareTo(hit) < 0) {

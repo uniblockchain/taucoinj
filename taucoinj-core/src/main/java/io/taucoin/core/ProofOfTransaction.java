@@ -1,6 +1,8 @@
 package io.taucoin.core;
 
 import io.taucoin.db.BlockStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 
@@ -8,10 +10,11 @@ import static java.lang.Math.abs;
 import static java.lang.Math.log;
 
 public class ProofOfTransaction {
-    private final static int MAXRATIO = 67;//335;
-    private final static int MINRATIO = 53;//265;
-    private final static int AVERTIME = 60;//300; //5 min
-    private final static double GAMMA = 0.64;
+    private static final Logger logger = LoggerFactory.getLogger("proofoftransaction");
+
+    private final static int MAXRATIO = 335;//67;//335;
+    private final static int MINRATIO = 265;//53;//265;
+    private final static int AVERTIME = 300;//60;//300; //5 min
     private final static BigInteger DiffAdjustNumerator = new BigInteger("010000000000000000",16);
     private final static BigInteger DiffAdjustNumeratorHalf = new BigInteger("0100000000",16);
     private final static BigInteger DiffAdjustNumeratorCoe = new BigInteger("800000000000000",16); //2^59
@@ -60,7 +63,7 @@ public class ProofOfTransaction {
             }
 
             newRequiredBaseTarget = previousBlockBaseTarget.
-                    subtract(previousBlockBaseTarget.divide(BigInteger.valueOf(375)).//1875)).
+                    subtract(previousBlockBaseTarget.divide(BigInteger.valueOf(1875)).//375//1875)).
                             multiply(BigInteger.valueOf(AVERTIME-max)).multiply(BigInteger.valueOf(4)));
         }
         return newRequiredBaseTarget;
@@ -110,12 +113,17 @@ public class ProofOfTransaction {
             headBytes[i] = temp[i];
         }*/
         System.arraycopy(generationSignature,0,headBytes,0,8);
-        BigInteger bhit = new BigInteger(headBytes);
+        BigInteger bhit = new BigInteger(1, headBytes);
+        logger.info("bhit:{}", bhit);
         BigInteger bhitUzero = bhit.add(BigInteger.ONE);
-        double logarithm = log(bhitUzero.doubleValue()) - 2 * log(DiffAdjustNumeratorHalf.doubleValue());
-        logarithm = abs(logarithm);
-        long ulogarithm = (new Double(logarithm*1000)).longValue();
+        logger.info("bhitUzero:{}", bhitUzero);
+        double logarithm = abs(log(bhitUzero.doubleValue()) - 2 * log(DiffAdjustNumeratorHalf.doubleValue()));
+        logarithm = logarithm * 1000;
+        logger.info("logarithm:{}", logarithm);
+        long ulogarithm = (new Double(logarithm)).longValue();
+        logger.info("ulogarithm:{}", ulogarithm);
         BigInteger adjustHit = DiffAdjustNumeratorCoe.multiply(BigInteger.valueOf(ulogarithm)).divide(BigInteger.valueOf(1000));
+        logger.info("adjustHit:{}", adjustHit);
         return adjustHit;
     }
 

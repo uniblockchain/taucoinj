@@ -51,7 +51,7 @@ public class GenesisLoader {
             Genesis genesis = createBlockForJson(genesisJson);
             genesis.setNumber(0);
             //set block signature
-            genesis.setGenerationSignature(new BigInteger("442c29a4d18f192164006030640fb54c8b9ffd4f5750d2f6dca192dc653c52ad",16));
+            genesis.setGenerationSignature(Hex.decode("442c29a4d18f192164006030640fb54c8b9ffd4f5750d2f6dca192dc653c52ad"));
             // Set genesis base target value and cumulative difficulty
             genesis.setBaseTarget(new BigInteger(
                     ByteUtil.removeHexPrefix(genesisJson.getGeneBasetarget()), 16));

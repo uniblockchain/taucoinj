@@ -3,6 +3,7 @@ package io.taucoin.forge;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.taucoin.facade.TaucoinImpl;
+import io.taucoin.util.ByteUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.core.*;
@@ -154,6 +155,7 @@ public class BlockForger {
         Block bestBlock = blockchain.getBestBlock();
 
         BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
+        logger.info("forging... baseTarget {}", baseTarget);
         BigInteger forgingPower = repository.getforgePower(minerCoinbase);
         logger.info("forging... forging power {}", forgingPower);
         if (forgingPower.longValue() < 0) {
@@ -164,7 +166,7 @@ public class BlockForger {
         logger.info("forging... base target {}, forging power {}", baseTarget, forgingPower);
 
         byte[] generationSignature = ProofOfTransaction.
-                calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature().toByteArray(), minerPubkey);
+                calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature(), minerPubkey);
         logger.info("forging... generationSignature {}", generationSignature);
 
         BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
@@ -176,7 +178,7 @@ public class BlockForger {
         logger.info("forging... hit {}, target value {}", hit.longValue(), targetValue);
         long timeNow = System.currentTimeMillis() / 1000;
         long timePreBlock = new BigInteger(bestBlock.getTimestamp()).longValue();
-        logger.info("forging... forging time {}", timeNow + timeInterval);
+        logger.info("forging... forging time {}", timePreBlock + timeInterval);
         if (timeNow < timePreBlock + timeInterval) {
             long sleepTime = timePreBlock + timeInterval - timeNow;
             logger.debug("Sleeping " + sleepTime + " s before importing...");
@@ -192,8 +194,7 @@ public class BlockForger {
 
         if (!stopForge) {
             miningBlock = blockchain.createNewBlock(bestBlock, baseTarget,
-                    BigIntegers.fromUnsignedByteArray(generationSignature),
-                    cumulativeDifficulty, getAllPendingTransactions());
+                    generationSignature, cumulativeDifficulty, getAllPendingTransactions());
 
             try {
                 // wow, block mined!
