@@ -377,6 +377,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         // adjust time to parent block this may happen due to system clocks difference
         Long time = System.currentTimeMillis() / 1000;
+        logger.info("create new block time {}", time);
         byte[] timeStamp = new BigInteger(time.toString()).toByteArray();
         byte version = (byte)1;
         byte option = (byte)1;
@@ -567,7 +568,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
         Block preBlock = blockStore.getBlockByHash(block.getPreviousHeaderHash());
-//        Block preBlock = blockStore.getChainBlockByNumber(block.getNumber() - 1);
         if (preBlock == null) {
             return false;
         }

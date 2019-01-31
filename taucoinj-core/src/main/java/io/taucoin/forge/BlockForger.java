@@ -151,6 +151,7 @@ public class BlockForger {
 
         BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
         BigInteger forgingPower = repository.getforgePower(minerCoinbase);
+        logger.info("forging... forging power {}", forgingPower);
         if (forgingPower.longValue() < 0) {
             logger.error("Forging Power < 0!!!");
             return;
@@ -163,12 +164,15 @@ public class BlockForger {
         logger.info("forging... generationSignature {}", generationSignature);
 
         BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
-        logger.info("forging... hit {}", hit);
+        logger.info("forging... hit {}", hit.longValue());
 
         long timeInterval = ProofOfTransaction.calculateForgingTimeInterval(hit, baseTarget, forgingPower);
         logger.info("forging... timeInterval {}", timeInterval);
+        BigInteger targetValue = ProofOfTransaction.calculateMinerTargetValue(baseTarget, forgingPower, timeInterval);
+        logger.info("forging... hit {}, target value {}", hit.longValue(), targetValue);
         long timeNow = System.currentTimeMillis() / 1000;
         long timePreBlock = new BigInteger(bestBlock.getTimestamp()).longValue();
+        logger.info("forging... forging time {}", timeNow + timeInterval);
         if (timeNow < timePreBlock + timeInterval) {
             long sleepTime = timePreBlock + timeInterval - timeNow;
             logger.debug("Sleeping " + sleepTime + " s before importing...");
