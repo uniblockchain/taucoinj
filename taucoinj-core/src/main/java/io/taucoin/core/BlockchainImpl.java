@@ -216,9 +216,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     private State pushState(byte[] bestBlockHash) {
         State push = stateStack.push(new State());
-//        this.bestBlock = blockStore.getBlockByHash(bestBlockHash);
-//        totalDifficulty = blockStore.getTotalDifficultyForHash(bestBlockHash);
-//        this.repository = this.repository.getSnapshotTo(this.bestBlock.getStateRoot());
+        this.bestBlock = blockStore.getBlockByHash(bestBlockHash);
+        totalDifficulty = blockStore.getTotalDifficultyForHash(bestBlockHash);
+        this.repository = this.repository.getSnapshotTo(this.bestBlock.getStateRoot());
         return push;
     }
 
@@ -234,58 +234,57 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     }
 
     public synchronized ImportResult tryConnectAndFork(final Block block) {
-        return IMPORTED_NOT_BEST;
-//        State savedState = pushState(block.getParentHash());
-//        this.fork = true;
+        State savedState = pushState(block.getPreviousHeaderHash());
+        this.fork = true;
+
+        try {
+
+            // FIXME: adding block with no option for flush
+            if (!add(block)) {
+                return INVALID_BLOCK;
+            }
+        } catch (Throwable th) {
+            logger.error("Unexpected error: ", th);
+        } finally {
+            this.fork = false;
+        }
+
+        if (isMoreThan(this.totalDifficulty, savedState.savedTD)) {
+
+            logger.info("Rebranching: {} ~> {}", savedState.savedBest.getShortHash(), block.getShortHash());
+
+            // main branch become this branch
+            // cause we proved that total difficulty
+            // is greateer
+            blockStore.reBranch(block);
+
+            // The main repository rebranch
+            this.repository = savedState.savedRepo;
+            this.repository.syncToRoot(block.getStateRoot());
+
+            // flushing
+            if (!byTest) {
+                repository.flush();
+                blockStore.flush();
+                System.gc();
+            }
+
+            dropState();
+
+//            EDT.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    pendingState.processBest(block);
+//                }
+//            });
 //
-//        try {
-//
-//            // FIXME: adding block with no option for flush
-//            if (!add(block)) {
-//                return INVALID_BLOCK;
-//            }
-//        } catch (Throwable th) {
-//            logger.error("Unexpected error: ", th);
-//        } finally {
-//            this.fork = false;
-//        }
-//
-//        if (isMoreThan(this.totalDifficulty, savedState.savedTD)) {
-//
-//            logger.info("Rebranching: {} ~> {}", savedState.savedBest.getShortHash(), block.getShortHash());
-//
-//            // main branch become this branch
-//            // cause we proved that total difficulty
-//            // is greateer
-//            blockStore.reBranch(block);
-//
-//            // The main repository rebranch
-//            this.repository = savedState.savedRepo;
-//            this.repository.syncToRoot(block.getStateRoot());
-//
-//            // flushing
-//            if (!byTest) {
-//                repository.flush();
-//                blockStore.flush();
-//                System.gc();
-//            }
-//
-//            dropState();
-//
-////            EDT.invokeLater(new Runnable() {
-////                @Override
-////                public void run() {
-////                    pendingState.processBest(block);
-////                }
-////            });
-////
-//            return IMPORTED_BEST;
-//        } else {
-//            // Stay on previous branch
-//            popState();
-//
-//            return IMPORTED_NOT_BEST;
-//        }
+            return IMPORTED_BEST;
+        } else {
+            // Stay on previous branch
+            popState();
+
+            return IMPORTED_NOT_BEST;
+        }
     }
 
 
@@ -702,8 +701,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     @Override
     public synchronized void storeBlock(Block block) {
-
-        updateTotalDifficulty(block);
 
         if (fork)
             blockStore.saveBlock(block, totalDifficulty, false);
