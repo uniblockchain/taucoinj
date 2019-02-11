@@ -105,7 +105,7 @@ public class TransactionExecutor {
         track.addBalance(coinbase, toBI(tx.transactionCost()));
 
         // Increase forge power.
-        track.increaseforgePower(tx.getSender());
+        track.increaseforgePower(tx.getReceiveAddress());
 
         logger.info("Pay fees to miner: [{}], feesEarned: [{}]", Hex.toHexString(coinbase), basicTxFee);
     }
