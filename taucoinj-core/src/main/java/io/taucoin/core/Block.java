@@ -198,9 +198,6 @@ public class Block {
         this.parsed = true;
     }
 
-    public void parseBlock() {
-        parseRLP();
-    }
 
     public boolean isMsg() {
         return isMsg;
@@ -260,7 +257,8 @@ public class Block {
     }
 
     public long getNumber() {
-        return number;
+        if (!parsed) parseRLP();
+        return this.number;
     }
 
     public void setBaseTarget(BigInteger baseTarget) {
@@ -268,7 +266,8 @@ public class Block {
     }
 
     public BigInteger getBaseTarget() {
-        return baseTarget;
+        if (!parsed) parseRLP();
+        return this.baseTarget;
     }
 
     public void setGenerationSignature(byte[] generationSignature) {
@@ -276,6 +275,7 @@ public class Block {
     }
 
     public byte[] getGenerationSignature() {
+        if (!parsed) parseRLP();
         return generationSignature;
     }
 
@@ -284,6 +284,7 @@ public class Block {
     }
 
     public BigInteger getCumulativeDifficulty() {
+        if (!parsed) parseRLP();
         return cumulativeDifficulty;
     }
 
@@ -301,6 +302,7 @@ public class Block {
      * Get block state root.
      */
     public byte[] getStateRoot() {
+        if (!parsed) parseRLP();
         return this.stateRoot;
     }
 

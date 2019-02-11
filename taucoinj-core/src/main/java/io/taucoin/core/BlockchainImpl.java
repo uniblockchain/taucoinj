@@ -295,9 +295,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         if (preBlock == null)
             return NO_PARENT;
 
-        //parse the block firstly
-        preBlock.parseBlock();
-
         if (block.isMsg()) {
             block.setNumber(preBlock.getNumber() + 1);
 
