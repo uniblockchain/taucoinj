@@ -33,10 +33,16 @@ public class ProofOfTransaction {
             return (new BigInteger("369D0369D036978",16));
         }
 
-        Block ancestor = blockStore.getChainBlockByNumber(blockNumber - 3);
+        Block ancestor1 = blockStore.getBlockByHash(previousBlock.getPreviousHeaderHash());
+        Block ancestor2 = blockStore.getBlockByHash(ancestor1.getPreviousHeaderHash());
+        Block ancestor3 = blockStore.getBlockByHash(ancestor2.getPreviousHeaderHash());
+        if (ancestor3 == null) {
+            logger.error("Can not find ancestor block, block number:" + (blockNumber - 3));
+        }
+
         BigInteger previousBlockBaseTarget = previousBlock.getBaseTarget();
         long pastTimeFromLatestBlock = new BigInteger(previousBlock.getTimestamp()).longValue() -
-                new BigInteger(ancestor.getTimestamp()).longValue();
+                new BigInteger(ancestor3.getTimestamp()).longValue();
 
         if (pastTimeFromLatestBlock < 0)
             pastTimeFromLatestBlock = 0;
