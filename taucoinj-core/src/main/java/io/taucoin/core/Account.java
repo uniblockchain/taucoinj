@@ -18,6 +18,7 @@ import java.util.Set;
 /**
  * Representation of an actual account or contract
  */
+@Component
 public class Account {
 
     private ECKey ecKey;
