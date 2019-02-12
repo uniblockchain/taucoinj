@@ -302,7 +302,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             block.setBaseTarget(baseTarget);
 
             byte[] generationSignature = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), minerPubkey);
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), block.getGeneratorPublicKey());
             block.setGenerationSignature(generationSignature);
 
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();

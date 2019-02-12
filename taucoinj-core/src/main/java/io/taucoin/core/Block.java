@@ -276,7 +276,7 @@ public class Block {
 
     public byte[] getGenerationSignature() {
         if (!parsed) parseRLP();
-        return generationSignature;
+        return this.generationSignature;
     }
 
     public void setCumulativeDifficulty(BigInteger cumulativeDifficulty) {
@@ -285,7 +285,7 @@ public class Block {
 
     public BigInteger getCumulativeDifficulty() {
         if (!parsed) parseRLP();
-        return cumulativeDifficulty;
+        return this.cumulativeDifficulty;
     }
 
     /**
