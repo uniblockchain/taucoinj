@@ -131,6 +131,12 @@ public class BlockForger {
         return this.isForging;
     }
 
+    public void notifyBestBlock() {
+        synchronized (blockchain) {
+            blockchain.notify();
+        }
+    }
+
     protected List<Transaction> getAllPendingTransactions() {
         List<Transaction> txList = new ArrayList<Transaction>();
         txList.addAll(pendingState.getPendingTransactions());
@@ -179,13 +185,16 @@ public class BlockForger {
         long timeNow = System.currentTimeMillis() / 1000;
         long timePreBlock = new BigInteger(bestBlock.getTimestamp()).longValue();
         logger.info("forging... forging time {}", timePreBlock + timeInterval);
+
         if (timeNow < timePreBlock + timeInterval) {
             long sleepTime = timePreBlock + timeInterval - timeNow;
             logger.debug("Sleeping " + sleepTime + " s before importing...");
-            try {
-                Thread.sleep(sleepTime * 1000);
-            } catch (InterruptedException e) {
-                //
+            synchronized (blockchain) {
+                try {
+                    blockchain.wait(sleepTime * 1000);
+                } catch (InterruptedException e) {
+                    //
+                }
             }
         }
 
@@ -218,7 +227,7 @@ public class BlockForger {
 
         // broadcast the block
         logger.debug("Importing newly mined block " + newBlock.getShortHash() + " ...");
-        ImportResult importResult = ((TaucoinImpl) taucoin).addNewMinedBlock(newBlock);
+        ImportResult importResult =  taucoin.addNewMinedBlock(newBlock);
         logger.debug("Mined block import result is " + importResult + " : " + newBlock.getShortHash());
     }
 

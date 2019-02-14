@@ -12,9 +12,9 @@ import static java.lang.Math.log;
 public class ProofOfTransaction {
     private static final Logger logger = LoggerFactory.getLogger("proofoftransaction");
 
-    private final static int MAXRATIO = 335;//67;//335;
-    private final static int MINRATIO = 265;//53;//265;
-    private final static int AVERTIME = 300;//60;//300; //5 min
+    private final static int MAXRATIO = 335;
+    private final static int MINRATIO = 265;
+    private final static int AVERTIME = 300; //5 min
     private final static BigInteger DiffAdjustNumerator = new BigInteger("010000000000000000",16);
     private final static BigInteger DiffAdjustNumeratorHalf = new BigInteger("0100000000",16);
     private final static BigInteger DiffAdjustNumeratorCoe = new BigInteger("800000000000000",16); //2^59
@@ -69,7 +69,7 @@ public class ProofOfTransaction {
             }
 
             newRequiredBaseTarget = previousBlockBaseTarget.
-                    subtract(previousBlockBaseTarget.divide(BigInteger.valueOf(1875)).//375//1875)).
+                    subtract(previousBlockBaseTarget.divide(BigInteger.valueOf(1875)).
                             multiply(BigInteger.valueOf(AVERTIME-max)).multiply(BigInteger.valueOf(4)));
         }
         return newRequiredBaseTarget;

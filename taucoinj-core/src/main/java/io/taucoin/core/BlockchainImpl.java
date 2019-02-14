@@ -6,6 +6,7 @@ import io.taucoin.crypto.HashUtil;
 import io.taucoin.crypto.SHA3Helper;
 import io.taucoin.db.BlockStore;
 import io.taucoin.db.ByteArrayWrapper;
+import io.taucoin.facade.Taucoin;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.manager.AdminInfo;
 import io.taucoin.trie.Trie;
@@ -81,6 +82,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     @Autowired
     private BlockStore blockStore;
 
+    @Autowired
+    private Taucoin taucoin;
+
     private Block bestBlock;
 
     private BigInteger totalDifficulty = ZERO;
@@ -102,6 +106,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     @Autowired
     SystemProperties config = SystemProperties.CONFIG;
+
+    private Object obj = new Object();
 
     private List<Chain> altChains = new ArrayList<>();
     private List<Block> garbage = new ArrayList<>();
@@ -191,6 +197,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         Collections.reverse(hashes);
 
         return hashes;
+    }
+
+    public Object getObj() {
+        return this.obj;
     }
 
     public static byte[] calcTxTrie(List<Transaction> transactions) {
@@ -337,6 +347,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 EventDispatchThread.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        taucoin.getBlockForger().notifyBestBlock();
                         pendingState.processBest(block);
                     }
                 });
@@ -354,6 +365,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     EventDispatchThread.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            taucoin.getBlockForger().notifyBestBlock();
                             pendingState.processBest(block);
                         }
                     });
