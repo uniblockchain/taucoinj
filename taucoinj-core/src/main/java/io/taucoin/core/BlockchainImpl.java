@@ -107,8 +107,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     @Autowired
     SystemProperties config = SystemProperties.CONFIG;
 
-    private Object obj = new Object();
-
     private List<Chain> altChains = new ArrayList<>();
     private List<Block> garbage = new ArrayList<>();
 
@@ -199,22 +197,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return hashes;
     }
 
-    public Object getObj() {
-        return this.obj;
-    }
-
-    public static byte[] calcTxTrie(List<Transaction> transactions) {
-
-        Trie txsState = new TrieImpl(null);
-
-        if (transactions == null || transactions.isEmpty())
-            return HashUtil.EMPTY_TRIE_HASH;
-
-        for (int i = 0; i < transactions.size(); i++) {
-            txsState.update(RLP.encodeInt(i), transactions.get(i).getEncoded());
-        }
-        return txsState.getRootHash();
-    }
 
     public Repository getRepository() {
         return repository;

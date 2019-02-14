@@ -67,7 +67,7 @@ public class BlockForger {
 
     private Block miningBlock;
 
-    private volatile boolean stopForge;
+    private volatile boolean stopForge = false;
 
     private volatile boolean isForging = false;
 
@@ -158,61 +158,81 @@ public class BlockForger {
     }
 
     public void restartMining() {
-        Block bestBlock = blockchain.getBestBlock();
 
-        BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
-        logger.info("forging... baseTarget {}", baseTarget);
-        BigInteger forgingPower = repository.getforgePower(minerCoinbase);
-        logger.info("forging... forging power {}", forgingPower);
-        if (forgingPower.longValue() < 0) {
-            logger.error("Forging Power < 0!!!");
-            return;
-        }
+        Block bestBlock;
+        BigInteger baseTarget;
+        byte[] generationSignature;
+        BigInteger cumulativeDifficulty;
 
-        logger.info("forging... base target {}, forging power {}", baseTarget, forgingPower);
+        while (true) {
+            bestBlock = blockchain.getBestBlock();
 
-        byte[] generationSignature = ProofOfTransaction.
-                calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature(), minerPubkey);
-        logger.info("forging... generationSignature {}", generationSignature);
+            baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
+            logger.info("forging... baseTarget {}", baseTarget);
 
-        BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
-        logger.info("forging... hit {}", hit.longValue());
+            BigInteger forgingPower = repository.getforgePower(minerCoinbase);
+            logger.info("forging... forging power {}", forgingPower);
+            if (forgingPower.longValue() < 0) {
+                logger.error("Forging Power < 0!!!");
+                return;
+            }
 
-        long timeInterval = ProofOfTransaction.calculateForgingTimeInterval(hit, baseTarget, forgingPower);
-        logger.info("forging... timeInterval {}", timeInterval);
-        BigInteger targetValue = ProofOfTransaction.calculateMinerTargetValue(baseTarget, forgingPower, timeInterval);
-        logger.info("forging... hit {}, target value {}", hit.longValue(), targetValue);
-        long timeNow = System.currentTimeMillis() / 1000;
-        long timePreBlock = new BigInteger(bestBlock.getTimestamp()).longValue();
-        logger.info("forging... forging time {}", timePreBlock + timeInterval);
+            logger.info("forging... base target {}, forging power {}", baseTarget, forgingPower);
 
-        if (timeNow < timePreBlock + timeInterval) {
-            long sleepTime = timePreBlock + timeInterval - timeNow;
-            logger.debug("Sleeping " + sleepTime + " s before importing...");
-            synchronized (blockchain) {
-                try {
-                    blockchain.wait(sleepTime * 1000);
-                } catch (InterruptedException e) {
-                    //
+            generationSignature = ProofOfTransaction.
+                    calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature(), minerPubkey);
+            logger.info("forging... generationSignature {}", generationSignature);
+
+            BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
+            logger.info("forging... hit {}", hit.longValue());
+
+            long timeInterval = ProofOfTransaction.calculateForgingTimeInterval(hit, baseTarget, forgingPower);
+            logger.info("forging... timeInterval {}", timeInterval);
+            BigInteger targetValue = ProofOfTransaction.calculateMinerTargetValue(baseTarget, forgingPower, timeInterval);
+            logger.info("forging... hit {}, target value {}", hit.longValue(), targetValue);
+            long timeNow = System.currentTimeMillis() / 1000;
+            long timePreBlock = new BigInteger(bestBlock.getTimestamp()).longValue();
+            logger.info("forging... forging time {}", timePreBlock + timeInterval);
+
+            if (timeNow < timePreBlock + timeInterval) {
+                long sleepTime = timePreBlock + timeInterval - timeNow;
+                logger.debug("Sleeping " + sleepTime + " s before importing...");
+                synchronized (blockchain) {
+                    try {
+                        blockchain.wait(sleepTime * 1000);
+                    } catch (InterruptedException e) {
+                        //
+                    }
                 }
             }
+
+            if (stopForge) {
+                logger.info("~~~~~~~~~~~~~~~~~~Stop forging!!!~~~~~~~~~~~~~~~~~~");
+                return;
+            }
+
+            cumulativeDifficulty = ProofOfTransaction.
+                    calculateCumulativeDifficulty(bestBlock.getCumulativeDifficulty(), baseTarget);
+
+            if (bestBlock.equals(blockchain.getBestBlock())) {
+                logger.info("~~~~~~~~~~~~~~~~~~Forging a new block...~~~~~~~~~~~~~~~~~~");
+                break;
+            } else {
+                logger.info("~~~~~~~~~~~~~~~~~~Got a new best block, continue forging...~~~~~~~~~~~~~~~~~~");
+            }
+
         }
 
-        BigInteger cumulativeDifficulty = ProofOfTransaction.
-                calculateCumulativeDifficulty(bestBlock.getCumulativeDifficulty(), baseTarget);
+        miningBlock = blockchain.createNewBlock(bestBlock, baseTarget,
+                generationSignature, cumulativeDifficulty, getAllPendingTransactions());
 
-        if (!stopForge) {
-            miningBlock = blockchain.createNewBlock(bestBlock, baseTarget,
-                    generationSignature, cumulativeDifficulty, getAllPendingTransactions());
-
-            try {
-                // wow, block mined!
-                blockForged(miningBlock);
-            } catch (InterruptedException | CancellationException e) {
-                // OK, we've been cancelled, just exit
-            } catch (Exception e) {
-                logger.warn("Exception during mining: ", e);
-            }
+        try {
+            // wow, block mined!
+            blockForged(miningBlock);
+        } catch (InterruptedException | CancellationException e) {
+            // OK, we've been cancelled, just exit
+        } catch (Exception e) {
+            logger.warn("Exception during mining: ", e);
         }
 
         fireBlockStarted(miningBlock);
