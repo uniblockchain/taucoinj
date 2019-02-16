@@ -107,6 +107,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     @Autowired
     SystemProperties config = SystemProperties.CONFIG;
 
+    private Object lock = new Object();
+
     private List<Chain> altChains = new ArrayList<>();
     private List<Block> garbage = new ArrayList<>();
 
@@ -166,6 +168,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     @Override
     public Block getBlockByHash(byte[] hash) {
         return blockStore.getBlockByHash(hash);
+    }
+
+    @Override
+    public Object getLockObject() {
+        return lock;
     }
 
     @Override
@@ -329,7 +336,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 EventDispatchThread.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        taucoin.getBlockForger().notifyBestBlock();
+                        synchronized (lock) {
+                            lock.notify();
+                        }
                         pendingState.processBest(block);
                     }
                 });
@@ -347,7 +356,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     EventDispatchThread.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            taucoin.getBlockForger().notifyBestBlock();
+                            synchronized (lock) {
+                                lock.notify();
+                            }
                             pendingState.processBest(block);
                         }
                     });

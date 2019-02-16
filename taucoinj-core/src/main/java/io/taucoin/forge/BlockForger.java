@@ -131,11 +131,6 @@ public class BlockForger {
         return this.isForging;
     }
 
-    public void notifyBestBlock() {
-        synchronized (blockchain) {
-            blockchain.notify();
-        }
-    }
 
     protected List<Transaction> getAllPendingTransactions() {
         List<Transaction> txList = new ArrayList<Transaction>();
@@ -197,9 +192,9 @@ public class BlockForger {
             if (timeNow < timePreBlock + timeInterval) {
                 long sleepTime = timePreBlock + timeInterval - timeNow;
                 logger.debug("Sleeping " + sleepTime + " s before importing...");
-                synchronized (blockchain) {
+                synchronized (blockchain.getLockObject()) {
                     try {
-                        blockchain.wait(sleepTime * 1000);
+                        blockchain.getLockObject().wait(sleepTime * 1000);
                     } catch (InterruptedException e) {
                         //
                     }
