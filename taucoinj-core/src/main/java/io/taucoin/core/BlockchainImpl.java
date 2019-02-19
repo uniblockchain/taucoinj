@@ -82,9 +82,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     @Autowired
     private BlockStore blockStore;
 
-    @Autowired
-    private Taucoin taucoin;
-
     private Block bestBlock;
 
     private BigInteger totalDifficulty = ZERO;
@@ -117,9 +114,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
     public boolean byTest = false;
     private boolean fork = false;
 
-    private byte[] minerCoinbase;
-    private byte[] minerPrikey;
-    private byte[] minerPubkey;
 
     private Stack<State> stateStack = new Stack<>();
 
@@ -140,9 +134,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     @PostConstruct
     private void init() {
-        minerCoinbase = config.getForgerCoinbase();
-        minerPrikey = config.getForgerPrikey();
-        minerPubkey = config.getForgerPubkey();
+//        minerCoinbase = config.getForgerCoinbase();
     }
 
     @Override
@@ -384,14 +376,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         Block block = new Block(version,
                 timeStamp,
                 parent.getHash(),
-                minerPubkey,
+                config.getForgerPubkey(),
                 option,
                 txs);
         block.setNumber(parent.getNumber() + 1);
         block.setBaseTarget(baseTarget);
         block.setGenerationSignature(generationSignature);
         block.setCumulativeDifficulty(cumulativeDifficulty);
-        block.sign(minerPrikey);
+        block.sign(config.getForgerPrikey());
 
 //        pushState(parent.getHash());
 //
@@ -821,14 +813,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     public void setExitOn(long exitOn) {
         this.exitOn = exitOn;
-    }
-
-    public void setMinerCoinbase(byte[] minerCoinbase) {
-        this.minerCoinbase = minerCoinbase;
-    }
-
-    public void setMinerPubkey(byte[] minerPubkey) {
-        this.minerPubkey = minerPubkey;
     }
 
     public boolean isBlockExist(byte[] hash) {

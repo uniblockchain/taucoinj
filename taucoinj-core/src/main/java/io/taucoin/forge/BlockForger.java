@@ -62,9 +62,6 @@ public class BlockForger {
 
     private List<ForgerListener> listeners = new CopyOnWriteArrayList<>();
 
-    private byte[] minerPubkey;
-    private byte[] minerCoinbase;
-
     private Block miningBlock;
 
     private volatile boolean stopForge = false;
@@ -75,8 +72,6 @@ public class BlockForger {
 
     @PostConstruct
     private void init() {
-        minerPubkey = config.getForgerPubkey();
-        minerCoinbase = config.getForgerCoinbase();
         listener.addListener(new EthereumListenerAdapter() {
 
             @Override
@@ -165,7 +160,7 @@ public class BlockForger {
             baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
             logger.info("forging... baseTarget {}", baseTarget);
 
-            BigInteger forgingPower = repository.getforgePower(minerCoinbase);
+            BigInteger forgingPower = repository.getforgePower(config.getForgerCoinbase());
             logger.info("forging... forging power {}", forgingPower);
             if (forgingPower.longValue() < 0) {
                 logger.error("Forging Power < 0!!!");
@@ -175,7 +170,7 @@ public class BlockForger {
             logger.info("forging... base target {}, forging power {}", baseTarget, forgingPower);
 
             generationSignature = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature(), minerPubkey);
+                    calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature(), config.getForgerPubkey());
             logger.info("forging... generationSignature {}", generationSignature);
 
             BigInteger hit = ProofOfTransaction.calculateRandomHit(generationSignature);
