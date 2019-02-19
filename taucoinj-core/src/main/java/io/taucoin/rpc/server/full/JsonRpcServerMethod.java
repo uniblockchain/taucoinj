@@ -189,8 +189,6 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
             if (detailed) {
                 JSONObject tx = transactionToJS(block, transaction);
                 tx.put("transactionIndex", "0x" + Integer.toHexString(i));
-                tx.put("blockHash", "0x" + Hex.toHexString(block.getHash()));
-                tx.put("blockNumber", "0x" + Long.toHexString(block.getNumber()));
                 transactionsJA.add(tx);
             } else {
                 transactionsJA.add("0x" + Hex.toHexString(transaction.getHash()));
@@ -211,30 +209,11 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("to", "0x" + Hex.toHexString(transaction.getReceiveAddress()));
 
-        /*
-        if (block == null) {
-            OrmLiteBlockStoreDatabase db = OrmLiteBlockStoreDatabase.getHelper(null);
-            BlockTransactionVO relation = db.getTransactionLocation(transaction.getHash());
-            if (relation == null) {
-                res.put("transactionIndex", null);
-                res.put("blockHash", null);
-                res.put("blockNumber", null);
-            } else {
-                block = taucoin.getBlockchain().getBlockByHash(relation.getBlockHash());
-            }
-        }
-        if (block != null) {
-            long txi = 0;
-            for (Transaction tx : block.getTransactionsList()) {
-                if (Arrays.equals(tx.getHash(), transaction.getHash()))
-                    break;
-                txi++;
-            }
-            res.put("transactionIndex", "0x" + Long.toHexString(txi));
-            res.put("blockHash", "0x" + Hex.toHexString(block.getHash()));
-            res.put("blockNumber", "0x" + Long.toHexString(block.getNumber()));
-        }
-        */
+        res.put("amount", "0x" + Hex.toHexString(transaction.getAmount()));
+
+        res.put("fee", "0x" + Hex.toHexString(transaction.getFee()));
+
+        res.put("time", "0x" + Hex.toHexString(transaction.getTime()));
 
         return res;
     }
