@@ -49,6 +49,9 @@ public class GenesisLoader {
             GenesisJson genesisJson  = new ObjectMapper().readValue(json, type);
 
             Genesis genesis = createBlockForJson(genesisJson);
+//            System.out.println("genesis header hash is: "+Hex.toHexString(genesis.getPreviousHeaderHash()));
+//            System.out.println("genesis header hash is: "+Hex.toHexString(genesis.getGeneratorPublicKey()));
+//            System.out.println("genesis gene signature is: "+Hex.toHexString(genesis.getblockSignature().s.toByteArray()));
             genesis.setNumber(0);
             //set block signature
             genesis.setGenerationSignature(Hex.decode("442c29a4d18f192164006030640fb54c8b9ffd4f5750d2f6dca192dc653c52ad"));
@@ -79,18 +82,18 @@ public class GenesisLoader {
 
     private static Genesis createBlockForJson(GenesisJson genesisJson){
 
-        byte version       = Utils.parseByte(genesisJson.version);
-        byte[] baseTarget  = Utils.parseData(genesisJson.geneBasetarget);
-        byte[] preheaderHash     = Utils.parseData(genesisJson.previousHeaderHash);
-        byte[][] coinbase    = Utils.parseHexArrayData(genesisJson.coinbase);
+        byte version       = Utils.parseByte(genesisJson.getVersion());
+        byte[] baseTarget  = Utils.parseData(genesisJson.getGeneBasetarget());
+        byte[] preheaderHash     = Utils.parseData(genesisJson.getPreviousHeaderHash());
+        byte[][] coinbase    = Utils.parseHexArrayData(genesisJson.getCoinbase());
 
-        byte[] timestampBytes = Utils.parseData(genesisJson.timestamp);
+        byte[] timestampBytes = Utils.parseData(genesisJson.getTimestamp());
         long   timestamp         = ByteUtil.byteArrayToLong(timestampBytes);
 
-        byte[] genePubkey  = Utils.parseData(genesisJson.generatorPublicKey);
-        byte[] geneSig   = Utils.parseData(genesisJson.blockSignature);
+        byte[] genePubkey  = Utils.parseData(genesisJson.getGeneratorPublicKey());
+        byte[] geneSig   = Utils.parseData(genesisJson.getBlockSignature());
 
-        byte option    = Utils.parseByte(genesisJson.option);
+        byte option    = Utils.parseByte(genesisJson.getOption());
         //here is temporary method...
         List<Transaction> tr = new ArrayList<Transaction>();
         for(byte[] tcoinbase:coinbase) {
