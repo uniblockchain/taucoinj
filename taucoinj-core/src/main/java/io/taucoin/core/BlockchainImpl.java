@@ -524,7 +524,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
 
         long txTime = ByteUtil.byteArrayToLong(tx.getTime());
+
         if (txTime - Constants.MAX_TIMEDRIFT > blockTime) {
+            logger.error("Tx time {} exceeds block time {} by {} seconds", txTime, blockTime, Constants.MAX_TIMEDRIFT);
             return false;
         }
 
@@ -538,6 +540,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         }
 
         if (txTime < referenceTime) {
+            logger.error("Block contains expiration transaction, tx time: {}, reference time : {}", txTime, referenceTime);
             return false;
         }
 
@@ -555,7 +558,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             if (Arrays.equals(block.getHash(), genesisHash)) {
                 return true;
             } else {
-                logger.info("Genesis block hash is not right!!! ({})", block.getGenerationSignature());
+                logger.error("Genesis block hash is not right!!! ({})", block.getGenerationSignature());
                 return false;
             }
         }
