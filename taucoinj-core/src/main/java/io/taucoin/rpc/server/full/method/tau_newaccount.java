@@ -15,7 +15,7 @@ import java.util.Collection;
 public class tau_newaccount extends JsonRpcServerMethod {
 
     public tau_newaccount (Taucoin taucoin) {
-        super(taucoin);
+    super(taucoin);
     }
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
@@ -27,7 +27,6 @@ public class tau_newaccount extends JsonRpcServerMethod {
         tmp.add("private key: "+Hex.toHexString(account.getEcKey().getPrivKey().toByteArray()));
         tmp.add("public key: "+ Hex.toHexString(account.getEcKey().getPubKey()));
         tmp.add("address: " + account.getEcKey().getAccountAddress().toBase58());
-        tmp.add("simple address: "+Hex.toHexString(account.getEcKey().getAddress()));
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
 

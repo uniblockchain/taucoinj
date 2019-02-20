@@ -17,6 +17,7 @@ import io.taucoin.core.Blockchain;
 import io.taucoin.core.Transaction;
 import io.taucoin.core.transaction.TransactionVersion;
 import io.taucoin.core.transaction.TransactionOptions;
+import io.taucoin.core.VersionedChecksummedBytes;
 import io.taucoin.crypto.ECKey;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.facade.Taucoin;
@@ -125,9 +126,20 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
             throw new Exception("Invalid params");
         }
 
+        long type= 0;
+        if (obj.containsKey("type") && ((long)obj.get("type")) >= 0) {
+            type= (long) obj.get("type");
+        }
+
         byte[] to = null;
         if (obj.containsKey("to") && !((String)obj.get("to")).equals("")) {
-            to = jsToAddress((String) obj.get("to"));
+            if(type==0){
+                to = jsToAddress((String) obj.get("to"));
+            } else {
+                VersionedChecksummedBytes toEncoedAddress= new VersionedChecksummedBytes((String) obj.get("to"));
+                to = toEncoedAddress.getBytes();
+                logger.info("json to address: {}", Hex.toHexString(to));
+            }
         }
 
         BigInteger value = BigInteger.ZERO;
@@ -205,9 +217,9 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("hash", "0x" + Hex.toHexString(transaction.getHash()));
 
-        res.put("from", "0x" + Hex.toHexString(transaction.getSender()));
+        res.put("from", ByteUtil.bytesToBase58(transaction.getSender()).toBase58());
 
-        res.put("to", "0x" + Hex.toHexString(transaction.getReceiveAddress()));
+        res.put("to", ByteUtil.bytesToBase58(transaction.getReceiveAddress()).toBase58());
 
         res.put("amount", "0x" + Hex.toHexString(transaction.getAmount()));
 
