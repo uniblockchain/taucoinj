@@ -3,6 +3,7 @@ package io.taucoin.rpc.server.full.method;
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
 import io.taucoin.rpc.server.full.JsonRpcServerMethod;
+import io.taucoin.core.VersionedChecksummedBytes;
 import io.taucoin.core.AccountState;
 import io.taucoin.core.Repository;
 import io.taucoin.facade.Taucoin;
@@ -27,7 +28,9 @@ public class tau_getBalance extends JsonRpcServerMethod {
         if (params.size() != 2) {
             return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
         } else {
-            byte[] address = jsToAddress((String) params.get(0));
+            byte[] address = null;
+            VersionedChecksummedBytes toEncoedAddress= new VersionedChecksummedBytes((String) params.get(0));
+            address = toEncoedAddress.getBytes();
             String height = (String)params.get(1);
 
             long blockNumber = getBlockNumber(height);
