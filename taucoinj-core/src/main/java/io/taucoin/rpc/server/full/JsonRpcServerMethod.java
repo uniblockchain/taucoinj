@@ -11,6 +11,7 @@ import net.minidev.json.JSONObject;
 import io.taucoin.rpc.server.full.JsonRpcServer;
 import io.taucoin.core.Account;
 import io.taucoin.core.AccountState;
+import io.taucoin.core.Utils;
 import io.taucoin.core.Block;
 import io.taucoin.core.BlockHeader;
 import io.taucoin.core.Blockchain;
@@ -185,9 +186,15 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("number", "0x" + Long.toHexString(block.getNumber()));
 
-        res.put("hash", "0x" + Hex.toHexString(block.getHash()));
+        res.put("minerPublicKey", "0x" + Hex.toHexString(block.getGeneratorPublicKey()));
+
+        res.put("minerAddress", ByteUtil.bytesToBase58(Utils.sha256hash160(block.getGeneratorPublicKey())).toBase58());
 
         res.put("parentHash", "0x" + Hex.toHexString(block.getPreviousHeaderHash()));
+
+        res.put("hash", "0x" + Hex.toHexString(block.getHash()));
+
+        res.put("time", "0x" + Hex.toHexString(block.getTimestamp()));
 
         res.put("totalDifficulty", "0x" + block.getCumulativeDifficulty().toString(16));
 
@@ -215,7 +222,7 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
     protected JSONObject transactionToJS (Block block, Transaction transaction) {
         JSONObject res = new JSONObject();
 
-        res.put("hash", "0x" + Hex.toHexString(transaction.getHash()));
+        res.put("thash", "0x" + Hex.toHexString(transaction.getHash()));
 
         res.put("from", ByteUtil.bytesToBase58(transaction.getSender()).toBase58());
 
