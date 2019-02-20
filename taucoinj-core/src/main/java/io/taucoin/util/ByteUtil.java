@@ -1,6 +1,8 @@
 package io.taucoin.util;
 
 import io.taucoin.db.ByteArrayWrapper;
+import io.taucoin.core.Address;
+import io.taucoin.config.MainNetParams;
 
 import org.spongycastle.util.encoders.Hex;
 
@@ -8,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import java.math.BigInteger;
-
 import java.nio.ByteBuffer;
 
 import java.util.Arrays;
@@ -594,4 +595,12 @@ public class ByteUtil {
             return data.substring(2);
         return data;
     }
+
+    /**
+     * Bytes into address, and toBase58()
+     */
+    public static Address bytesToBase58(byte[] data) {
+        return new Address(MainNetParams.get(), data);
+    }
+
 }
