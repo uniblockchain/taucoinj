@@ -2,6 +2,7 @@ package io.taucoin.rpc.server.full.method;
 
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
+import io.taucoin.config.MainNetParams;
 import io.taucoin.rpc.server.full.JsonRpcServerMethod;
 import io.taucoin.facade.Taucoin;
 import io.taucoin.core.*;
@@ -25,6 +26,7 @@ public class tau_newaccount extends JsonRpcServerMethod {
         taucoin.getWallet().addNewAccount(account);
         ArrayList<String> tmp = new ArrayList<String>();
         tmp.add("private key: "+Hex.toHexString(account.getEcKey().getPrivKey().toByteArray()));
+        tmp.add("WiF Key is: "+account.getEcKey().getPrivateKeyAsWiF(MainNetParams.get()));
         tmp.add("public key: "+ Hex.toHexString(account.getEcKey().getPubKey()));
         tmp.add("address: " + account.getEcKey().getAccountAddress().toBase58());
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
