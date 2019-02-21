@@ -3,22 +3,16 @@ package io.taucoin.rpc.server.full;
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.server.*;
 
+import io.taucoin.config.MainNetParams;
+import io.taucoin.core.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
 //import io.taucoin.android.db.BlockTransactionVO;
 //import io.taucoin.android.db.OrmLiteBlockStoreDatabase;
 import io.taucoin.rpc.server.full.JsonRpcServer;
-import io.taucoin.core.Account;
-import io.taucoin.core.AccountState;
-import io.taucoin.core.Utils;
-import io.taucoin.core.Block;
-import io.taucoin.core.BlockHeader;
-import io.taucoin.core.Blockchain;
-import io.taucoin.core.Transaction;
 import io.taucoin.core.transaction.TransactionVersion;
 import io.taucoin.core.transaction.TransactionOptions;
-import io.taucoin.core.VersionedChecksummedBytes;
 import io.taucoin.crypto.ECKey;
 import io.taucoin.crypto.HashUtil;
 import io.taucoin.facade.Taucoin;
@@ -155,7 +149,18 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         byte[] senderPrivkey = null;
         if (obj.containsKey("privkey") && !((String)obj.get("privkey")).equals("")) {
-            senderPrivkey = jsToByteArray((String) obj.get("privkey"));
+            String prikey = (String) obj.get("privkey");
+            ECKey key;
+            logger.info("privkey is {}",prikey);
+
+            if (prikey.length() == 51 || prikey.length() == 52) {
+                DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(MainNetParams.get(),prikey);
+                key = dumpedPrivateKey.getKey();
+            } else {
+                BigInteger privKey = new BigInteger(jsToByteArray(prikey));
+                key = ECKey.fromPrivate(privKey);
+            }
+            senderPrivkey = key.getPrivKeyBytes();
         }
 
         // Check account balance
