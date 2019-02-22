@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.spongycastle.util.encoders.Hex;
 
 import java.net.InetAddress;
 import java.util.*;
@@ -202,6 +203,7 @@ public class ChannelManager {
         synchronized (activePeers) {
             for (Channel channel : activePeers.values()) {
                 if (channel != receivedFrom) {
+                    logger.debug("send new block {} to {}", Hex.toHexString(block.getHash()), channel.toString());
                     channel.sendNewBlock(block);
                 }
             }
