@@ -40,13 +40,13 @@ public class tau_getBlockHashList extends JsonRpcServerMethod {
             startBlockNumber = (long) request.get("start");
         }
 
-        int limit = 100;
-        if (request.containsKey("limit") && ((int)request.get("limit")) > 0) {
-            limit = (int) request.get("limit");
+        long limit = 100;
+        if (request.containsKey("limit") && ((long)request.get("limit")) > 0) {
+            limit = (long) request.get("limit");
         }
 
         List<String> blockHashList = new ArrayList<String>();
-        List<byte[]> hashList = getBlockChain().getListOfHashesStartFromBlock(startBlockNumber, limit);
+        List<byte[]> hashList = getBlockChain().getListOfHashesStartFromBlock(startBlockNumber, (int)limit);
         for (byte[] hash : hashList) {
             blockHashList.add("0x" + Hex.toHexString(hash));
         }
