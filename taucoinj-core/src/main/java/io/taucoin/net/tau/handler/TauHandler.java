@@ -28,6 +28,7 @@ import io.taucoin.util.BIUtil;
 import io.taucoin.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -296,12 +297,13 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
     private void processNewBlock(NewBlockMessage newBlockMessage) {
 
         Block newBlock = newBlockMessage.getBlock();
+        loggerNet.info("Receive new block {}", Hex.toHexString(newBlock.getHash()));
 
 //        loggerSync.info("New block received: block.index [{}]", newBlock.getNumber());
 
         // skip new block if TD is lower than ours
         if (isLessThan(newBlockMessage.getDifficultyAsBigInt(), blockchain.getTotalDifficulty())) {
-            loggerSync.trace(
+            loggerSync.warn(
                     "New block difficulty lower than ours: [{}] vs [{}], skip",
                     newBlockMessage.getDifficultyAsBigInt(),
                     blockchain.getTotalDifficulty()
