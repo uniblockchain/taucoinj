@@ -357,7 +357,17 @@ public class SyncQueue {
 
         }
 
-        headerStore.addBatch(headers);
+        if (fillupHeaderNumber(headers)) {
+            if (logger.isDebugEnabled()) {
+               for (BlockHeader header : headers) {
+                   logger.debug("compute header number {}:{}",
+                           Hex.toHexString(header.getHash()),
+                           header.getNumber());
+               }
+            }
+            headerStore.addBatch(headers);
+        }
+
 
         if (logger.isDebugEnabled())
             logger.debug("{} headers filtered out, {} added", headers.size() - filtered.size(), filtered.size());
@@ -487,4 +497,44 @@ public class SyncQueue {
         return true;
     }
 
+    private boolean fillupHeaderNumber(List<BlockHeader> headers) {
+        if (headers == null || headers.size() == 0) {
+            return false;
+        }
+
+        Block firstParent = this.blockchain.getBlockByHash(headers.get(0).getPreviousHeaderHash());
+        Block lastParent = this.blockchain.getBlockByHash(headers.get(headers.size() - 1).getPreviousHeaderHash());
+        long firstParentNumber = firstParent != null ? firstParent.getNumber() : -1;
+        long lastParentNumber  = lastParent  != null ? lastParent.getNumber()  : -1;
+        long startBlockNumber  = 0;
+        long delta;
+
+        if (firstParentNumber >= 0 && lastParentNumber == -1) {
+            startBlockNumber = firstParentNumber + 1;
+            delta = 1;
+        } else if (lastParentNumber >= 0 && firstParentNumber != -1) {
+            startBlockNumber = lastParentNumber + headers.size();
+            delta = -1;
+        } else if (firstParentNumber >= 0 && lastParentNumber >= 0) {
+            if (firstParentNumber <= lastParentNumber) {
+                startBlockNumber = firstParentNumber + 1;
+                delta = 1;
+            } else {
+                startBlockNumber = lastParentNumber + headers.size();
+                delta = -1;
+            }
+        } else {
+            logger.error("fatal error, can't fillup header number {} {}",
+                    Hex.toHexString(headers.get(0).getHash()),
+                    Hex.toHexString(headers.get(headers.size() - 1).getHash()));
+            return false;
+        }
+
+        for (BlockHeader header : headers) {
+            header.setNumber(startBlockNumber);
+            startBlockNumber += delta;
+        }
+
+        return true;
+    }
 }
