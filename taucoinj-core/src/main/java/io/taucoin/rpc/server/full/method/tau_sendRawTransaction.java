@@ -51,7 +51,7 @@ public class tau_sendRawTransaction extends JsonRpcServerMethod {
             return new JSONRPC2Response(JSONRPC2Error.INTERNAL_ERROR, req.getID());
         }
 
-        result.add("Send raw transaction successfully!");
+        result.add("txid: "+Hex.toHexString(tx.getHash()));
 
         JSONRPC2Response res = new JSONRPC2Response(result, req.getID());
         return res;
