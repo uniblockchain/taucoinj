@@ -18,6 +18,7 @@ public class GenesisJson {
     private String option;
 
     private ArrayList<String> coinbase;
+    private String stateroot;
     private Map<String, AllocatedAccount> alloc;
 
     private String geneBasetarget;
@@ -88,7 +89,12 @@ public class GenesisJson {
     public void setCoinbase(ArrayList<String> coinbase) {
         this.coinbase = coinbase;
     }
-
+    public String getStateroot(){
+        return stateroot;
+    }
+    public void setStateroot(String stateroot){
+        this.stateroot = stateroot;
+    }
     public Map<String, AllocatedAccount> getAlloc() {
         return alloc;
     }
