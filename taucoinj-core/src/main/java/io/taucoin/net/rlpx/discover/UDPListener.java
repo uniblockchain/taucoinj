@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -89,8 +90,8 @@ public class UDPListener {
             }
         }
 
+        Collections.shuffle(bootNodes);
         nodeManager.setBootNodes(bootNodes);
-
 
         try {
             DiscoveryExecutor discoveryExecutor = new DiscoveryExecutor(nodeManager);
