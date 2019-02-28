@@ -143,9 +143,9 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
             }
 
             for (Node node : bootNodes) {
-                //getNodeHandler(node);
+                getNodeHandler(node);
                 // Hack code just for debugging. It should be removed ASAP.
-                getNodeHandler(node).getNodeStatistics().setPredefined(true);
+                //getNodeHandler(node).getNodeStatistics().setPredefined(true);
             }
         }
     }
