@@ -13,7 +13,7 @@ public class tau_blockNumber extends JsonRpcServerMethod {
 
     protected JSONRPC2Response worker(JSONRPC2Request req, MessageContext ctx) {
 
-        String tmp = "0x" + Long.toHexString(taucoin.getBlockchain().getBestBlock().getNumber());
+        String tmp = "0x" + Long.toHexString(taucoin.getBlockchain().getBestBlock().getNumber()+ 1);
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
 
