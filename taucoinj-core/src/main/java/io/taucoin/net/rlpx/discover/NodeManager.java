@@ -340,7 +340,7 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
                 if (handler.getNodeStatistics().getEthTotalDifficulty() == null) {
                     return false;
                 }
-                return handler.getNodeStatistics().getEthTotalDifficulty().compareTo(lowerDifficulty) > 0;
+                return handler.getNodeStatistics().getEthTotalDifficulty().compareTo(lowerDifficulty) >= 0;
             }
         }, BEST_DIFFICULTY_COMPARATOR, limit);
     }
