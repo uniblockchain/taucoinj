@@ -123,7 +123,7 @@ public class SyncManager {
 
                 updateDifficulties();
 
-                changeState(stateInitiator.initiate());
+                changeState(initialState());
 
                 addBestKnownNodeListener();
 
@@ -278,6 +278,15 @@ public class SyncManager {
 
         // TODO decrease peer's reputation
 
+    }
+
+    private SyncStateName initialState() {
+        if (queue.hasSolidBlocks()) {
+            logger.info("It seems that BLOCK_RETRIEVING was interrupted, starting from this state now");
+            return BLOCK_RETRIEVING;
+        } else {
+            return HASH_RETRIEVING;
+        }
     }
 
     private int gapSize(BlockWrapper block) {
