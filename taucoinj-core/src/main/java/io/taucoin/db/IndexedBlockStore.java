@@ -90,8 +90,9 @@ public class IndexedBlockStore implements BlockStore{
 
         long t2 = System.nanoTime();
 
-        if (indexDB != null)
+        if (indexDB != null) {
             indexDB.commit();
+        }
 
         logger.info("Flush block store in: {} ms", ((float)(t2 - t1) / 1_000_000));
 
@@ -222,7 +223,7 @@ public class IndexedBlockStore implements BlockStore{
     }
 
 
-        @Override
+    @Override
     public BigInteger getTotalDifficulty(){
 
         BigInteger cacheTotalDifficulty = ZERO;
@@ -368,7 +369,10 @@ public class IndexedBlockStore implements BlockStore{
             while(currentLevel > bestBlock.getNumber()){
                 List<BlockInfo> blocks =  getBlockInfoForLevel(currentLevel);
                 BlockInfo blockInfo = getBlockInfoForHash(blocks, forkLine.getHash());
-                if (blockInfo != null) blockInfo.setMainChain(true);
+                if (blockInfo != null) {
+                    blockInfo.setMainChain(true);
+                    updateBlockInfoForLevel(currentLevel, blocks);
+                }
                 forkLine = getBlockByHash(forkLine.getPreviousHeaderHash());
                 --currentLevel;
             }
@@ -381,7 +385,10 @@ public class IndexedBlockStore implements BlockStore{
 
                 List<BlockInfo> blocks =  getBlockInfoForLevel(currentLevel);
                 BlockInfo blockInfo = getBlockInfoForHash(blocks, bestLine.getHash());
-                if (blockInfo != null) blockInfo.setMainChain(false);
+                if (blockInfo != null) {
+                    blockInfo.setMainChain(false);
+                    updateBlockInfoForLevel(currentLevel, blocks);
+                }
                 bestLine = getBlockByHash(bestLine.getPreviousHeaderHash());
                 --currentLevel;
             }
@@ -398,6 +405,9 @@ public class IndexedBlockStore implements BlockStore{
             BlockInfo forkInfo = getBlockInfoForHash(levelBlocks, forkLine.getHash());
             if (forkInfo != null) forkInfo.setMainChain(true);
 
+            if (bestInfo != null || forkInfo != null) {
+                updateBlockInfoForLevel(currentLevel, levelBlocks);
+            }
 
             bestLine = getBlockByHash(bestLine.getPreviousHeaderHash());
             forkLine = getBlockByHash(forkLine.getPreviousHeaderHash());
@@ -530,6 +540,16 @@ public class IndexedBlockStore implements BlockStore{
         }
 
         return index.get(level);
+    }
+
+    private void updateBlockInfoForLevel(Long level, List<BlockInfo> infos) {
+
+        if (cache != null && cache.index != null) {
+            cache.index.put(level, infos);
+            return;
+        }
+
+        index.put(level, infos);
     }
 
     private static BlockInfo getBlockInfoForHash(List<BlockInfo> blocks, byte[] hash){
