@@ -162,6 +162,8 @@ public class SyncManager {
 
         BigInteger peerTotalDifficulty = peer.getTotalDifficulty();
 
+        // Discard totoal difficulty.
+        /*
         if (!isIn20PercentRange(peerTotalDifficulty, lowerUsefulDifficulty)) {
             if(logger.isInfoEnabled()) logger.info(
                     "Peer {}: difficulty significantly lower than ours: {} vs {}, skipping",
@@ -172,14 +174,16 @@ public class SyncManager {
             // TODO report low total difficulty
             return;
         }
+         */
 
-        if (state.is(HASH_RETRIEVING) && !isIn20PercentRange(highestKnownDifficulty, peerTotalDifficulty)) {
-            if(logger.isInfoEnabled()) logger.info(
+        if (state.is(HASH_RETRIEVING)/* && !isIn20PercentRange(highestKnownDifficulty, peerTotalDifficulty)*/) {
+            /*if(logger.isInfoEnabled()) logger.info(
                     "Peer {}: its chain is better than previously known: {} vs {}, rotate master peer",
                     Utils.getNodeIdShort(peer.getPeerId()),
                     peerTotalDifficulty.toString(),
                     highestKnownDifficulty.toString()
             );
+            */
 
             Channel master = pool.findOne(new Functional.Predicate<Channel>() {
                 @Override
@@ -198,7 +202,9 @@ public class SyncManager {
             }
         }
 
-        updateHighestKnownDifficulty(peerTotalDifficulty);
+        if (peerTotalDifficulty.compareTo(highestKnownDifficulty) > 0) {
+            updateHighestKnownDifficulty(peerTotalDifficulty);
+        }
 
         pool.add(peer);
     }
@@ -430,6 +436,10 @@ public class SyncManager {
                                 handler.getNodeStatistics().getEthTotalDifficulty(),
                                 highestKnownDifficulty
                         );
+                        int lackSize = config.syncPeerCount() - pool.activeCount();
+                        if(lackSize <= 0) {
+                            return;
+                        }
                         pool.connect(handler.getNode());
                     }
 

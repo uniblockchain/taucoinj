@@ -340,7 +340,9 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
                 if (handler.getNodeStatistics().getEthTotalDifficulty() == null) {
                     return false;
                 }
-                return handler.getNodeStatistics().getEthTotalDifficulty().compareTo(lowerDifficulty) >= 0;
+                // discard total difficulty
+                //return handler.getNodeStatistics().getEthTotalDifficulty().compareTo(lowerDifficulty) >= 0;
+                return true;
             }
         }, BEST_DIFFICULTY_COMPARATOR, limit);
     }
@@ -361,11 +363,15 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
             Comparator<NodeHandler> comparator,
             int limit
     ) {
+        Map<String, NodeHandler> handlersMap = new HashMap<String, NodeHandler>();
         List<NodeHandler> filtered = new ArrayList<>();
         synchronized (this) {
             for (NodeHandler handler : nodeHandlerMap.values()) {
-                if (predicate.test(handler)) {
+                if ((handler.getState() == NodeHandler.State.Active)
+                        && !handlersMap.containsKey(handler.getNode().getHexId())
+                        && predicate.test(handler)) {
                     filtered.add(handler);
+                    handlersMap.put(handler.getNode().getHexId(), handler);
                 }
             }
         }
