@@ -86,7 +86,7 @@ public class NodeHandler {
     public NodeHandler(Node node, NodeManager nodeManager) {
         this.node = node;
         this.nodeManager = nodeManager;
-        if (node.getPort() != CONFIG.listenPort()) {
+        if (node.getPort() == CONFIG.listenPort()) {
             changeState(State.Discovered);
         }
     }
