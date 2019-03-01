@@ -187,6 +187,11 @@ public class PeersPool implements Iterable<Channel> {
     }
 
     public void connect(Node node) {
+        if (this.ethereum.getChannelManager().isPeerExist(node.getId())) {
+            logger.info("Peer {} connection exists, ignore", node.getHexIdShort());
+            return;
+        }
+
         if (logger.isTraceEnabled()) logger.trace(
                 "Peer {}: initiate connection",
                 node.getHexIdShort()
