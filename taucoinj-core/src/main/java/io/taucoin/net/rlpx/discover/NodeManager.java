@@ -224,6 +224,7 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
         } else if (ret.getNode().isDiscoveryNode() && !n.isDiscoveryNode()) {
             // we found discovery node with same host:port,
             // replace node with correct nodeId
+            n.setType(ret.node.getType());
             ret.node = n;
             if (!n.getHexId().equals(homeNode.getHexId())) {
                 ethereumListener.onNodeDiscovered(ret.getNode());
