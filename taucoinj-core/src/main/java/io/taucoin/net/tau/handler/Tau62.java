@@ -159,6 +159,7 @@ public class Tau62 extends TauHandler {
             changeState(DONE_HASH_RETRIEVING);
             syncStats.setEmptyHashesGot();
         } else {
+            syncStats.setHashesGot();
             syncStats.addHashes(received.size());
 
             if (syncState == HASH_RETRIEVING && !commonAncestorFound) {

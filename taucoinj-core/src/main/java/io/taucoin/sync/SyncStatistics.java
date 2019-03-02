@@ -24,7 +24,6 @@ public class SyncStatistics {
         blocksCount = 0;
         hashesCount = 0;
         emptyResponsesCount = 0;
-        emptyHashesGotAt = 0;
     }
 
     public void addBlocks(long cnt) {
@@ -64,8 +63,13 @@ public class SyncStatistics {
         emptyHashesGotAt = System.currentTimeMillis();
     }
 
+    public void setHashesGot() {
+        emptyHashesGotAt = 0;
+    }
+
     public boolean isEmptyHashesGotTimeout() {
-        return System.currentTimeMillis() - emptyHashesGotAt >= EMPTY_HASHES_GOT_TIMEOUT;
+        return emptyHashesGotAt == 0
+                || System.currentTimeMillis() - emptyHashesGotAt >= EMPTY_HASHES_GOT_TIMEOUT;
     }
 
     public long secondsSinceLastEmptyHashes() {
