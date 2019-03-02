@@ -7,10 +7,13 @@ package io.taucoin.sync;
  * @since 20.08.2015
  */
 public class SyncStatistics {
+    private static final long EMPTY_HASHES_GOT_TIMEOUT = 30 * 1000;
+
     private long updatedAt;
     private long blocksCount;
     private long hashesCount;
     private int emptyResponsesCount;
+    private long emptyHashesGotAt;
 
     public SyncStatistics() {
         reset();
@@ -21,6 +24,7 @@ public class SyncStatistics {
         blocksCount = 0;
         hashesCount = 0;
         emptyResponsesCount = 0;
+        emptyHashesGotAt = 0;
     }
 
     public void addBlocks(long cnt) {
@@ -54,5 +58,17 @@ public class SyncStatistics {
 
     public int getEmptyResponsesCount() {
         return emptyResponsesCount;
+    }
+
+    public void setEmptyHashesGot() {
+        emptyHashesGotAt = System.currentTimeMillis();
+    }
+
+    public boolean isEmptyHashesGotTimeout() {
+        return System.currentTimeMillis() - emptyHashesGotAt >= EMPTY_HASHES_GOT_TIMEOUT;
+    }
+
+    public long secondsSinceLastEmptyHashes() {
+        return (System.currentTimeMillis() - emptyHashesGotAt) / 1000;
     }
 }
