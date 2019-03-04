@@ -41,7 +41,7 @@ public class NodeManager implements Functional.Consumer<DiscoveryEvent>{
     private static NodeStatistics DUMMY_STAT = new NodeStatistics(new Node(new byte[0], "dummy.node", 0));
     private boolean PERSIST;
 
-    private static final long LISTENER_REFRESH_RATE = 1000;
+    private static final long LISTENER_REFRESH_RATE = 3000;
     private static final long DB_COMMIT_RATE = 1 * 60 * 1000;
     private static final int DB_MAX_LOAD_NODES = 100;
     static final int MAX_NODES = 2000;
