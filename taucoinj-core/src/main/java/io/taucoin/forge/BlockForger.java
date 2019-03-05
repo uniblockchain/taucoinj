@@ -165,13 +165,21 @@ public class BlockForger {
         bestBlock = blockchain.getBestBlock();
         baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(bestBlock, blockStore);
         BigInteger forgingPower = repository.getforgePower(config.getForgerCoinbase());
+        BigInteger balance = repository.getBalance(config.getForgerCoinbase());
+
         if (forgingPower.longValue() < 0) {
             logger.error("Forging Power < 0!!!");
             return false;
         }
 
-        logger.info("base target {}, forging power {}", baseTarget, forgingPower);
+        long hisAverageFee = bestBlock.getCumulativeFee().longValue()/(bestBlock.getNumber()+1);
+        logger.info("balance: {} history average fee: {}",balance,hisAverageFee);
+        if (balance.longValue() < hisAverageFee){
+            logger.error("balance less than history average fee");
+            return false;
+        }
 
+        logger.info("base target {}, forging power {}", baseTarget, forgingPower);
         generationSignature = ProofOfTransaction.
                 calculateNextBlockGenerationSignature(bestBlock.getGenerationSignature(), config.getForgerPubkey());
         logger.info("generationSignature {}", new BigInteger(generationSignature));
@@ -241,7 +249,7 @@ public class BlockForger {
         miningBlock = null;
 
         // broadcast the block
-        logger.debug("Importing newly mined block " + newBlock.getShortHash() + " ...");
+        logger.debug("Importing newly mined block:{} fee is: {}",newBlock.getShortHash(),newBlock.getCumulativeFee());
         ImportResult importResult =  taucoin.addNewMinedBlock(newBlock);
         logger.debug("Mined block import result is " + importResult + " : " + newBlock.getShortHash());
     }
