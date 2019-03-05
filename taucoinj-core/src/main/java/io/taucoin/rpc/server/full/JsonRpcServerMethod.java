@@ -203,6 +203,9 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("totalDifficulty", "0x" + block.getCumulativeDifficulty().toString(16));
 
+        res.put("historyTotalFee", "0x" + block.getCumulativeFee().toString(16));
+
+        res.put("historyAverageFee","0x" + (block.getCumulativeFee().divide(BigInteger.valueOf(block.getNumber()))).toString(16));
         // No way to get size of block in bytes, so I try calculate it using formula from  getEncoded
         byte[] header = block.getHeader().getEncoded();
         byte[] transactions = RLP.encodeList();
