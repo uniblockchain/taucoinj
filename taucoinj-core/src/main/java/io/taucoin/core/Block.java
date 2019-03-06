@@ -293,6 +293,7 @@ public class Block {
         return this.cumulativeDifficulty;
     }
     public BigInteger getCumulativeFee() {
+        if (!parsed) parseRLP();
         return cumulativeFee;
     }
 
