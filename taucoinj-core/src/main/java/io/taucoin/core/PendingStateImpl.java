@@ -1,6 +1,6 @@
 package io.taucoin.core;
 
-import io.taucoin.listener.TaucoinListener;
+//import io.taucoin.listener.TaucoinListener;
 import io.taucoin.util.FastByteComparisons;
 import io.taucoin.util.ByteUtil;
 import org.slf4j.Logger;
@@ -8,9 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import javax.annotation.Resource;
-
-import javax.inject.Singleton;
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ import io.taucoin.db.ByteArrayWrapper;
  * @author Mikhail Kalinin
  * @since 28.09.2015
  */
-@Singleton
+@Component
 public class PendingStateImpl implements PendingState {
 
     /*
@@ -51,11 +50,10 @@ public class PendingStateImpl implements PendingState {
     */
     private static final Logger logger = LoggerFactory.getLogger("state");
 
-    private TaucoinListener listener;
     private Repository repository;
     private Blockchain blockchain;
 
-    @Resource
+    //@Resource
     private final List<Transaction> wireTransactions = new ArrayList<>();
 
     // To filter out the transactions we have already processed
@@ -64,7 +62,7 @@ public class PendingStateImpl implements PendingState {
 
     private final Map<String, BigInteger> expendList = new HashMap<String, BigInteger>(500000);
 
-    @Resource
+    //@Resource
     private final List<Transaction> pendingStateTransactions = new ArrayList<>();
 
     private Repository pendingState;
@@ -74,9 +72,8 @@ public class PendingStateImpl implements PendingState {
     public PendingStateImpl() {
     }
 
-    @Inject
-    public PendingStateImpl(TaucoinListener listener, Repository repository) {
-        this.listener = listener;
+    @Autowired
+    public PendingStateImpl(Repository repository) {
         this.repository = repository;
     }
 
@@ -166,14 +163,12 @@ public class PendingStateImpl implements PendingState {
         if(!tx.verify()) {
             if (logger.isWarnEnabled())
                 logger.warn("Invalid transaction in structure");
-            tx.TRANSACTION_STATUS = "Invalid transaction in structure";
 			return false;
         }
 
         if(!tx.checkTime()) {
             if (logger.isWarnEnabled())
                 logger.warn("Invalid transaction in time");
-            tx.TRANSACTION_STATUS = "Invalid transaction in time";
 			return false;
         }
         
@@ -199,7 +194,6 @@ public class PendingStateImpl implements PendingState {
             if (!isCovers(senderBalance, expendList.get(senderTmp))) {
                 if (logger.isWarnEnabled())
                     logger.warn("No enough balance: Require: {}, Sender's balance: {}", expendList.get(senderTmp), senderBalance);
-                tx.TRANSACTION_STATUS = "sorry,No enough balance";
                 return false;
             }
         }
@@ -210,7 +204,6 @@ public class PendingStateImpl implements PendingState {
                 redceivedTxs.put(hash, null);
                 return true;
             } else {
-                tx.TRANSACTION_STATUS = "repeated transaction,can't be accepted";
                 return false;
             }
         }
