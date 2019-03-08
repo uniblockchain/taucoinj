@@ -40,7 +40,7 @@ public class tau_getAccountDetails extends JsonRpcServerMethod {
 
         if(repo.isExist(address)){
 
-            result.add("address: "+ Hex.toHexString(address));
+            result.add("address: "+ (String)params.get(0));
             result.add("balance: "+repo.getBalance(address).toString());
             result.add("forgepower: "+repo.getforgePower(address).toString());
 
