@@ -8,7 +8,9 @@ import io.taucoin.util.RLPList;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.taucoin.util.ByteUtil.EMPTY_BYTE_ARRAY;
 import static io.taucoin.util.TimeUtils.secondsToMillis;
+
 
 /**
  * <p> Wraps {@link Block} </p>
@@ -27,15 +29,17 @@ public class BlockWrapper {
     private long receivedAt = 0;
     private boolean newBlock;
     private byte[] nodeId;
+    private String remoteAddress;
 
-    public BlockWrapper(Block block, byte[] nodeId) {
-        this(block, false, nodeId);
+    public BlockWrapper(Block block, byte[] nodeId, String remoteAddress) {
+        this(block, false, nodeId, remoteAddress);
     }
 
-    public BlockWrapper(Block block, boolean newBlock, byte[] nodeId) {
+    public BlockWrapper(Block block, boolean newBlock, byte[] nodeId, String remoteAddress) {
         this.block = block;
         this.newBlock = newBlock;
         this.nodeId = nodeId;
+        this.remoteAddress = remoteAddress;
     }
 
     public BlockWrapper(byte[] bytes) {
@@ -94,6 +98,10 @@ public class BlockWrapper {
         return nodeId;
     }
 
+    public String getRemoteAddress() {
+        return remoteAddress;
+    }
+
     public void importFailed() {
         if (importFailedAt == 0) {
             importFailedAt = System.currentTimeMillis();
@@ -122,8 +130,10 @@ public class BlockWrapper {
         byte[] receivedAtBytes = RLP.encodeBigInteger(BigInteger.valueOf(receivedAt));
         byte[] newBlockBytes = RLP.encodeByte((byte) (newBlock ? 1 : 0));
         byte[] nodeIdBytes = RLP.encodeElement(nodeId);
+        byte[] remoteAddressBytes = RLP.encodeString(remoteAddress);
         return RLP.encodeList(blockBytes, importFailedBytes,
-                receivedAtBytes, newBlockBytes, nodeIdBytes);
+                receivedAtBytes, newBlockBytes, nodeIdBytes,
+                remoteAddressBytes);
     }
 
     private void parse(byte[] bytes) {
@@ -141,6 +151,8 @@ public class BlockWrapper {
         byte newBlock = newBlockBytes == null ? 0 : new BigInteger(1, newBlockBytes).byteValue();
         this.newBlock = newBlock == 1;
         this.nodeId = wrapper.get(4).getRLPData();
+        byte[] remoteAddressBytes = wrapper.get(5) != null ? wrapper.get(5).getRLPData() : null;
+        this.remoteAddress = new String(remoteAddressBytes != null ? remoteAddressBytes : EMPTY_BYTE_ARRAY);
     }
 
     @Override

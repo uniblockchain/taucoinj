@@ -228,11 +228,11 @@ public abstract class TauLegacy extends TauHandler {
                 if (block.getNumber() < newBlockLowerNumber) {
                     regularBlocks.add(block);
                 } else {
-                    queue.addNew(block, channel.getNodeId());
+                    queue.addNew(block, channel.getNodeId(), channel.getInetSocketAddress().toString());
                 }
             }
 
-            queue.addAndValidate(regularBlocks, channel.getNodeId());
+            queue.addAndValidate(regularBlocks, channel.getNodeId(), channel.getInetSocketAddress().toString());
             queue.logHashesSize();
         } else {
             changeState(BLOCKS_LACK);

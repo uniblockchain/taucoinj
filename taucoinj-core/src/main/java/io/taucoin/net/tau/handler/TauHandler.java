@@ -317,7 +317,7 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
         // adding block to the queue
         // there will be decided how to
         // connect it to the chain
-        queue.addNew(newBlock, channel.getNodeId());
+        queue.addNew(newBlock, channel.getNodeId(), channel.getInetSocketAddress().toString());
 
 //        if (newBlockLowerNumber == Long.MAX_VALUE) {
 //            newBlockLowerNumber = newBlock.getNumber();

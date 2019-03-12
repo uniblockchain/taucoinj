@@ -256,11 +256,11 @@ public class Tau62 extends TauHandler {
                 if (block.getNumber() < newBlockLowerNumber) {
                     regularBlocks.add(block);
                 } else {
-                    queue.addNew(block, channel.getNodeId());
+                    queue.addNew(block, channel.getNodeId(), channel.getInetSocketAddress().toString());
                 }
             }
 
-            queue.addList(regularBlocks, channel.getNodeId());
+            queue.addList(regularBlocks, channel.getNodeId(), channel.getInetSocketAddress().toString());
             queue.logHeadersSize();
         } else {
             changeState(BLOCKS_LACK);

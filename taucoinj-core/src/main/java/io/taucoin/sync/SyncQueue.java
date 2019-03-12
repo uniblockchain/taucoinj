@@ -173,7 +173,7 @@ public class SyncQueue {
      * @param blocks the blocks received from a peer to be added to the queue
      * @param nodeId of the remote peer which these blocks are received from
      */
-    public void addAndValidate(List<Block> blocks, byte[] nodeId) {
+    public void addAndValidate(List<Block> blocks, byte[] nodeId, String remoteAddress) {
 
         // run basic checks
         for (Block b : blocks) {
@@ -188,7 +188,7 @@ public class SyncQueue {
             }
         }
 
-        addList(blocks, nodeId);
+        addList(blocks, nodeId, remoteAddress);
     }
 
     /**
@@ -197,7 +197,7 @@ public class SyncQueue {
      * @param blocks block list received from remote peer and be added to the queue
      * @param nodeId nodeId of remote peer which these blocks are received from
      */
-    public void addList(List<Block> blocks, byte[] nodeId) {
+    public void addList(List<Block> blocks, byte[] nodeId, String remoteAddress) {
 
         if (blocks.isEmpty()) {
             return;
@@ -205,7 +205,7 @@ public class SyncQueue {
 
         List<BlockWrapper> wrappers = new ArrayList<>(blocks.size());
         for (Block b : blocks) {
-            wrappers.add(new BlockWrapper(b, nodeId));
+            wrappers.add(new BlockWrapper(b, nodeId, remoteAddress));
         }
 
         blockQueue.addAll(wrappers);
@@ -223,7 +223,7 @@ public class SyncQueue {
      * @param block new block
      * @param nodeId nodeId of the remote peer which this block is received from
      */
-    public void addNew(Block block, byte[] nodeId) {
+    public void addNew(Block block, byte[] nodeId, String remoteAddress) {
 
         // run basic checks
         if (!isValid(block.getHeader())) {
@@ -231,7 +231,7 @@ public class SyncQueue {
             return;
         }
 
-        BlockWrapper wrapper = new BlockWrapper(block, true, nodeId);
+        BlockWrapper wrapper = new BlockWrapper(block, true, nodeId, remoteAddress);
         wrapper.setReceivedAt(System.currentTimeMillis());
 
         blockQueue.addOrReplace(wrapper);

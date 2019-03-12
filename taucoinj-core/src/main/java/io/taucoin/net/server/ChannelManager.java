@@ -9,12 +9,15 @@ import io.taucoin.core.BlockWrapper;
 import io.taucoin.core.Transaction;
 import io.taucoin.core.PendingState;
 import io.taucoin.db.ByteArrayWrapper;
-
 import io.taucoin.net.message.ReasonCode;
 import io.taucoin.sync.SyncManager;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.spongycastle.util.encoders.Hex;
@@ -42,9 +45,14 @@ public class ChannelManager {
     // too active peers
     private static final int inboundConnectionBanTimeout = 10 * 1000;
 
+    // Allow peers with the same node id connecting one node.
+    private static final int SAME_NODEID_MAX_CONNECTIONS = 16;
+
     private List<Channel> newPeers = new CopyOnWriteArrayList<>();
-    private final Map<ByteArrayWrapper, Channel> newPeersMap = Collections.synchronizedMap(new HashMap<ByteArrayWrapper, Channel>());
-    private final Map<ByteArrayWrapper, Channel> activePeers = Collections.synchronizedMap(new HashMap<ByteArrayWrapper, Channel>());
+    private final SetMultimap<ByteArrayWrapper, Channel> newPeersMap =
+            Multimaps.synchronizedSetMultimap(HashMultimap.<ByteArrayWrapper, Channel>create());
+    private final SetMultimap<ByteArrayWrapper, Channel> activePeers =
+            Multimaps.synchronizedSetMultimap(HashMultimap.<ByteArrayWrapper, Channel>create());
 
     private ScheduledExecutorService mainWorker = Executors.newSingleThreadScheduledExecutor();
     private int maxActivePeers;
@@ -130,7 +138,25 @@ public class ChannelManager {
                         addCnt++;
                     }
                 } else {
-                    disconnect(peer, DUPLICATE_PEER);
+                    if (!peer.isActive() &&
+                        activePeers.size() >= maxActivePeers &&
+                        !trustedPeers.accept(peer.getNode())) {
+
+                        // restricting inbound connections unless this is a trusted peer
+
+                        disconnect(peer, TOO_MANY_PEERS);
+                    } else {
+                        // Allow duplicate peers with the same nodeId with
+                        // the max account of SAME_NODEID_MAX_CONNECTIONS.
+                        Set<Channel> peerSet = activePeers.get(peer.getNodeIdWrapper());
+                        if (peerSet.size() < SAME_NODEID_MAX_CONNECTIONS) {
+                            process(peer);
+                            addCnt++;
+                            logger.info("Duplidate peer connected {} {}", peerSet.size(), peer.toString());
+                        } else {
+                            disconnect(peer, DUPLICATE_PEER);
+                        }
+                    }
                 }
 
                 processed.add(peer);
@@ -175,8 +201,19 @@ public class ChannelManager {
         }
     }
 
-    public Channel getActivePeer(byte[] nodeId) {
-        return activePeers.get(new ByteArrayWrapper(nodeId));
+    private Channel getActivePeer(byte[] nodeId, String remoteAddress) {
+        Set<Channel> peerSet = activePeers.get(new ByteArrayWrapper(nodeId));
+        if (peerSet == null || peerSet.size() == 0) {
+            return null;
+        }
+
+        for (Channel peer : peerSet) {
+            if (remoteAddress.equals(peer.getInetSocketAddress().toString())) {
+                return peer;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -248,7 +285,7 @@ public class ChannelManager {
             BlockWrapper wrapper = null;
             try {
                 wrapper = newForeignBlocks.take();
-                Channel receivedFrom = getActivePeer(wrapper.getNodeId());
+                Channel receivedFrom = getActivePeer(wrapper.getNodeId(), wrapper.getRemoteAddress());
                 sendNewBlock(wrapper.getBlock(), receivedFrom);
             } catch (InterruptedException e) {
                 break;
