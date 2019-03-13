@@ -6,6 +6,7 @@ import io.taucoin.core.BlockHeader;
 import io.taucoin.core.BlockIdentifier;
 import io.taucoin.core.BlockWrapper;
 import io.taucoin.net.tau.message.*;
+import io.taucoin.sync.SyncQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -159,6 +160,8 @@ public class Tau62 extends TauHandler {
             changeState(DONE_HASH_RETRIEVING);
             syncStats.setEmptyHashesGot();
         } else {
+            // Anyway, firstly fillup block headers number.
+            SyncQueue.fillupHeadersNumber(received, msg.getStartNumber(), msg.getLastNumber());
             syncStats.setHashesGot();
             syncStats.addHashes(received.size());
 
