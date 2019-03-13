@@ -1,39 +1,21 @@
 package io.taucoin.db;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.taucoin.core.AccountState;
-import io.taucoin.core.Block;
 import io.taucoin.core.Repository;
 import io.taucoin.datasource.KeyValueDataSource;
-import io.taucoin.json.EtherObjectMapper;
-import io.taucoin.json.JSONHelper;
-import io.taucoin.trie.SecureTrie;
-import io.taucoin.trie.Trie;
-import io.taucoin.trie.TrieImpl;
 import io.taucoin.util.Functional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
-import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.Thread.sleep;
-import static io.taucoin.config.SystemProperties.CONFIG;
-import static io.taucoin.crypto.HashUtil.EMPTY_DATA_HASH;
-import static io.taucoin.crypto.HashUtil.EMPTY_TRIE_HASH;
 import static io.taucoin.crypto.SHA3Helper.sha3;
-import static io.taucoin.util.ByteUtil.EMPTY_BYTE_ARRAY;
 import static io.taucoin.util.ByteUtil.wrap;
 
 /**
@@ -49,40 +31,20 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
     private static final Logger logger = LoggerFactory.getLogger("repository");
     private static final Logger gLogger = LoggerFactory.getLogger("general");
 
-    private Trie worldState;
-
-    private DatabaseImpl stateDB = null;
-
-    private KeyValueDataSource stateDS = null;
+    private KeyValueDataSource stateDB = null;
 
     private final ReentrantLock lock = new ReentrantLock();
     private final AtomicInteger accessCounter = new AtomicInteger();
 
-    private boolean isSnapshot = false;
-
     public RepositoryImpl() {
-
-    }
-
-    public RepositoryImpl(boolean createDb) {
     }
 
     public RepositoryImpl(KeyValueDataSource stateDS) {
 
         stateDS.setName(STATE_DB);
         stateDS.init();
-        this.stateDS = stateDS;
-
-        stateDB = new DatabaseImpl(stateDS);
-        worldState = new SecureTrie(stateDB.getDb());
+        this.stateDB = stateDS;
     }
-
-    public RepositoryImpl(String stateDbName) {
-
-        stateDB = new DatabaseImpl(stateDbName);
-        worldState = new SecureTrie(stateDB.getDb());
-    }
-
 
     @Override
     public void reset() {
@@ -91,9 +53,7 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
             public void invoke() {
                 close();
 
-                stateDS.init();
-                stateDB = new DatabaseImpl(stateDS);
-                worldState = new SecureTrie(stateDB.getDb());
+                stateDB.init();
             }
         });
     }
@@ -106,7 +66,6 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
 
                 if (stateDB != null) {
                     stateDB.close();
-                    stateDB = null;
                 }
             }
         });
@@ -114,7 +73,7 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
 
     @Override
     public boolean isClosed() {
-        return stateDB == null;
+        return stateDB.isAlive();
     }
 
     @Override
@@ -150,28 +109,11 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
     }
 
     @Override
-    public void flushNoReconnect() {
-        doWithLockedAccess(new Functional.InvokeWrapper() {
-            @Override
-            public void invoke() {
-                gLogger.info("flushing to disk");
-                worldState.sync();
-            }
-        });
-    }
-
-
-    @Override
     public void flush() {
         doWithLockedAccess(new Functional.InvokeWrapper() {
             @Override
             public void invoke() {
                 gLogger.info("flushing to disk");
-                worldState.sync();
-
-                byte[] root = worldState.getRootHash();
-                reset();
-                worldState.setRoot(root);
             }
         });
     }
@@ -187,145 +129,8 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
     }
 
     @Override
-    public void syncToRoot(final byte[] root) {
-        doWithAccessCounting(new Functional.InvokeWrapper() {
-            @Override
-            public void invoke() {
-                worldState.setRoot(root);
-            }
-        });
-    }
-
-    @Override
     public Repository startTracking() {
         return new RepositoryTrack(this);
-    }
-
-    @Override
-    public void dumpState(Block block, long trFee, int txNumber, byte[] txHash) {
-        dumpTrie(block);
-        //TODO: getNumber() needed
-        if (!(CONFIG.dumpFull() ||CONFIG.dumpBlock() == block.getNumber() ))
-            return;
-
-        // todo: dump block header and the relevant tx
-
-        if (block.getNumber()==0 && txNumber == 0)
-            if (CONFIG.dumpCleanOnRestart()) {
-                try{
-                	FileUtils.forceDelete(new File(CONFIG.dumpDir()));
-                }catch(IOException e){
-                	logger.error(e.getMessage(), e);
-                }
-            }
-
-        String dir = CONFIG.dumpDir() + "/";
-
-        String fileName = "";
-        if (txHash != null)
-            // here block height is needed
-            fileName = String.format("%07d_%d_%s.dmp",block.getNumber(), txNumber,
-                    Hex.toHexString(txHash).substring(0, 8));
-        else {
-            fileName = String.format("%07d_c.dmp", block.getNumber());
-        }
-
-        File dumpFile = new File(System.getProperty("user.dir") + "/" + dir + fileName);
-        FileWriter fw = null;
-        BufferedWriter bw = null;
-        try {
-
-            dumpFile.getParentFile().mkdirs();
-            dumpFile.createNewFile();
-
-            fw = new FileWriter(dumpFile.getAbsoluteFile());
-            bw = new BufferedWriter(fw);
-
-            //List<ByteArrayWrapper> keys = this.detailsDB.dumpKeys();
-
-            JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
-            ObjectNode blockNode = jsonFactory.objectNode();
-            //todo: if no contrast
-            //JSONHelper.dumpBlock(blockNode, block, trFee,
-            //        this.getRoot(),
-            //        keys, this);
-
-            EtherObjectMapper mapper = new EtherObjectMapper();
-            bw.write(mapper.writeValueAsString(blockNode));
-
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (bw != null) bw.close();
-                if (fw != null) fw.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public String getTrieDump() {
-        return doWithAccessCounting(new Functional.InvokeWrapperWithResult<String>() {
-            @Override
-            public String invoke() {
-                return worldState.getTrieDump();
-            }
-        });
-    }
-
-    public void dumpTrie(Block block) {
-        //todo: same as 206
-        if (!(CONFIG.dumpFull() || CONFIG.dumpBlock() == block.getNumber()))
-            return;
-
-        String fileName = String.format("%07d_trie.dmp",/*block.getNumber()*/0);
-        String dir = CONFIG.dumpDir() + "/";
-        File dumpFile = new File(System.getProperty("user.dir") + "/" + dir + fileName);
-        FileWriter fw = null;
-        BufferedWriter bw = null;
-
-        String dump = getTrieDump();
-
-        try {
-
-            dumpFile.getParentFile().mkdirs();
-            dumpFile.createNewFile();
-
-            fw = new FileWriter(dumpFile.getAbsoluteFile());
-            bw = new BufferedWriter(fw);
-
-            bw.write(dump);
-
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (bw != null) bw.close();
-                if (fw != null) fw.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    @Override
-    public Set<byte[]> getAccountsKeys() {
-        return doWithAccessCounting(new Functional.InvokeWrapperWithResult<Set<byte[]>>() {
-            @Override
-            public Set<byte[]> invoke() {
-                Set<byte[]> result = new HashSet<>();
-                //todo: here needless cache
-                for (ByteArrayWrapper key : stateDB.dumpKeys()) {
-                    if(isExist(key.getData())){
-                        result.add(key.getData());
-                    }
-                }
-
-                return result;
-            }
-        });
     }
 
     @Override
@@ -334,6 +139,17 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
         AccountState account = getAccountStateOrCreateNew(addr);
 
         BigInteger result = account.addToBalance(value);
+        updateAccountState(addr, account);
+
+        return result;
+    }
+
+    @Override
+    public BigInteger subBalance(byte[] addr, BigInteger value) {
+
+        AccountState account = getAccountStateOrCreateNew(addr);
+
+        BigInteger result = account.subFromBalance(value);
         updateAccountState(addr, account);
 
         return result;
@@ -366,11 +182,21 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
         return account.getforgePower();
     }
 
+    @Override
+    public BigInteger reduceForgePower(byte[] addr) {
+        AccountState account = getAccountStateOrCreateNew(addr);
+
+        account.reduceForgePower();
+        updateAccountState(addr, account);
+
+        return account.getforgePower();
+    }
+
     private void updateAccountState(final byte[] addr, final AccountState accountState) {
         doWithAccessCounting(new Functional.InvokeWrapper() {
             @Override
             public void invoke() {
-                worldState.update(addr, accountState.getEncoded());
+                stateDB.put(addr, accountState.getEncoded());
             }
         });
     }
@@ -389,8 +215,7 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
         doWithAccessCounting(new Functional.InvokeWrapper() {
             @Override
             public void invoke() {
-                worldState.delete(addr);
-//                dds.remove(addr);
+                stateDB.delete(addr);
             }
         });
     }
@@ -401,9 +226,9 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
             @Override
             public AccountState invoke() {
                 AccountState result = null;
-                byte[] accountData = worldState.get(addr);
+                byte[] accountData = stateDB.get(addr);
 
-                if (accountData.length != 0)
+                if (accountData != null)
                     result = new AccountState(accountData);
 
                 return result;
@@ -435,11 +260,6 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
 
         ByteArrayWrapper wrappedAddress = wrap(addr);
         cacheAccounts.put(wrappedAddress, account);
-    }
-
-    @Override
-    public byte[] getRoot() {
-        return worldState.getRootHash();
     }
 
     private void doWithLockedAccess(Functional.InvokeWrapper wrapper) {
@@ -491,21 +311,4 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
         });
     }
 
-
-    @Override
-    public Repository getSnapshotTo(byte[] root){
-
-        TrieImpl trie = new SecureTrie(stateDS);
-        trie.setRoot(root);
-        trie.setCache(((TrieImpl)(worldState)).getCache());
-
-        RepositoryImpl repo = new RepositoryImpl();
-        repo.worldState = trie;
-        repo.stateDB = this.stateDB;
-        repo.stateDS = this.stateDS;
-
-        repo.isSnapshot = true;
-
-        return repo;
-    }
 }

@@ -168,14 +168,11 @@ public class WorldManager {
             Object object= blockStore.getClass();
             logger.info("blockStore class : {}",((Class) object).getName());
 
-            // Before store genesis block, setting genesis's state root.
-            genesis.setStateRoot(repository.getRoot());
             blockStore.saveBlock(Genesis.getInstance(config), Genesis.getInstance(config).getCumulativeDifficulty(), true);
             blockchain.setBestBlock(Genesis.getInstance(config));
             blockchain.setTotalDifficulty(Genesis.getInstance(config).getCumulativeDifficulty());
 
             listener.onBlock(Genesis.getInstance(config));
-            repository.dumpState(Genesis.getInstance(config), 0, 0, null);
 
             logger.info("Genesis block loaded");
         } else {
@@ -189,25 +186,6 @@ public class WorldManager {
                     blockchain.getBestBlock().getNumber(),
                     blockchain.getTotalDifficulty().toString(),
                     Hex.toHexString(blockchain.getBestBlock().getHash()));
-        }
-
-        if (config.rootHashStart() != null) {
-
-            // update world state by dummy hash
-            byte[] rootHash = Hex.decode(config.rootHashStart());
-            logger.info("Loading root hash from property file: [{}]", config.rootHashStart());
-            this.repository.syncToRoot(rootHash);
-
-        } else {
-
-            // Update world state to latest loaded block from db
-            // if state is not generated from empty premine list
-            // to word state we should be watch out...
-            // todo this is just a workaround, move EMPTY_TRIE_HASH logic to Trie implementation
-            if (!Arrays.equals(blockchain.getBestBlock().getHash(), EMPTY_TRIE_HASH)) {
-                this.repository.syncToRoot(blockchain.getBestBlock().getStateRoot());
-                this.repository.flushNoReconnect();
-            }
         }
 
 /* todo: return it when there is no state conflicts on the chain

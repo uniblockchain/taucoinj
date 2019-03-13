@@ -63,10 +63,6 @@ public class GenesisLoader {
             Map<ByteArrayWrapper, AccountState> premine = generatePreMine(genesisJson.getAlloc());
             genesis.setPremine(premine);
 
-            byte[] rootHash = generateRootHash(premine);
-            //genesis.setStateRoot(rootHash);
-
-
             return genesis;
         } catch (Throwable e) {
             System.err.println("Genesis block configuration is corrupted or not found ./resources/genesis/...");
@@ -120,17 +116,6 @@ public class GenesisLoader {
         }
 
         return premine;
-    }
-
-    private static byte[] generateRootHash(Map<ByteArrayWrapper, AccountState> premine){
-
-        Trie state = new SecureTrie(null);
-
-        for (ByteArrayWrapper key : premine.keySet()) {
-            state.update(key.getData(), premine.get(key).getEncoded());
-        }
-
-        return state.getRootHash();
     }
 
 }

@@ -38,10 +38,11 @@ public interface BlockStore {
 
     long getMaxNumber();
 
-
     void flush();
 
-    void reBranch(Block forkBlock);
+    void getForkBlocksInfo(Block forkBlock, List<Block> undoBlocks, List<Block> newBlocks);
+
+    void reBranchBlocks(List<Block> undoBlocks, List<Block> newBlocks);
 
     void load();
     void setSessionFactory(SessionFactory sessionFactory);

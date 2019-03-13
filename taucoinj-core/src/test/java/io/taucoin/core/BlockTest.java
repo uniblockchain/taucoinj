@@ -1,7 +1,6 @@
 package io.taucoin.core;
 
 import io.taucoin.core.genesis.GenesisLoader;
-import io.taucoin.trie.SecureTrie;
 import io.taucoin.trie.Trie;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -62,7 +61,6 @@ public class BlockTest {
         Block genesis = GenesisLoader.loadGenesis(getClass().getResourceAsStream("/genesis/olympic.json"));
         assertEquals(Hex.toHexString(genesis.getHash()),   Hex.toHexString(genesisFromRLP.getHash()));
         //assertEquals(Hex.toHexString(genesis.getParentHash()), Hex.toHexString(genesisFromRLP.getParentHash()));
-        assertEquals(Hex.toHexString(genesis.getStateRoot()), Hex.toHexString(genesisFromRLP.getStateRoot()));
     }
 
     @Test
@@ -84,51 +82,5 @@ public class BlockTest {
         Collection<AccountState> accounts = genesis.getPremine().values();
         assertTrue(accounts.size() == 12);
     }
-
-
-    @Test
-    public void testPremineFromJSON() throws ParseException {
-
-        JSONParser parser = new JSONParser();
-        JSONObject genesisMap = (JSONObject) parser.parse(TEST_GENESIS);
-
-        Set keys = genesisMap.keySet();
-
-        Trie state = new SecureTrie(null);
-
-        for (Object key : keys) {
-
-            JSONObject val = (JSONObject) genesisMap.get(key);
-            String denom = (String) val.keySet().toArray()[0];
-            String value = (String) val.values().toArray()[0];
-
-            BigInteger wei = Denomination.valueOf(denom.toUpperCase()).value().multiply(new BigInteger(value));
-
-            AccountState acctState = new AccountState(BigInteger.ZERO, wei);
-            state.update(Hex.decode(key.toString()), acctState.getEncoded());
-        }
-
-        logger.info("root: " + Hex.toHexString(state.getRootHash()));
-        assertEquals(GENESIS_STATE_ROOT, Hex.toHexString(state.getRootHash()));
-    }
-
-
-    @Test
-    public void testFrontierGenesis(){
-
-        String prev = CONFIG.genesisInfo();
-        CONFIG.setGenesisInfo("frontier.json");
-
-        Block genesis = GenesisLoader.loadGenesis();
-
-        String hash = Hex.toHexString(genesis.getHash());
-        String root = Hex.toHexString(genesis.getStateRoot());
-
-        assertEquals("d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544", root);
-        assertEquals("d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3", hash);
-
-        CONFIG.setGenesisInfo(prev);
-    }
-
 
 }

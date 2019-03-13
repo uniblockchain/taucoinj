@@ -3,18 +3,11 @@ package io.taucoin.core;
 import io.taucoin.config.Constants;
 import io.taucoin.config.SystemProperties;
 import io.taucoin.crypto.ECKey;
-import io.taucoin.crypto.HashUtil;
-import io.taucoin.crypto.SHA3Helper;
 import io.taucoin.db.BlockStore;
-import io.taucoin.db.ByteArrayWrapper;
-import io.taucoin.facade.Taucoin;
 import io.taucoin.listener.EthereumListener;
 import io.taucoin.manager.AdminInfo;
-import io.taucoin.trie.Trie;
-import io.taucoin.trie.TrieImpl;
 import io.taucoin.util.AdvancedDeviceUtils;
 import io.taucoin.util.ByteUtil;
-import io.taucoin.util.RLP;
 import io.taucoin.validator.DependentBlockHeaderRule;
 import io.taucoin.validator.ParentBlockHeaderValidator;
 import org.slf4j.Logger;
@@ -28,13 +21,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Runtime.getRuntime;
-import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 import static java.util.Collections.emptyList;
 import static io.taucoin.core.ImportResult.*;
@@ -114,9 +105,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     public boolean byTest = false;
     private boolean fork = false;
-
-
-    private Stack<State> stateStack = new Stack<>();
 
     public BlockchainImpl() {
     }
@@ -206,74 +194,84 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return blockStore;
     }
 
-    private State pushState(byte[] bestBlockHash) {
-        State push = stateStack.push(new State());
-        this.bestBlock = blockStore.getBlockByHash(bestBlockHash);
-        totalDifficulty = blockStore.getTotalDifficultyForHash(bestBlockHash);
-        this.repository = this.repository.getSnapshotTo(this.bestBlock.getStateRoot());
-        return push;
-    }
-
-    private void popState() {
-        State state = stateStack.pop();
-        this.repository = state.savedRepo;
-        this.bestBlock = state.savedBest;
-        this.totalDifficulty = state.savedTD;
-    }
-
-    public void dropState() {
-        stateStack.pop();
-    }
-
     public synchronized ImportResult tryConnectAndFork(final Block block) {
-        State savedState = pushState(block.getPreviousHeaderHash());
-        this.fork = true;
+        if (isMoreThan(block.getCumulativeDifficulty(), this.totalDifficulty)) {
+            //cumulative difficulty is more than current chain
+            track = repository.startTracking();
+            //try to roll back and reconnect
+            List<Block> undoBlocks = new ArrayList<>();
+            List<Block> newBlocks = new ArrayList<>();
+            blockStore.getForkBlocksInfo(block, undoBlocks, newBlocks);
+            newBlocks.add(0, block);
 
-        try {
-
-            // FIXME: adding block with no option for flush
-            if (!add(block)) {
-                return INVALID_BLOCK;
+            for (Block undoBlock : undoBlocks) {
+                logger.info("Try to disconnect block, block number: {}, hash: {}",
+                        undoBlock.getNumber(), Hex.toHexString(undoBlock.getHash()));
+                ECKey key = ECKey.fromPublicOnly(undoBlock.getGeneratorPublicKey());
+                for (Transaction tx : undoBlock.getTransactionsList()){
+                    //roll back
+                    TransactionExecutor executor = new TransactionExecutor(tx, track);
+                    executor.setCoinbase(key.getAddress());
+                    executor.undoTransaction();
+                }
             }
-        } catch (Throwable th) {
-            logger.error("Unexpected error: ", th);
-        } finally {
-            this.fork = false;
-        }
 
-        if (isMoreThan(this.totalDifficulty, savedState.savedTD)) {
+            boolean isValid = true;
+            Repository cacheTrack;
+            for (int i = newBlocks.size() - 1; i >= 0; i--) {
+                cacheTrack = track.startTracking();
 
-            logger.info("Rebranching: {} ~> {}", savedState.savedBest.getShortHash(), block.getShortHash());
+                Block newBlock = newBlocks.get(i);
+                logger.info("Try to connect block, block number: {}, hash: {}",
+                        newBlock.getNumber(), Hex.toHexString(newBlock.getHash()));
 
-            // main branch become this branch
-            // cause we proved that total difficulty
-            // is greateer
-            blockStore.reBranch(block);
+                if (!isValid(newBlock, track)) {
+                    isValid = false;
+                    logger.info("Connect block fail! Cannot verify block, block number: {}, hash: {}",
+                            newBlock.getNumber(), Hex.toHexString(newBlock.getHash()));
+                    break;
+                }
 
-            // The main repository rebranch
-            this.repository = savedState.savedRepo;
-            this.repository.syncToRoot(block.getStateRoot());
+                if (newBlock.getNumber() >= config.traceStartBlock() && config.traceStartBlock() != -1) {
+                    AdvancedDeviceUtils.adjustDetailedTracing(newBlock.getNumber());
+                }
 
-            // flushing
-            if (!byTest) {
+                //TODO:check it again when repository commit and roll back; TransactionExecutor track cache
+                processBlock(newBlock);
+
+                cacheTrack.commit();
+            }
+
+            if (isValid) {
+                logger.info("Beginning to re-branch.");
+                track.commit();
+
+                blockStore.saveBlock(block, totalDifficulty, true);
+                setBestBlock(block);
+
+                blockStore.reBranchBlocks(undoBlocks, newBlocks);
+
+//              if (!byTest && needFlush(block)) {
                 repository.flush();
                 blockStore.flush();
                 System.gc();
+//              }
+
+                return IMPORTED_BEST;
+            } else {
+                track.rollback();
+
+                return INVALID_BLOCK;
             }
 
-            dropState();
-
-//            EDT.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    pendingState.processBest(block);
-//                }
-//            });
-//
-            return IMPORTED_BEST;
         } else {
-            // Stay on previous branch
-            popState();
+            //cumulative difficulty is less than current
+            //just verify block simply
+            if (!verifyBlockSimply(block)) {
+                return INVALID_BLOCK;
+            }
+
+            blockStore.saveBlock(block, totalDifficulty, false);
 
             return IMPORTED_NOT_BEST;
         }
@@ -282,11 +280,13 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     public synchronized ImportResult tryToConnect(final Block block) {
 
-        //wrap the block
         Block preBlock = blockStore.getBlockByHash(block.getPreviousHeaderHash());
-        if (preBlock == null)
+        if (preBlock == null) {
+            logger.error("Cannot find parent block! Block hash [{}], previous block hash [{}].",
+                    Hex.toHexString(block.getHash()), Hex.toHexString(block.getPreviousHeaderHash()));
             return NO_PARENT;
-
+        }
+        //wrap the block
         if (block.isMsg()) {
             block.setNumber(preBlock.getNumber() + 1);
 
@@ -399,15 +399,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         block.setCumulativeFee(curTotalfee);
         block.sign(config.getForgerPrikey());
 
-//        pushState(parent.getHash());
-//
-//        track = repository.startTracking();
-//        applyBlock(block);
-//        track.commit();
-//        block.setStateRoot(getRepository().getRoot());
-//
-//        popState();
-
         return block;
     }
 
@@ -421,8 +412,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             System.exit(-1);
         }
 
-
-        if (!isValid(block)) {
+        //TODO:check it again
+        if (!isValid(block, repository)) {
             logger.warn("Invalid block with number: {}", block.getNumber());
             return false;
         }
@@ -439,11 +430,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             AdvancedDeviceUtils.adjustDetailedTracing(block.getNumber());
         }
 
+        //TODO:check it again when repository commit and roll back; TransactionExecutor track cache
         processBlock(block);
 
         track.commit();
-        // Setting state root before storing block.
-        block.setStateRoot(repository.getRoot());
 
         storeBlock(block);
 
@@ -518,6 +508,32 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return option == (byte) 1;
     }
 
+    private boolean verifyBlockTime(Block block) {
+        long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
+
+        Block parentBlock = blockStore.getBlockByHash(block.getPreviousHeaderHash());
+        if (parentBlock == null) {
+            logger.error("Cannot find parent block!");
+            return false;
+        }
+        long parentBlockTime = ByteUtil.byteArrayToLong(parentBlock.getTimestamp());
+        if (blockTime  <= parentBlockTime) {
+            logger.error("Block time {} is less than parent block time {}",
+                    blockTime, parentBlockTime);
+            return false;
+        }
+
+
+        Long localTime = System.currentTimeMillis() / 1000;
+
+        if (blockTime - Constants.MAX_TIMEDRIFT > localTime) {
+            logger.error("Block time {} exceeds local time {} by {} seconds",
+                    blockTime, localTime, Constants.MAX_TIMEDRIFT);
+            return false;
+        }
+
+        return true;
+    }
     /**
      * verify block signature with public key and signature
      * @param block
@@ -565,7 +581,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
      * @param block
      * @return
      */
-    private boolean verifyProofOfTransaction(Block block) {
+    private boolean verifyProofOfTransaction(Block block, Repository repo) {
         if (block.getNumber() == 0 ) {
             byte[] genesisHash = Hex.decode(Constants.GENESIS_BLOCK_HASH);
             if (Arrays.equals(block.getHash(), genesisHash)) {
@@ -578,12 +594,13 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
         byte[] address = key.getAddress();
-        BigInteger forgingPower = repository.getforgePower(address);
+        BigInteger forgingPower = repo.getforgePower(address);
         logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
 
         long blockTime = ByteUtil.byteArrayToLong(block.getTimestamp());
         Block preBlock = blockStore.getBlockByHash(block.getPreviousHeaderHash());
         if (preBlock == null) {
+            logger.error("Previous block is null!");
             return false;
         }
         long preBlockTime = ByteUtil.byteArrayToLong(preBlock.getTimestamp());
@@ -596,7 +613,52 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         logger.info("verify block target value {}, hit {}", targetValue, hit);
 
         if (targetValue.compareTo(hit) < 0) {
+            logger.error("Target value is smaller than hit!");
             return false;
+        }
+
+        return true;
+    }
+
+    private boolean verifyBlockSimply(Block block) {
+        if (!verifyVersion(block.getVersion())) {
+            logger.error("Block version is invalid, block number {}, version {}",
+                    block.getNumber(), block.getVersion());
+            return false;
+        }
+
+        if (!verifyOption(block.getOption())) {
+            logger.error("Block version is invalid, block number {}, version {}",
+                    block.getNumber(), block.getOption());
+            return false;
+        }
+
+        if (!verifyBlockSignature(block)) {
+            logger.error("Block signature is invalid, block number {}", block.getNumber());
+            return false;
+        }
+
+        if (!verifyBlockTime(block)) {
+            logger.error("Verify Block time fail, block number {}", block.getNumber());
+            return false;
+        }
+
+        if (!isValid(block.getHeader())) {
+            return false;
+        }
+
+        List<Transaction> txs = block.getTransactionsList();
+        if (txs.size() > Constants.MAX_BLOCKTXSIZE) {
+            logger.error("Too many transactions, block number {}", block.getNumber());
+            return false;
+        }
+        if (!txs.isEmpty()) {
+            for (Transaction tx: txs) {
+                if (!verifyTransactionTime(tx, block)) {
+                    logger.error("Block contains expiration transaction, block number {}", block.getNumber());
+                    return false;
+                }
+            }
         }
 
         return true;
@@ -609,78 +671,39 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
      * likely next period. Conversely, if the period is too large, the difficulty,
      * and expected time to the next block, is reduced.
      */
-    private boolean isValid(Block block) {
+    private boolean isValid(Block block, Repository repo) {
 
         if (!block.isGenesis()) {
-            if (!verifyVersion(block.getVersion())) {
-                logger.error("Block version is invalid, block number {}, version {}",
-                        block.getNumber(), block.getVersion());
+            if (!verifyBlockSimply(block))
                 return false;
-            }
 
-            if (!verifyOption(block.getOption())) {
-                logger.error("Block version is invalid, block number {}, version {}",
-                        block.getNumber(), block.getOption());
-                return false;
-            }
-
-            if (!verifyBlockSignature(block)) {
-                logger.error("Block signature is invalid, block number {}", block.getNumber());
-                return false;
-            }
-
-            if (!verifyProofOfTransaction(block)) {
+            if (!verifyProofOfTransaction(block, repo)) {
                 logger.error("Verify ProofOfTransaction fail, block number {}", block.getNumber());
                 return false;
             }
-
-            if (!isValid(block.getHeader())) {
-                return false;
-            }
-
-            List<Transaction> txs = block.getTransactionsList();
-            if (txs.size() > Constants.MAX_BLOCKTXSIZE) {
-                logger.error("Too many transactions, block number {}", block.getNumber());
-                return false;
-            }
-            if (!txs.isEmpty()) {
-                for (Transaction tx: txs) {
-                    if (!verifyTransactionTime(tx, block)) {
-                        logger.error("Block contains expiration transaction, block number {}", block.getNumber());
-                        return false;
-                    }
-                }
-            }
-
         }
 
         return true;
     }
 
-    private List<Transaction> processBlock(Block block) {
+    private void processBlock(Block block) {
 
-        List<Transaction> receipts = new ArrayList<>();
         if (!block.isGenesis()) {
             if (!config.blockChainOnly()) {
 //                wallet.addTransactions(block.getTransactionsList());
-                receipts = applyBlock(block);
+                applyBlock(block);
 //                wallet.processBlock(block);
             }
         }
-
-        return receipts;
     }
 
-    private List<Transaction> applyBlock(Block block) {
+    private void applyBlock(Block block) {
 
         logger.info("applyBlock: block: [{}] tx.list: [{}]", block.getNumber(), block.getTransactionsList().size());
         long saveTime = System.nanoTime();
-        int i = 1;
-        long totalGasUsed = 0;
-        List<Transaction> receipts = new ArrayList<>();
 
         for (Transaction tx : block.getTransactionsList()) {
-            stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), i);
+            stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), tx.toString());
 
             TransactionExecutor executor = new TransactionExecutor(tx, track);
             ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
@@ -688,26 +711,16 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             executor.setCoinbase(key.getAddress());
             executor.executeFinal();
 
-            track.commit();
+//            track.commit();
         }
 
         updateTotalDifficulty(block);
 
-        track.commit();
-
-        stateLogger.info("applied reward for block: [{}]  \n  state: [{}]",
-                block.getNumber(),
-                Hex.toHexString(repository.getRoot()));
-
-
-        if (block.getNumber() >= config.traceStartBlock())
-            repository.dumpState(block, totalGasUsed, 0, null);
+//        track.commit();
 
         long totalTime = System.nanoTime() - saveTime;
         adminInfo.addBlockExecTime(totalTime);
         logger.info("block: num: [{}] hash: [{}], executed after: [{}]nano", block.getNumber(), block.getShortHash(), totalTime);
-
-        return receipts;
     }
 
     @Override
@@ -930,9 +943,4 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return bodies;
     }
 
-    private class State {
-        Repository savedRepo = repository;
-        Block savedBest = bestBlock;
-        BigInteger savedTD = totalDifficulty;
-    }
 }
