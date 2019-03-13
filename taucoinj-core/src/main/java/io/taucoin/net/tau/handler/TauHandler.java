@@ -262,9 +262,9 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
     }
 
     private void processTransactions(TransactionsMessage msg) {
-        if(!processTransactions) {
-            return;
-        }
+//        if(!processTransactions) {
+//            return;
+//        }
 
         List<Transaction> txList = msg.getTransactions();
         Set<Transaction>  txSet = new HashSet<Transaction>();
@@ -520,6 +520,7 @@ public abstract class TauHandler extends SimpleChannelInboundHandler<TauMessage>
     @Override
     public void onSyncDone() {
         syncDone = true;
+        pendingState.onSyncDone();
     }
 
     public StatusMessage getHandshakeStatusMessage() {

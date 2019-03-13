@@ -51,11 +51,11 @@ public class TransactionExecutor {
      * will be ready to run the transaction at the end
      * set readyToExecute = true
      */
-    public void init() {
+    public boolean init() {
 
         if (localCall) {
             readyToExecute = true;
-            return;
+            return true;
         }
 
 		// Check In Transaction Amount
@@ -67,7 +67,7 @@ public class TransactionExecutor {
             if (logger.isWarnEnabled())
                 logger.warn("Not enough gas for transaction execution: Require: {} Got: {}", basicTxFee);
             // TODO: save reason for failure
-            return;
+            return false;
         }
 
         BigInteger totalCost = toBI(tx.getAmount()).add(toBI(tx.transactionCost()));
@@ -79,10 +79,11 @@ public class TransactionExecutor {
                 logger.warn("No enough balance: Require: {}, Sender's balance: {}", totalCost, senderBalance);
 
             // TODO: save reason for failure
-            return;
+            return false;
         }
 
         readyToExecute = true;
+        return true;
     }
 
     /**

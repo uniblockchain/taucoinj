@@ -52,6 +52,7 @@ public class PendingStateImpl implements PendingState {
 
     private Repository repository;
     private Blockchain blockchain;
+    private boolean isSyncdone = false;
 
     //@Resource
     private final List<Transaction> wireTransactions = new ArrayList<>();
@@ -173,9 +174,7 @@ public class PendingStateImpl implements PendingState {
         }
         
         TransactionExecutor executor = new TransactionExecutor(tx, getRepository());
-        executor.init();
-
-        return true;
+        return executor.init();
     }
 
     private boolean addNewTxIfNotExist(Transaction tx) {
@@ -318,4 +317,8 @@ public class PendingStateImpl implements PendingState {
 		return false;
     }
 
+    @Override
+    public void onSyncDone(){
+        isSyncdone = true;
+    }
 }
