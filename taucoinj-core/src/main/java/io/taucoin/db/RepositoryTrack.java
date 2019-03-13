@@ -169,20 +169,6 @@ public class RepositoryTrack implements Repository {
         return newBalance;
     }
 
-    @Override
-    public BigInteger subBalance(byte[] addr, BigInteger value) {
-
-        AccountState accountState = getAccountState(addr);
-        if (accountState == null) {
-            accountState = createAccount(addr);
-        }
-        BigInteger newBalance = accountState.subFromBalance(value);
-
-        logger.trace("subtract balance addr: [{}], balance: [{}], delta: [{}]", Hex.toHexString(addr),
-                newBalance, value);
-
-        return newBalance;
-    }
 
     public Set<ByteArrayWrapper> getFullAddressSet() {
         return cacheAccounts.keySet();

@@ -89,15 +89,6 @@ public interface Repository {
     BigInteger addBalance(byte[] addr, BigInteger value);
 
     /**
-     * Subtract value from the balance of an account
-     *
-     * @param addr of the account
-     * @param value to be subtracted
-     * @return balance
-     */
-    BigInteger subBalance(byte[] addr, BigInteger value);
-
-    /**
      * Save a snapshot and start tracking future changes
      *
      * @return the tracker repository

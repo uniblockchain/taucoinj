@@ -145,17 +145,6 @@ public class RepositoryImpl implements io.taucoin.facade.Repository{
     }
 
     @Override
-    public BigInteger subBalance(byte[] addr, BigInteger value) {
-
-        AccountState account = getAccountStateOrCreateNew(addr);
-
-        BigInteger result = account.subFromBalance(value);
-        updateAccountState(addr, account);
-
-        return result;
-    }
-
-    @Override
     public BigInteger getBalance(byte[] addr) {
         AccountState account = getAccountState(addr);
         return (account == null) ? BigInteger.ZERO : account.getBalance();

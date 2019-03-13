@@ -1,21 +1,14 @@
 package io.taucoin.core;
 
 import io.taucoin.core.genesis.GenesisLoader;
-import io.taucoin.trie.Trie;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
-import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Set;
 
-import static io.taucoin.config.SystemProperties.CONFIG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

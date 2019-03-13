@@ -332,12 +332,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             recordBlock(block);
 
             if (add(block)) {
+                //notify
+                synchronized (lock) {
+                    lock.notify();
+                }
+
                 EventDispatchThread.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        synchronized (lock) {
-                            lock.notify();
-                        }
                         pendingState.processBest(block);
                     }
                 });
@@ -352,12 +354,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 ImportResult result = tryConnectAndFork(block);
 
                 if (result == IMPORTED_BEST) {
+                    //notify
+                    synchronized (lock) {
+                        lock.notify();
+                    }
+
                     EventDispatchThread.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            synchronized (lock) {
-                                lock.notify();
-                            }
                             pendingState.processBest(block);
                         }
                     });

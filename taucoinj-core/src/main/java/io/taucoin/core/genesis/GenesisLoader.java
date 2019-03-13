@@ -10,8 +10,6 @@ import io.taucoin.core.Block;
 import io.taucoin.core.Genesis;
 import io.taucoin.db.ByteArrayWrapper;
 import io.taucoin.jsontestsuite.Utils;
-import io.taucoin.trie.SecureTrie;
-import io.taucoin.trie.Trie;
 import io.taucoin.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
 
@@ -21,8 +19,6 @@ import java.util.*;
 
 import static java.math.BigInteger.ZERO;
 import static io.taucoin.config.SystemProperties.CONFIG;
-import static io.taucoin.core.Genesis.ZERO_HASH_2048;
-import static io.taucoin.crypto.HashUtil.EMPTY_LIST_HASH;
 import static io.taucoin.util.ByteUtil.wrap;
 
 public class GenesisLoader {
