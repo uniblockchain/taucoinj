@@ -493,11 +493,10 @@ public class SystemProperties {
     @ValidateMe
     public String privateKey() {
         if (config.hasPath("peer.privateKey")) {
-            String key = config.getString("peer.privateKey");
-            if (key.length() != 64) {
-                throw new RuntimeException("The peer.privateKey needs to be Hex encoded and 32 byte length");
-            }
-            return key;
+            String privkeyStr = config.getString("peer.privateKey");
+            ECKey key = Utils.getKeyFromPrivkeyString(privkeyStr);
+            byte[] privkeyBytes = key.getPrivKeyBytes();
+            return Hex.toHexString(privkeyBytes);
         } else {
             return getGeneratedNodePrivateKey();
         }
