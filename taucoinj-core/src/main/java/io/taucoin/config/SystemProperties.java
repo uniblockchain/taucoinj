@@ -11,6 +11,7 @@ import io.taucoin.crypto.ECKey;
 import io.taucoin.net.p2p.P2pHandler;
 import io.taucoin.net.rlpx.MessageCodec;
 import io.taucoin.net.rlpx.Node;
+import io.taucoin.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -85,6 +86,11 @@ public class SystemProperties {
     private Boolean rpcEnabled = null;
 
     private Genesis genesis;
+
+    // Forger private key, public key and coinbase management.
+    private byte[] forgerPrivateKey = null;
+    private byte[] forgerPublicKey = null;
+    private byte[] forgerCoinbase = null;
 
     public SystemProperties() {
         this(ConfigFactory.empty());
@@ -686,38 +692,39 @@ public class SystemProperties {
 
     @ValidateMe
     public byte[] getForgerPrikey() {
-        String sc = config.getString("forge.prikey");
-        byte[] c = Hex.decode(sc);
-        //if (c.length != 32 && c.length != 33) throw new RuntimeException("mine.coinbase has invalid value: '" + sc + "'");
-        return c;
-    }
-
-    @ValidateMe
-    public byte[] getForgerPubkey() {
-        String sc = config.getString("forge.pubkey");
-        byte[] c = Hex.decode(sc);
-        //if (c.length != 32 && c.length != 33) throw new RuntimeException("mine.coinbase has invalid value: '" + sc + "'");
-        return c;
-    }
-
-    @ValidateMe
-    public byte[] getForgerCoinbase() {
-        String sc = config.getString("forge.coinbase");
-        byte[] c = Hex.decode(sc);
-        if (c.length != 20) throw new RuntimeException("forge.coinbase has invalid value: '" + sc + "'");
-        return c;
-    }
-
-    @ValidateMe
-    public byte[] getForgeExtraData() {
-        byte[] bytes;
-        if (config.hasPath("forge.extraDataHex")) {
-            bytes = Hex.decode(config.getString("forge.extraDataHex"));
-        } else {
-            bytes = config.getString("forge.extraData").getBytes();
+        if (forgerPrivateKey != null) {
+            return forgerPrivateKey;
         }
-        if (bytes.length > 32) throw new RuntimeException("forge.extraData exceed 32 bytes length: " + bytes.length);
-        return bytes;
+
+        String privkeyStr = config.getString("forge.prikey");
+        ECKey key = Utils.getKeyFromPrivkeyString(privkeyStr);
+        forgerPrivateKey = key.getPrivKeyBytes();
+        forgerPublicKey = ECKey.fromPrivate(forgerPrivateKey).getPubKey();
+        forgerCoinbase = ECKey.fromPrivate(forgerPrivateKey).getAddress();
+
+        logger.info("forger privkey {}", Hex.toHexString(forgerPrivateKey));
+        logger.info("forger pubkey {}", Hex.toHexString(forgerPublicKey));
+        logger.info("forger coinbase {}", Hex.toHexString(forgerCoinbase));
+
+        return forgerPrivateKey;
+    }
+
+    public byte[] getForgerPubkey() {
+        if (forgerPublicKey != null) {
+            return forgerPublicKey;
+        }
+
+        getForgerPrikey();
+        return forgerPublicKey;
+    }
+
+    public byte[] getForgerCoinbase() {
+        if (forgerCoinbase != null) {
+            return forgerCoinbase;
+        }
+
+        getForgerPrikey();
+        return forgerCoinbase;
     }
 
     public Genesis getGenesis() {

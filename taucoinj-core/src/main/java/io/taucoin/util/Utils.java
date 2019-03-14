@@ -1,18 +1,18 @@
 package io.taucoin.util;
 
+import io.taucoin.crypto.ECKey;
+import io.taucoin.core.DumpedPrivateKey;
+import io.taucoin.config.MainNetParams;
+
 import org.spongycastle.util.encoders.DecoderException;
 import org.spongycastle.util.encoders.Hex;
 
 import java.lang.reflect.Array;
 import java.math.BigInteger;
-
 import java.net.URL;
-
-import java.security.SecureRandom;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -174,6 +174,7 @@ public class Utils {
         return alignRight ? alignString + s : s + alignString;
 
     }
+
     public static String repeat(String s, int n) {
         if (s.length() == 1) {
             byte[] bb = new byte[n];
@@ -184,5 +185,26 @@ public class Utils {
             for (int i = 0; i < n; i++) ret.append(s);
             return ret.toString();
         }
+    }
+
+    /**
+     * Get ECKey from raw hex or WIF private key string.
+     */
+    public static ECKey getKeyFromPrivkeyString(String privkeyStr) {
+        if (privkeyStr == null || privkeyStr.isEmpty()) {
+            return null;
+        }
+
+        ECKey key;
+
+        if (privkeyStr.length() == 51 || privkeyStr.length() == 52) {
+            DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(MainNetParams.get(), privkeyStr);
+            key = dumpedPrivateKey.getKey();
+        } else {
+            BigInteger privKey = new BigInteger(privkeyStr, 16);
+            key = ECKey.fromPrivate(privKey);
+        }
+
+        return key;
     }
 }
