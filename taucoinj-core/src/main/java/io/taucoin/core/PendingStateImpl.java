@@ -267,20 +267,23 @@ public class PendingStateImpl implements PendingState {
     }
 
     private void clearWire(List<Transaction> txs) {
-        for (Transaction tx : txs) {
-            if (wireTransactions.contains(tx)){
-                wireTransactions.remove(tx);
+        synchronized (wireTransactions) {
+            for (Transaction tx : txs) {
+                if (wireTransactions.contains(tx)){
+                    wireTransactions.remove(tx);
+                }
+                removeExpendList(tx);
             }
-
-            removeExpendList(tx);
-        }
+		}
     }
 
     private void clearPendingState(List<Transaction> txs) {
+        synchronized (pendingStateTransactions) {
             for (Transaction tx : txs){
                 if (pendingStateTransactions.contains(tx)){
                     pendingStateTransactions.remove(tx);
                 }
+            }
         }
     }
 
