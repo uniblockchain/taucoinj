@@ -92,14 +92,7 @@ public class PendingStateImpl implements PendingState {
 
     // Return Transaction Received From Network
     public List<Transaction> getWireTransactions() {
-
-        List<Transaction> txs = new ArrayList<>();
-
-        for (Transaction tx : wireTransactions) {
-            txs.add(tx);
-        }
-
-        return txs;
+        return wireTransactions;
     }
 
     public Block getBestBlock() {
@@ -211,7 +204,9 @@ public class PendingStateImpl implements PendingState {
     @Override
     public boolean addPendingTransaction(Transaction tx) {
         if (addNewTxIfNotExist(tx)) {
-            pendingStateTransactions.add(tx);
+            synchronized (this) {
+                pendingStateTransactions.add(tx);
+            }
             return isValid(tx);
         }
 
@@ -247,10 +242,10 @@ public class PendingStateImpl implements PendingState {
                     removeExpendList(tx);
                     outdated.add(tx);
 			    }
+
+		    if(!outdated.isEmpty())
+                wireTransactions.removeAll(outdated);
         }
-		if(!outdated.isEmpty())
-            wireTransactions.removeAll(outdated);
-        
         outdated.clear();
 
         //clear pending transactions
@@ -260,10 +255,10 @@ public class PendingStateImpl implements PendingState {
                     removeExpendList(tx);
                     outdated.add(tx);
                 }
-        }
-		if(!outdated.isEmpty())
-            pendingStateTransactions.removeAll(outdated);
 
+		    if(!outdated.isEmpty())
+                pendingStateTransactions.removeAll(outdated);
+        }
     }
 
     private void clearWire(List<Transaction> txs) {
