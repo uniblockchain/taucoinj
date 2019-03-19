@@ -5,14 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
-import java.util.List;
 
-import static org.apache.commons.lang3.ArrayUtils.getLength;
-import static org.apache.commons.lang3.ArrayUtils.isEmpty;
-import static io.taucoin.config.SystemProperties.CONFIG;
 import static io.taucoin.util.BIUtil.*;
-import static io.taucoin.util.ByteUtil.EMPTY_BYTE_ARRAY;
-import static io.taucoin.util.ByteUtil.toHexString;
 
 /**
  * @author Roman Mandeleil
@@ -21,18 +15,13 @@ import static io.taucoin.util.ByteUtil.toHexString;
 public class TransactionExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger("execute");
-    private static final Logger stateLogger = LoggerFactory.getLogger("state");
 
     private Transaction tx;
     private Repository track;
     private byte[] coinbase;
 
-    private boolean readyToExecute = false;
-
     long basicTxAmount = 0;
     long basicTxFee = 0;
-
-    boolean localCall = false;
 
     //constructor
     public TransactionExecutor(Transaction tx, Repository track) {
@@ -40,33 +29,24 @@ public class TransactionExecutor {
         this.track= track;
     }
 
-    //setLocal
-    public TransactionExecutor setLocalCall(boolean localCall) {
-        this.localCall = localCall;
-	    return this;
-    }
-
     /**
-     * Do all the basic validation, if the executor
-     * will be ready to run the transaction at the end
-     * set readyToExecute = true
+     * Do all the basic validation
      */
     public boolean init() {
 
-        if (localCall) {
-            readyToExecute = true;
-            return true;
-        }
-
 		// Check In Transaction Amount
         basicTxAmount = toBI(tx.getAmount()).longValue();
+        if (basicTxAmount < 0 ) {
+            if (logger.isWarnEnabled())
+                logger.warn("Transaction amount [{}] is invalid!", basicTxAmount);
+            return false;
+        }
 
         // Check In Transaction Fee
         basicTxFee = toBI(tx.transactionCost()).longValue();
         if (basicTxFee < 0 ) {
             if (logger.isWarnEnabled())
-                logger.warn("Not enough gas for transaction execution: Require: {} Got: {}", basicTxFee);
-            // TODO: save reason for failure
+                logger.warn("Transaction fee [{}] is invalid!", basicTxFee);
             return false;
         }
 
@@ -74,15 +54,11 @@ public class TransactionExecutor {
         BigInteger senderBalance = track.getBalance(tx.getSender());
 
         if (!isCovers(senderBalance, totalCost)) {
-
             if (logger.isWarnEnabled())
                 logger.warn("No enough balance: Require: {}, Sender's balance: {}", totalCost, senderBalance);
-
-            // TODO: save reason for failure
             return false;
         }
 
-        readyToExecute = true;
         return true;
     }
 
@@ -92,7 +68,6 @@ public class TransactionExecutor {
      * 2. add transaction fee to actually miner 
      */
     public void executeFinal() {
-        if (!readyToExecute) return;
 
 		// Sender subtract balance
         BigInteger totalCost = toBI(tx.getAmount()).add(toBI(tx.transactionCost()));
