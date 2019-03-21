@@ -137,15 +137,22 @@ public class BlockForger {
 
     protected List<Transaction> getAllPendingTransactions() {
         List<Transaction> txList = new ArrayList<Transaction>();
-        txList.addAll(pendingState.getPendingTransactions());
+        //txList.addAll(pendingState.getPendingTransactions());
         txList.addAll(pendingState.getWireTransactions());
 
         if (txList.size() <= TNO) {
             return txList;
         } else {
             // Order, Transaction Fee, Time
-            Collections.sort(txList);
-            return txList.subList(0, TNO);
+            // a honest forger who doesn't accept transactions that may come from future.
+            List<Transaction> txListTemp =  txList.subList(0, TNO);
+            long lockTime = System.currentTimeMillis() / 1000;
+            for(int i =0;i < TNO;++i){
+                if(ByteUtil.byteArrayToLong(txListTemp.get(i).getTime()) > lockTime){
+                    txListTemp.remove(i);
+                }
+            }
+            return txListTemp;
         }
     }
 

@@ -86,6 +86,7 @@ public class WorldManager {
         //wallet.importKey(cbAddr);
 
         loadBlockchain();
+        pendingState.setBlockchain(blockchain);
         logger.info("chain size is {}",blockchain.getSize());
     }
 

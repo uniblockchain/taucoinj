@@ -287,8 +287,8 @@ public class TaucoinImpl implements Taucoin {
     }
 
     @Override
-    public io.taucoin.facade.Repository getPendingState() {
-        return (io.taucoin.facade.Repository) worldManager.getPendingState().getRepository();
+    public io.taucoin.core.PendingState getPendingState() {
+        return worldManager.getPendingState();
     }
 
     @Override
