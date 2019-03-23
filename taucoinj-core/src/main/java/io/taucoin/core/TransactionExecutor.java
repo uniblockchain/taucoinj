@@ -117,6 +117,8 @@ public class TransactionExecutor {
         if(accountState.getTranHistory().size() > MaxHistoryCount){
             long txTime = Collections.min(accountState.getTranHistory().keySet());
             accountState.getTranHistory().remove(txTime);
+            long txTimeTemp = ByteUtil.byteArrayToLong(tx.getTime());
+            accountState.getTranHistory().put(txTimeTemp,tx.getHash());
         }else{
             long txTime = ByteUtil.byteArrayToLong(tx.getTime());
             accountState.getTranHistory().put(txTime,tx.getHash());
