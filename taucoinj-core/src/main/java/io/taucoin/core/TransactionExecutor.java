@@ -1,10 +1,14 @@
 package io.taucoin.core;
 
+import io.taucoin.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static io.taucoin.util.BIUtil.*;
 
@@ -19,6 +23,7 @@ public class TransactionExecutor {
     private Transaction tx;
     private Repository track;
     private byte[] coinbase;
+    private static final int MaxHistoryCount = 7200;
 
     long basicTxAmount = 0;
     long basicTxFee = 0;
@@ -49,7 +54,30 @@ public class TransactionExecutor {
                 logger.warn("Transaction fee [{}] is invalid!", basicTxFee);
             return false;
         }
-
+        /**
+         * node need to check whether this transaction has been recorded in block.
+         * a honest node need to avoid transactions duplicated in block chain.
+         */
+        AccountState accountState = track.getAccountState(tx.getSender());
+        if(accountState == null){
+            if(logger.isErrorEnabled())
+                logger.error("in valid account ,address is: {}", ByteUtil.toHexString(tx.getSender()));
+            return false;
+        }
+        long tranTime = ByteUtil.byteArrayToLong(tx.getTime());
+        Set<Long> txHistory = accountState.getTranHistory().keySet();
+        if(!txHistory.isEmpty()) {
+            long txTime = Collections.max(txHistory);
+            /**
+             * System should be concurrency high rather than 1 transaction per second.
+             */
+            if (tranTime <= txTime) {
+                if (tx.getHash() == accountState.getTranHistory().get(tranTime)) {
+                    logger.error("duplicate transaction ,tx is: {}", ByteUtil.toHexString(tx.getHash()));
+                    return false;
+                }
+            }
+        }
         BigInteger totalCost = toBI(tx.getAmount()).add(toBI(tx.transactionCost()));
         BigInteger senderBalance = track.getBalance(tx.getSender());
 
@@ -84,6 +112,15 @@ public class TransactionExecutor {
         track.increaseforgePower(tx.getSender());
 
         logger.info("Pay fees to miner: [{}], feesEarned: [{}]", Hex.toHexString(coinbase), basicTxFee);
+
+        AccountState accountState = track.getAccountState(tx.getSender());
+        if(accountState.getTranHistory().size() > MaxHistoryCount){
+            long txTime = Collections.min(accountState.getTranHistory().keySet());
+            accountState.getTranHistory().remove(txTime);
+        }else{
+            long txTime = ByteUtil.byteArrayToLong(tx.getTime());
+            accountState.getTranHistory().put(txTime,tx.getHash());
+        }
     }
 
     public void undoTransaction() {
