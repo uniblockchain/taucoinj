@@ -40,7 +40,7 @@ public interface BlockStore {
 
     void flush();
 
-    void getForkBlocksInfo(Block forkBlock, List<Block> undoBlocks, List<Block> newBlocks);
+    boolean getForkBlocksInfo(Block forkBlock, List<Block> undoBlocks, List<Block> newBlocks);
 
     void reBranchBlocks(List<Block> undoBlocks, List<Block> newBlocks);
 

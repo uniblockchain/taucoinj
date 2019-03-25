@@ -126,6 +126,65 @@ public class IndexedBlockStore implements BlockStore{
     }
 
 
+    public void delNonChainBlock(byte[] hash) {
+        if (cache != null) {
+            cache.delNonChainBlock(hash);
+        }
+
+        byte[] blockRlp = blocks.get(hash);
+        if (blockRlp == null)
+            return;
+        Block block = new Block(blockRlp);
+
+        List<BlockInfo> blockInfos = index.get(block.getNumber());
+        for (BlockInfo blockInfo : blockInfos) {
+            if (areEqual(blockInfo.getHash(), hash)) {
+                if (blockInfo.mainChain) {
+                    return;
+                }
+                blockInfos.remove(blockInfo);
+                break;
+            }
+        }
+        index.put(block.getNumber(), blockInfos);
+        blocks.delete(hash);
+    }
+
+    //Do not use this interface easily (different blocks in different branch may have common parent)
+    public void delNonChainBlocksEndWith(byte[] hash) {
+        Block block = getBlockByHash(hash);
+        if (block == null)
+            return;
+        List<BlockInfo> blockInfos = getBlockInfoForLevel(block.getNumber());
+        if (blockInfos == null)
+            return;
+        BlockInfo blockInfo = getBlockInfoForHash(blockInfos, hash);
+        if (blockInfo == null || blockInfo.mainChain)
+            return;
+
+        delNonChainBlock(hash);
+
+        delNonChainBlocksEndWith(block.getPreviousHeaderHash());
+    }
+
+    public void delNonChainBlocksByNumber(long number) {
+        if (cache != null) {
+            cache.delNonChainBlocksByNumber(number);
+        }
+
+        List<BlockInfo> blockInfos = index.get(number);
+        List<BlockInfo> newBlockInfos = new ArrayList<>();
+        for (BlockInfo blockInfo : blockInfos) {
+            if (blockInfo.mainChain) {
+                newBlockInfos.add(blockInfo);
+            } else {
+                blocks.delete(blockInfo.hash);
+            }
+        }
+        index.put(number, newBlockInfos);
+    }
+
+
     public List<Block> getBlocksByNumber(long number){
 
         List<Block> result = new ArrayList<>();
@@ -357,7 +416,7 @@ public class IndexedBlockStore implements BlockStore{
     }
 
     @Override
-    public void getForkBlocksInfo(Block forkBlock, List<Block> undoBlocks, List<Block> newBlocks) {
+    public boolean getForkBlocksInfo(Block forkBlock, List<Block> undoBlocks, List<Block> newBlocks) {
         Block bestBlock = getBestBlock();
 
         long maxLevel = Math.max(bestBlock.getNumber(), forkBlock.getNumber());
@@ -371,6 +430,8 @@ public class IndexedBlockStore implements BlockStore{
                 newBlocks.add(forkLine);
 
                 forkLine = getBlockByHash(forkLine.getPreviousHeaderHash());
+                if (forkLine == null)
+                    return false;
                 --currentLevel;
             }
         }
@@ -394,8 +455,13 @@ public class IndexedBlockStore implements BlockStore{
             bestLine = getBlockByHash(bestLine.getPreviousHeaderHash());
             forkLine = getBlockByHash(forkLine.getPreviousHeaderHash());
 
+            if (forkLine == null)
+                return false;
+
             --currentLevel;
         }
+
+        return true;
     }
 
     @Override
