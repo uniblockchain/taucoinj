@@ -125,7 +125,7 @@ public class IndexedBlockStore implements BlockStore{
         blocks.put(block.getHash(), block.getEncoded());
     }
 
-
+    @Override
     public void delNonChainBlock(byte[] hash) {
         if (cache != null) {
             cache.delNonChainBlock(hash);
@@ -151,6 +151,7 @@ public class IndexedBlockStore implements BlockStore{
     }
 
     //Do not use this interface easily (different blocks in different branch may have common parent)
+    @Override
     public void delNonChainBlocksEndWith(byte[] hash) {
         Block block = getBlockByHash(hash);
         if (block == null)
@@ -167,6 +168,7 @@ public class IndexedBlockStore implements BlockStore{
         delNonChainBlocksEndWith(block.getPreviousHeaderHash());
     }
 
+    @Override
     public void delNonChainBlocksByNumber(long number) {
         if (cache != null) {
             cache.delNonChainBlocksByNumber(number);
@@ -273,10 +275,11 @@ public class IndexedBlockStore implements BlockStore{
 
         Long level  =  block.getNumber();
         List<BlockInfo> blockInfos =  index.get(level);
-        for (BlockInfo blockInfo : blockInfos)
-                 if (areEqual(blockInfo.getHash(), hash)) {
-                     return blockInfo.cummDifficulty;
-                 }
+        for (BlockInfo blockInfo : blockInfos) {
+            if (areEqual(blockInfo.getHash(), hash)) {
+                 return blockInfo.cummDifficulty;
+            }
+        }
 
         return ZERO;
     }

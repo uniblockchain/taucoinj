@@ -227,14 +227,17 @@ public class InMemoryBlockStore implements BlockStore{
         s.close();
     }
 
+    @Override
     public void delNonChainBlock(byte[] hash) {
 
     }
 
+    @Override
     public void delNonChainBlocksEndWith(byte[] hash) {
 
     }
 
+    @Override
     public void delNonChainBlocksByNumber(long number) {
 
     }
