@@ -680,8 +680,8 @@ public class SystemProperties {
     }
 
     @ValidateMe
-    public int getImmutableRange() {
-        return config.getInt("immutable.range");
+    public int getMutableRange() {
+        return config.getInt("mutable.range");
     }
 
     @ValidateMe

@@ -227,6 +227,18 @@ public class InMemoryBlockStore implements BlockStore{
         s.close();
     }
 
+    public void delNonChainBlock(byte[] hash) {
+
+    }
+
+    public void delNonChainBlocksEndWith(byte[] hash) {
+
+    }
+
+    public void delNonChainBlocksByNumber(long number) {
+
+    }
+
     public void load(){
 
         logger.info("loading db");
