@@ -75,6 +75,8 @@ public final class JsonRpcServer extends io.taucoin.rpc.server.JsonRpcServer{
         this.dispatcher.register(new tau_getBlockHashList(this.taucoin));
         this.dispatcher.register(new tau_getBlockByHash(this.taucoin));
         this.dispatcher.register(new tau_getBlockByNumber(this.taucoin));
+        this.dispatcher.register(new tau_sendNewBlock(this.taucoin));
+
 
         //db
         this.dispatcher.register(new db_putString(this.taucoin));
