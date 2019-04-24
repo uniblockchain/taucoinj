@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
+import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -190,10 +191,15 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
             return null;
 
         res.put("number", "0x" + Long.toHexString(block.getNumber()));
+        ECKey key = null;
+        try{
+            key = ECKey.signatureToKey(block.getRawHash(),block.getblockSignature().toBase64());
+        }catch(SignatureException e){
 
-        res.put("minerPublicKey", "0x" + Hex.toHexString(block.getGeneratorPublicKey()));
+        }
+        res.put("minerPublicKey", "0x" + Hex.toHexString(key.getPubKey()));
 
-        res.put("minerAddress", ByteUtil.bytesToBase58(Utils.sha256hash160(block.getGeneratorPublicKey())).toBase58());
+        res.put("minerAddress", ByteUtil.bytesToBase58(Utils.sha256hash160(key.getPubKey())).toBase58());
 
         res.put("parentHash", "0x" + Hex.toHexString(block.getPreviousHeaderHash()));
 
@@ -207,8 +213,8 @@ public abstract class JsonRpcServerMethod implements RequestHandler {
 
         res.put("historyAverageFee","0x" + (block.getCumulativeFee().divide(BigInteger.valueOf(block.getNumber()))).toString(16));
         // No way to get size of block in bytes, so I try calculate it using formula from  getEncoded
-        byte[] header = block.getHeader().getEncoded();
-        byte[] transactions = RLP.encodeList();
+//        byte[] header = block.getHeader().getEncoded();
+//        byte[] transactions = RLP.encodeList();
 
         JSONArray transactionsJA = new JSONArray();
         int i = 0;

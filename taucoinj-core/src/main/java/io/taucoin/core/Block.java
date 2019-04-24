@@ -237,7 +237,7 @@ public class Block {
     }
 
     @Deprecated
-    public byte[] getGeneratorPublicKey() {
+    private byte[] getGeneratorPublicKey() {
         if (!parsed) parseRLP();
         return null;
     }
