@@ -201,6 +201,17 @@ public class Block {
         }
 
         this.parsed = true;
+        if(isMsg){
+            ECKey key;
+            try{
+                key = ECKey.signatureToKey(this.getRawHash(),blockSignature.toBase64());
+                if(key != null){
+                    forgerPubkey = key.getPubKey();
+                }
+            }catch (SignatureException e){
+                forgerPubkey = ByteUtil.intToBytes(0);
+            }
+        }
     }
 
 

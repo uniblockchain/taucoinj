@@ -632,8 +632,17 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 return false;
             }
         }
+        ECKey key = null;
+        try{
+            key = ECKey.signatureToKey(block.getRawHash(),block.getblockSignature().toBase64());
+        }catch (SignatureException e){
+        }
+        if( key == null ){
+            logger.error("miner pubkey is null .....");
+            key = new ECKey();
+        }
 
-        ECKey key = ECKey.fromPrivate(config.getForgerPrikey());
+        //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
         byte[] address = key.getAddress();
         BigInteger forgingPower = repo.getforgePower(address);
         logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
