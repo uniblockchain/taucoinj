@@ -205,12 +205,12 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             //try to roll back and reconnect
             List<Block> undoBlocks = new ArrayList<>();
             List<Block> newBlocks = new ArrayList<>();
+            // Note: 'getForkBlocksInfo' method will add 'block' into 'newBlocks'.
             if (!blockStore.getForkBlocksInfo(block, undoBlocks, newBlocks)) {
                 logger.error("Can not find continuous branch!");
                 blockStore.delNonChainBlock(block.getPreviousHeaderHash());
                 return DISCONTINUOUS_BRANCH;
             }
-            newBlocks.add(0, block);
 
             if (undoBlocks.size() > mutableRange) {
                 logger.info("Blocks to be rolled back are out of mutable range !");
