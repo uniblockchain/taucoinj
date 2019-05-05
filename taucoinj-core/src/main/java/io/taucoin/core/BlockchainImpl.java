@@ -363,11 +363,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 synchronized (lock) {
                     lock.notify();
                 }
-
+                pendingState.processBest(block);
                 EventDispatchThread.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        pendingState.processBest(block);
                         if (block.getNumber() > mutableRange) {
                             blockStore.delNonChainBlocksByNumber(block.getNumber() - mutableRange);
                         }
@@ -388,11 +387,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     synchronized (lock) {
                         lock.notify();
                     }
-
+                    pendingState.processBest(block);
                     EventDispatchThread.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            pendingState.processBest(block);
                             if (block.getNumber() > mutableRange) {
                                 blockStore.delNonChainBlocksByNumber(block.getNumber() - mutableRange);
                             }
