@@ -63,9 +63,9 @@ public class AccountState implements Serializable {
 
         if(items.size() > 2) {
             RLPList trHis = (RLPList) items.get(2);
-            for (int i = 0; i < trHis.size(); ++i) {
-                RLPElement transactionHis = trHis.get(i);
-                TransactionInfo trinfo = new TransactionInfo(transactionHis.getRLPData());
+            for (int i = 2; i < trHis.size(); ++i) {
+                byte[] transactionHis = items.get(i).getRLPData();
+                TransactionInfo trinfo = new TransactionInfo(transactionHis);
                 this.tranHistory.put(trinfo.gettrTime(),trinfo.gettrHashcode());
             }
         }
@@ -78,6 +78,11 @@ public class AccountState implements Serializable {
     public void setforgePower(BigInteger forgePower) {
         rlpEncoded = null;
         this.forgePower = forgePower;
+    }
+
+    public void setTranHistory(TreeMap<Long,byte[]> tranHistory) {
+        rlpEncoded = null;
+        this.tranHistory = tranHistory;
     }
 
     public void incrementforgePower() {
@@ -149,6 +154,7 @@ public class AccountState implements Serializable {
         AccountState accountState = new AccountState();
         accountState.addToBalance(this.getBalance());
         accountState.setforgePower(this.getforgePower());
+        accountState.setTranHistory(this.getTranHistory());
         accountState.setDirty(false);
 
         return accountState;

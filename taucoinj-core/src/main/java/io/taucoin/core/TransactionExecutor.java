@@ -23,15 +23,17 @@ public class TransactionExecutor {
     private Transaction tx;
     private Repository track;
     private byte[] coinbase;
-    private static final int MaxHistoryCount = 7200;
+    private Blockchain blockchain;
+    private static final int MaxHistoryCount = 144;
 
     long basicTxAmount = 0;
     long basicTxFee = 0;
 
     //constructor
-    public TransactionExecutor(Transaction tx, Repository track) {
+    public TransactionExecutor(Transaction tx, Repository track,Blockchain blockchain) {
         this.tx= tx;
         this.track= track;
+        this.blockchain = blockchain;
     }
 
     /**
@@ -67,13 +69,19 @@ public class TransactionExecutor {
         long tranTime = ByteUtil.byteArrayToLong(tx.getTime());
         Set<Long> txHistory = accountState.getTranHistory().keySet();
         if(!txHistory.isEmpty()) {
-            long txTime = Collections.max(txHistory);
+            long txTimeCeil = Collections.max(txHistory);
+            long txTimeFloor = Collections.min(txHistory);
             /**
              * System should be concurrency high rather than 1 transaction per second.
              */
-            if (tranTime <= txTime) {
-                if (tx.getHash() == accountState.getTranHistory().get(tranTime)) {
+            if (tranTime <= txTimeCeil) {
+                if (accountState.getTranHistory().containsKey(tranTime)) {
                     logger.error("duplicate transaction ,tx is: {}", ByteUtil.toHexString(tx.getHash()));
+                    return false;
+                }
+
+                if (tranTime < txTimeFloor && blockchain.getSize() > MaxHistoryCount) {
+                    logger.error("attacking transaction ,tx is: {}",ByteUtil.toHexString(tx.getHash()));
                     return false;
                 }
             }
@@ -114,11 +122,19 @@ public class TransactionExecutor {
         logger.info("Pay fees to miner: [{}], feesEarned: [{}]", Hex.toHexString(coinbase), basicTxFee);
 
         AccountState accountState = track.getAccountState(tx.getSender());
-        if(accountState.getTranHistory().size() > MaxHistoryCount){
+        if(blockchain.getSize() > MaxHistoryCount){
+
             long txTime = Collections.min(accountState.getTranHistory().keySet());
-            accountState.getTranHistory().remove(txTime);
-            long txTimeTemp = ByteUtil.byteArrayToLong(tx.getTime());
-            accountState.getTranHistory().put(txTimeTemp,tx.getHash());
+            // if earliest transaction is beyond expire time
+            // it will be removed.
+            long freshTime = blockchain.getSize() - MaxHistoryCount;
+            if (txTime < ByteUtil.byteArrayToLong(blockchain.getBlockByNumber(freshTime).getTimestamp())) {
+                accountState.getTranHistory().remove(txTime);
+            } else {
+                long txTimeTemp = ByteUtil.byteArrayToLong(tx.getTime());
+                accountState.getTranHistory().put(txTimeTemp, tx.getHash());
+            }
+
         }else{
             long txTime = ByteUtil.byteArrayToLong(tx.getTime());
             accountState.getTranHistory().put(txTime,tx.getHash());
@@ -136,6 +152,12 @@ public class TransactionExecutor {
 
         // Transfer fees to miner
         track.addBalance(coinbase, toBI(tx.transactionCost()).negate());
+
+        // undo account transaction history
+        AccountState accountState = track.getAccountState(tx.getSender());
+        if ( accountState.getTranHistory().keySet().contains( ByteUtil.byteArrayToLong(tx.getTime()) ) ) {
+            accountState.getTranHistory().remove( ByteUtil.byteArrayToLong(tx.getTime()) );
+        }
 
         // Increase forge power.
         track.reduceForgePower(tx.getSender());
