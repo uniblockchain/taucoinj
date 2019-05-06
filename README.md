@@ -15,4 +15,3 @@ taucoinj is a pure-Java implementation of the Taucoin protocol.
 
 # License
 taucoinj is released under the [MIT license](LICENSE).
-
