@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.SignatureException;
 import java.util.*;
 
 import static java.lang.Math.max;
@@ -204,12 +205,12 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             //try to roll back and reconnect
             List<Block> undoBlocks = new ArrayList<>();
             List<Block> newBlocks = new ArrayList<>();
+            // Note: 'getForkBlocksInfo' method will add 'block' into 'newBlocks'.
             if (!blockStore.getForkBlocksInfo(block, undoBlocks, newBlocks)) {
                 logger.error("Can not find continuous branch!");
                 blockStore.delNonChainBlock(block.getPreviousHeaderHash());
                 return DISCONTINUOUS_BRANCH;
             }
-            newBlocks.add(0, block);
 
             if (undoBlocks.size() > mutableRange) {
                 logger.info("Blocks to be rolled back are out of mutable range !");
@@ -221,10 +222,15 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             for (Block undoBlock : undoBlocks) {
                 logger.info("Try to disconnect block, block number: {}, hash: {}",
                         undoBlock.getNumber(), Hex.toHexString(undoBlock.getHash()));
-                ECKey key = ECKey.fromPublicOnly(undoBlock.getGeneratorPublicKey());
+                ECKey key;
+                try {
+                    key = ECKey.signatureToKey(undoBlock.getRawHash(), undoBlock.getblockSignature().toBase64());
+                }catch (SignatureException e){
+                    return DISCONNECTED_FAILED;
+                }
                 for (Transaction tx : undoBlock.getTransactionsList()){
                     //roll back
-                    TransactionExecutor executor = new TransactionExecutor(tx, track);
+                    TransactionExecutor executor = new TransactionExecutor(tx, track,this);
                     executor.setCoinbase(key.getAddress());
                     executor.undoTransaction();
                 }
@@ -308,9 +314,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
             BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(preBlock, blockStore);
             block.setBaseTarget(baseTarget);
-
+            ECKey key;
+            try {
+                key = ECKey.signatureToKey(block.getRawHash(), block.getblockSignature().toBase64());
+            }catch (SignatureException e){
+                return INVALID_BLOCK;
+            }
             byte[] generationSignature = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), block.getGeneratorPublicKey());
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(),key.getCompressedPubKey());
             block.setGenerationSignature(generationSignature);
 
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();
@@ -352,12 +363,13 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 synchronized (lock) {
                     lock.notify();
                 }
-
+                pendingState.processBest(block);
                 EventDispatchThread.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        pendingState.processBest(block);
-                        blockStore.delNonChainBlocksByNumber(block.getNumber() - mutableRange);
+                        if (block.getNumber() > mutableRange) {
+                            blockStore.delNonChainBlocksByNumber(block.getNumber() - mutableRange);
+                        }
                     }
                 });
                 return IMPORTED_BEST;
@@ -375,12 +387,13 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     synchronized (lock) {
                         lock.notify();
                     }
-
+                    pendingState.processBest(block);
                     EventDispatchThread.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            pendingState.processBest(block);
-                            blockStore.delNonChainBlocksByNumber(block.getNumber() - mutableRange);
+                            if (block.getNumber() > mutableRange) {
+                                blockStore.delNonChainBlocksByNumber(block.getNumber() - mutableRange);
+                            }
                         }
                     });
                 }
@@ -405,7 +418,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         Block block = new Block(version,
                 timeStamp,
                 parent.getHash(),
-                config.getForgerPubkey(),
                 option,
                 txs);
 
@@ -618,8 +630,17 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 return false;
             }
         }
+        ECKey key = null;
+        try{
+            key = ECKey.signatureToKey(block.getRawHash(),block.getblockSignature().toBase64());
+        }catch (SignatureException e){
+        }
+        if( key == null ){
+            logger.error("miner pubkey is null .....");
+            key = new ECKey();
+        }
 
-        ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
+        //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
         byte[] address = key.getAddress();
         BigInteger forgingPower = repo.getforgePower(address);
         logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
@@ -635,7 +656,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         BigInteger targetValue = ProofOfTransaction.
                 calculateMinerTargetValue(block.getBaseTarget(), forgingPower, blockTime - preBlockTime);
 
-        logger.info("Generation Signature {}", block.getGenerationSignature());
+        logger.info("Generation Signature {}", Hex.toHexString(block.getGenerationSignature()));
         BigInteger hit = ProofOfTransaction.calculateRandomHit(block.getGenerationSignature());
         logger.info("verify block target value {}, hit {}", targetValue, hit);
 
@@ -670,9 +691,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             return false;
         }
 
-        if (!isValid(block.getHeader())) {
-            return false;
-        }
+//        if (!isValid(block.getHeader())) {
+//            return false;
+//        }
 
         List<Transaction> txs = block.getTransactionsList();
         if (txs.size() > Constants.MAX_BLOCKTXSIZE) {
@@ -734,12 +755,19 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         Repository cacheTrack;
         boolean isValid = true;
+        ECKey key = null;
+        try {
+            key = ECKey.signatureToKey(block.getRawHash(), block.getblockSignature().toBase64());
+        }catch (SignatureException e){
+            return false;
+        }
         for (Transaction tx : block.getTransactionsList()) {
             stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), tx.toString());
 
             cacheTrack = repo.startTracking();
-            TransactionExecutor executor = new TransactionExecutor(tx, cacheTrack);
-            ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
+            TransactionExecutor executor = new TransactionExecutor(tx, cacheTrack,this);
+
+            //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
             if (!executor.init()) {
                 isValid = false;
                 cacheTrack.rollback();
