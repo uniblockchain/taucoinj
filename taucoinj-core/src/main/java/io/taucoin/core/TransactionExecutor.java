@@ -41,6 +41,7 @@ public class TransactionExecutor {
      */
     public boolean init() {
 
+        logger.debug("Init entry {}", Hex.toHexString(tx.getHash()));
 		// Check In Transaction Amount
         basicTxAmount = toBI(tx.getAmount()).longValue();
         if (basicTxAmount < 0 ) {
@@ -67,7 +68,11 @@ public class TransactionExecutor {
             return false;
         }
         long tranTime = ByteUtil.byteArrayToLong(tx.getTime());
+        logger.debug("Init sender {} tx time {}", Hex.toHexString(tx.getSender()), tranTime);
         Set<Long> txHistory = accountState.getTranHistory().keySet();
+        for (Long h : txHistory) {
+            logger.debug("Init sender {} history time {}", Hex.toHexString(tx.getSender()), h);
+        }
         if(!txHistory.isEmpty()) {
             long txTimeCeil = Collections.max(txHistory);
             long txTimeFloor = Collections.min(txHistory);
@@ -95,6 +100,7 @@ public class TransactionExecutor {
             return false;
         }
 
+        logger.debug("Init exit {}", Hex.toHexString(tx.getHash()));
         return true;
     }
 
@@ -105,6 +111,7 @@ public class TransactionExecutor {
      */
     public void executeFinal() {
 
+        logger.debug("execute entry {}", Hex.toHexString(tx.getHash()));
 		// Sender subtract balance
         BigInteger totalCost = toBI(tx.getAmount()).add(toBI(tx.transactionCost()));
         logger.info("in executation sender is "+Hex.toHexString(tx.getSender()));
@@ -130,15 +137,20 @@ public class TransactionExecutor {
             long freshTime = blockchain.getSize() - MaxHistoryCount;
             if (txTime < ByteUtil.byteArrayToLong(blockchain.getBlockByNumber(freshTime).getTimestamp())) {
                 accountState.getTranHistory().remove(txTime);
+                logger.debug("{} remove tx time {}", Hex.toHexString(tx.getSender()), txTime);
             } else {
                 long txTimeTemp = ByteUtil.byteArrayToLong(tx.getTime());
                 accountState.getTranHistory().put(txTimeTemp, tx.getHash());
+                logger.debug("{} add tx time {}", Hex.toHexString(tx.getSender()), txTime);
             }
 
         }else{
             long txTime = ByteUtil.byteArrayToLong(tx.getTime());
             accountState.getTranHistory().put(txTime,tx.getHash());
+            logger.debug("{} add tx time {}", Hex.toHexString(tx.getSender()), txTime);
         }
+
+        logger.debug("execute exit {}", Hex.toHexString(tx.getHash()));
     }
 
     public void undoTransaction() {
