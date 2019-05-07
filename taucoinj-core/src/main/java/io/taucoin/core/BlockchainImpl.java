@@ -308,20 +308,21 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     Hex.toHexString(block.getHash()), Hex.toHexString(block.getPreviousHeaderHash()));
             return NO_PARENT;
         }
+        if (!block.isMsg()) {
+            for (Transaction tr : block.getTransactionsList()) {
+                byte[] witnessAddress = track.getAccountState(tr.getSender()).getWitnessAddress();
+                byte[] associateAddress = track.getAccountState(tr.getSender()).getAssociatedAddress();
+                if (witnessAddress != null) {
+                    tr.setWitnessAddress(witnessAddress);
+                }
 
-        for(Transaction tr: block.getTransactionsList()){
-            byte[] witnessAddress = track.getAccountState(tr.getSender()).getWitnessAddress();
-            byte[] associateAddress = track.getAccountState(tr.getSender()).getAssociatedAddress();
-            if (witnessAddress != null) {
-                tr.setWitnessAddress(witnessAddress);
-            }
+                if (associateAddress != null) {
+                    tr.setAssociatedAddress(associateAddress);
+                }
 
-            if (associateAddress != null) {
-                tr.setAssociatedAddress(associateAddress);
-            }
-
-            if (witnessAddress != null && associateAddress != null) {
-                tr.setIsCompositeTx(true);
+                if (witnessAddress != null && associateAddress != null) {
+                    tr.setIsCompositeTx(true);
+                }
             }
         }
 

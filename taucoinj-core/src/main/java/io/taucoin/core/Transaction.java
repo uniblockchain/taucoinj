@@ -94,6 +94,14 @@ public class Transaction {
         parsed = false;
     }
 
+    public Transaction(byte[] rawData ,boolean isComposite) {
+        if (!isComposite) {
+            this.rlpEncoded = rawData;
+        } else {
+            this.rlpEncodedComposite = rawData;
+        }
+        parsed = false;
+    }
     /* creation tx
      * [ version, option, timeStamp, toAddress, amount, fee, expireTime,signature(v, r, s) ]
      */
