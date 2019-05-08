@@ -133,7 +133,7 @@ public class TransactionExecutor {
                         toBI(feeDistributor.getLastWitFee()));
             }
 
-            if (track.getAccountState(tx.getSender()).getAssociatedAddress() != null) {
+            if (track.getAccountState(tx.getSender()).getAssociatedAddress().size() != 0) {
                 // Transfer fees to last associate
                 AssociatedFeeDistributor assDistributor = new AssociatedFeeDistributor(
                         track.getAccountState(tx.getSender()).getAssociatedAddress().size(),
@@ -165,7 +165,7 @@ public class TransactionExecutor {
                         toBI(feeDistributor.getLastWitFee()));
             }
 
-            if (track.getAccountState(tx.getSender()).getAssociatedAddress() == null) {
+            if (track.getAccountState(tx.getSender()).getAssociatedAddress().size() == 0) {
                 // Transfer fees to last associate
                 track.addBalance(coinbase,
                         toBI(feeDistributor.getLastAssociFee()));
@@ -198,10 +198,6 @@ public class TransactionExecutor {
             accountState.getTranHistory().put(txTime,tx.getHash());
             logger.debug("{} add tx time {}", Hex.toHexString(tx.getSender()), txTime);
         }
-
-        StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
-                new StakeHolderIdentityUpdate(tx, track, coinbase, blockchain);
-        stakeHolderIdentityUpdate.updateStakeHolderIdentity();
 
         logger.debug("execute exit {}", Hex.toHexString(tx.getHash()));
     }
