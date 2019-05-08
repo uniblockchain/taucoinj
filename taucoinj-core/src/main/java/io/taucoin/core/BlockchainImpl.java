@@ -745,7 +745,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     logger.info("tx sender address is ====> {}",Hex.toHexString(tr.getSender()));
                     logger.info("is sender account empty ====> {}",track.getAccountState(tr.getSender()) == null);
                     byte[] witnessAddress = track.getAccountState(tr.getSender()).getWitnessAddress();
-                    byte[] associateAddress = track.getAccountState(tr.getSender()).getAssociatedAddress();
+                    ArrayList<byte[]> associateAddress = track.getAccountState(tr.getSender()).getAssociatedAddress();
                     if (witnessAddress != null) {
                         tr.setWitnessAddress(witnessAddress);
                     }
