@@ -220,20 +220,29 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             track = repository.startTracking();
 
             for (Block undoBlock : undoBlocks) {
+                Repository cacheTrack = track.startTracking();
                 logger.info("Try to disconnect block, block number: {}, hash: {}",
                         undoBlock.getNumber(), Hex.toHexString(undoBlock.getHash()));
                 ECKey key;
                 try {
                     key = ECKey.signatureToKey(undoBlock.getRawHash(), undoBlock.getblockSignature().toBase64());
-                }catch (SignatureException e){
+                } catch (SignatureException e) {
                     return DISCONNECTED_FAILED;
                 }
-                for (Transaction tx : undoBlock.getTransactionsList()){
+
+                List<Transaction> txs = undoBlock.getTransactionsList();
+                for (int i = txs.size() - 1; i >= 0; i--) {
+                    StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
+                            new StakeHolderIdentityUpdate(txs.get(i), cacheTrack, key.getAddress(), undoBlock.getNumber());
+                    stakeHolderIdentityUpdate.rollbackStakeHolderIdentity();
+                }
+                for (int i = txs.size() - 1; i >= 0; i--) {
                     //roll back
-                    TransactionExecutor executor = new TransactionExecutor(tx, track,this);
+                    TransactionExecutor executor = new TransactionExecutor(txs.get(i), cacheTrack,this);
                     executor.setCoinbase(key.getAddress());
                     executor.undoTransaction();
                 }
+                cacheTrack.commit();
             }
 
             boolean isValid = true;
@@ -322,7 +331,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 return INVALID_BLOCK;
             }
             byte[] generationSignature = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(),key.getCompressedPubKey());
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), key.getCompressedPubKey());
             block.setGenerationSignature(generationSignature);
 
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();
@@ -453,12 +462,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         }
 
         track = repository.startTracking();
-        if (block == null)
-            return false;
 
         // keep chain continuity
-        if (!Arrays.equals(bestBlock.getHash(),
-                block.getPreviousHeaderHash())) return false;
+        if (!Arrays.equals(bestBlock.getHash(), block.getPreviousHeaderHash()))
+            return false;
 
         if (block.getNumber() >= config.traceStartBlock() && config.traceStartBlock() != -1) {
             AdvancedDeviceUtils.adjustDetailedTracing(block.getNumber());
@@ -634,7 +641,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         ECKey key = null;
         try{
             key = ECKey.signatureToKey(block.getRawHash(),block.getblockSignature().toBase64());
-        }catch (SignatureException e){
+        } catch (SignatureException e){
+
         }
         if( key == null ){
             logger.error("miner pubkey is null .....");
@@ -743,18 +751,28 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             for (Transaction tr : block.getTransactionsList()) {
                 if(tr.getSender() != null) {
                     logger.info("tx sender address is ====> {}",Hex.toHexString(tr.getSender()));
-                    logger.info("is sender account empty ====> {}",track.getAccountState(tr.getSender()) == null);
-                    byte[] witnessAddress = track.getAccountState(tr.getSender()).getWitnessAddress();
-                    ArrayList<byte[]> associateAddress = track.getAccountState(tr.getSender()).getAssociatedAddress();
-                    if (witnessAddress != null) {
-                        tr.setWitnessAddress(witnessAddress);
+                    logger.info("is sender account empty ====> {}",repo.getAccountState(tr.getSender()) == null);
+                    byte[] senderWitnessAddress = repo.getAccountState(tr.getSender()).getWitnessAddress();
+                    ArrayList<byte[]> senderAssociateAddress = repo.getAccountState(tr.getSender()).getAssociatedAddress();
+                    byte[] receiverWitnessAddress = repo.getAccountState(tr.getReceiveAddress()).getWitnessAddress();
+                    ArrayList<byte[]> receiverAssociateAddress = repo.getAccountState(tr.getReceiveAddress()).getAssociatedAddress();
+                    if (senderWitnessAddress != null) {
+                        tr.setSenderWitnessAddress(senderWitnessAddress);
                     }
 
-                    if (associateAddress != null) {
-                        tr.setAssociatedAddress(associateAddress);
+                    if (receiverWitnessAddress != null) {
+                        tr.setReceiverWitnessAddress(receiverWitnessAddress);
                     }
 
-                    if (witnessAddress != null || associateAddress != null) {
+                    if (senderAssociateAddress != null) {
+                        tr.setSenderAssociatedAddress(senderAssociateAddress);
+                    }
+
+                    if (receiverAssociateAddress != null) {
+                        tr.setReceiverAssociatedAddress(receiverAssociateAddress);
+                    }
+
+                    if (senderWitnessAddress != null || senderAssociateAddress != null) {
                         tr.setIsCompositeTx(true);
                     }
                 }
@@ -800,15 +818,15 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
             cacheTrack.commit();
         }
-
-        for (Transaction tx : block.getTransactionsList()) {
-            StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
-                    new StakeHolderIdentityUpdate(tx, track, key.getAddress(),this);
-            stakeHolderIdentityUpdate.updateStakeHolderIdentity();
-        }
         
         if (!isValid) {
             return false;
+        }
+
+        for (Transaction tx : block.getTransactionsList()) {
+            StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
+                    new StakeHolderIdentityUpdate(tx, repo, key.getAddress(), block.getNumber());
+            stakeHolderIdentityUpdate.updateStakeHolderIdentity();
         }
 
         updateTotalDifficulty(block);
