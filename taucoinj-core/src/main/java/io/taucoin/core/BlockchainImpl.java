@@ -764,11 +764,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     tx.setReceiverWitnessAddress(receiverWitnessAddress);
                 }
 
-                if (senderAssociateAddress != null) {
+                if (senderAssociateAddress != null && senderAssociateAddress.size() > 0) {
                     tx.setSenderAssociatedAddress(senderAssociateAddress);
                 }
 
-                if (receiverAssociateAddress != null) {
+                if (receiverAssociateAddress != null && receiverAssociateAddress.size() > 0) {
                     tx.setReceiverAssociatedAddress(receiverAssociateAddress);
                 }
 
