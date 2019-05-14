@@ -41,11 +41,11 @@ public class StakeHolderIdentityUpdate {
         byte[] receiveAddress = tx.getReceiveAddress();
 
         AccountState senderAccount = track.getAccountState(senderAddress);
-        AccountState receiveAccount = track.getAccountState(receiveAddress);
+        AccountState receiverAccount = track.getAccountState(receiveAddress);
 
         senderAccount.updateAssociatedAddress(tx.getSenderAssociatedAddress(), blockNumber);
         senderAccount.setWitnessAddress(tx.getSenderWitnessAddress());
-        receiveAccount.updateAssociatedAddress(tx.getReceiverAssociatedAddress(), blockNumber);
-        receiveAccount.setWitnessAddress(tx.getReceiverWitnessAddress());
+        receiverAccount.updateAssociatedAddress(tx.getReceiverAssociatedAddress(), blockNumber);
+        receiverAccount.setWitnessAddress(tx.getReceiverWitnessAddress());
     }
 }

@@ -236,6 +236,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                             new StakeHolderIdentityUpdate(txs.get(i), cacheTrack, key.getAddress(), undoBlock.getNumber());
                     stakeHolderIdentityUpdate.rollbackStakeHolderIdentity();
                 }
+                cacheTrack.commit();
+                cacheTrack = track.startTracking();
                 for (int i = txs.size() - 1; i >= 0; i--) {
                     //roll back
                     TransactionExecutor executor = new TransactionExecutor(txs.get(i), cacheTrack,this);
@@ -747,7 +749,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     private void wrapBlockTransactions(Block block, Repository repo) {
         for (Transaction tx : block.getTransactionsList()) {
-            tx.setIsCompositeTx(false);
             if(tx.getSender() != null) {
                 logger.info("tx sender address is ====> {}",Hex.toHexString(tx.getSender()));
                 logger.info("is sender account empty ====> {}",repo.getAccountState(tx.getSender()) == null);
