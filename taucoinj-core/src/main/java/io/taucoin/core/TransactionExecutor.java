@@ -181,7 +181,7 @@ public class TransactionExecutor {
         logger.info("Pay fees to miner: [{}], feesEarned: [{}]", Hex.toHexString(coinbase), basicTxFee);
 
         AccountState accountState = track.getAccountState(tx.getSender());
-        if(blockchain.getSize() > MaxHistoryCount){
+        if(blockchain.getSize() > MaxHistoryCount && accountState.getTranHistory().size() !=0 ){
 
             long txTime = Collections.min(accountState.getTranHistory().keySet());
             // if earliest transaction is beyond expire time
