@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static io.taucoin.config.SystemProperties.CONFIG;
 import static io.taucoin.util.BIUtil.*;
 
 /**
@@ -87,7 +88,12 @@ public class TransactionExecutor {
 
                 if (tranTime < txTimeFloor && blockchain.getSize() > MaxHistoryCount) {
                     long freshTime = blockchain.getSize() - MaxHistoryCount;
-                    if (tranTime < ByteUtil.byteArrayToLong(blockchain.getBlockByNumber(freshTime).getTimestamp())) {
+                    if(freshTime == 1 && tranTime < ByteUtil.byteArrayToLong(CONFIG.getGenesis().getTimestamp())){
+                        logger.error("overflow attacking transaction ,tx is: {}", ByteUtil.toHexString(tx.getHash()));
+                        return false;
+                    }
+
+                    if ( freshTime > 1 && tranTime < ByteUtil.byteArrayToLong(blockchain.getBlockByNumber(freshTime - 1).getTimestamp())) {
                         logger.error("attacking transaction ,tx is: {}", ByteUtil.toHexString(tx.getHash()));
                         return false;
                     }
@@ -187,7 +193,7 @@ public class TransactionExecutor {
             // if earliest transaction is beyond expire time
             // it will be removed.
             long freshTime = blockchain.getSize() - MaxHistoryCount;
-            if (txTime < ByteUtil.byteArrayToLong(blockchain.getBlockByNumber(freshTime).getTimestamp())) {
+            if (freshTime > 1 && txTime < ByteUtil.byteArrayToLong(blockchain.getBlockByNumber(freshTime -1).getTimestamp())) {
                 accountState.getTranHistory().remove(txTime);
                 logger.debug("{} remove tx time {}", Hex.toHexString(tx.getSender()), txTime);
             } else {
