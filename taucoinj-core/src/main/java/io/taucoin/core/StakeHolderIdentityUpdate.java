@@ -1,9 +1,9 @@
 package io.taucoin.core;
 
 import io.taucoin.crypto.ECKey;
+import io.taucoin.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.util.encoders.Hex;
 
 import java.util.List;
 
@@ -45,22 +45,22 @@ public class StakeHolderIdentityUpdate {
         AccountState receiverAccount = track.getAccountState(receiverAddress);
 
         if (tx.getSenderWitnessAddress() != null) {
-            logger.error("Sender:{}, witness address:{}", Hex.toHexString(tx.getSender()),
-                    Hex.toHexString(tx.getSenderWitnessAddress()));
+            logger.info("Sender:{}, witness address:{}", ByteUtil.bytesToBase58(tx.getSender()),
+                    ByteUtil.bytesToBase58(tx.getSenderWitnessAddress()));
         } else {
-            logger.error("Sender:{}, witness address is null!", Hex.toHexString(tx.getSender()));
+            logger.info("Sender:{}, witness address is null!", ByteUtil.bytesToBase58(tx.getSender()));
         }
         for (byte[] address : tx.getSenderAssociatedAddress()) {
-            logger.error("associate address:{}", Hex.toHexString(address));
+            logger.info("associate address:{}", ByteUtil.bytesToBase58(address));
         }
         if (tx.getReceiverWitnessAddress() != null) {
-            logger.error("Receiver:{}, witness address:{}", Hex.toHexString(tx.getReceiveAddress()),
-                    Hex.toHexString(tx.getReceiverWitnessAddress()));
+            logger.info("Receiver:{}, witness address:{}", ByteUtil.bytesToBase58(tx.getReceiveAddress()),
+                    ByteUtil.bytesToBase58(tx.getReceiverWitnessAddress()));
         } else {
-            logger.error("Receiver:{}, witness address is null", Hex.toHexString(tx.getReceiveAddress()));
+            logger.info("Receiver:{}, witness address is null", ByteUtil.bytesToBase58(tx.getReceiveAddress()));
         }
         for (byte[] address : tx.getReceiverAssociatedAddress()) {
-            logger.error("associate address:{}", Hex.toHexString(address));
+            logger.info("associate address:{}", ByteUtil.bytesToBase58(address));
         }
         senderAccount.updateAssociatedAddress(tx.getSenderAssociatedAddress(), blockNumber);
         senderAccount.setWitnessAddress(tx.getSenderWitnessAddress());

@@ -223,24 +223,18 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 Repository cacheTrack = track.startTracking();
                 logger.info("Try to disconnect block, block number: {}, hash: {}",
                         undoBlock.getNumber(), Hex.toHexString(undoBlock.getHash()));
-                ECKey key;
-                try {
-                    key = ECKey.signatureToKey(undoBlock.getRawHash(), undoBlock.getblockSignature().toBase64());
-                } catch (SignatureException e) {
-                    return DISCONNECTED_FAILED;
-                }
 
                 List<Transaction> txs = undoBlock.getTransactionsList();
                 for (int i = txs.size() - 1; i >= 0; i--) {
                     StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
-                            new StakeHolderIdentityUpdate(txs.get(i), cacheTrack, key.getAddress(), undoBlock.getNumber());
+                            new StakeHolderIdentityUpdate(txs.get(i), cacheTrack, undoBlock.getForgerAddress(), undoBlock.getNumber());
                     stakeHolderIdentityUpdate.rollbackStakeHolderIdentity();
                 }
 
                 for (int i = txs.size() - 1; i >= 0; i--) {
                     //roll back
                     TransactionExecutor executor = new TransactionExecutor(txs.get(i), cacheTrack,this);
-                    executor.setCoinbase(key.getAddress());
+                    executor.setCoinbase(undoBlock.getForgerAddress());
                     executor.undoTransaction();
                 }
                 cacheTrack.commit();
@@ -325,14 +319,14 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
             BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(preBlock, blockStore);
             block.setBaseTarget(baseTarget);
-            ECKey key;
-            try {
-                key = ECKey.signatureToKey(block.getRawHash(), block.getblockSignature().toBase64());
-            }catch (SignatureException e){
+
+            if (!block.extractForgerPublicKey()) {
+                logger.error("Extract forger public key fail!!!");
                 return INVALID_BLOCK;
             }
+
             byte[] generationSignature = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), key.getCompressedPubKey());
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), block.getForgerPublicKey());
             block.setGenerationSignature(generationSignature);
 
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();
@@ -578,14 +572,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         return true;
     }
-    /**
-     * verify block signature with public key and signature
-     * @param block
-     * @return
-     */
-    private boolean verifyBlockSignature(Block block) {
-        return block.verifyBlockSignature();
-    }
 
     /**
      * verify transaction time
@@ -639,19 +625,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 return false;
             }
         }
-        ECKey key = null;
-        try{
-            key = ECKey.signatureToKey(block.getRawHash(),block.getblockSignature().toBase64());
-        } catch (SignatureException e){
-
-        }
-        if( key == null ){
-            logger.error("miner pubkey is null .....");
-            key = new ECKey();
-        }
 
         //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
-        byte[] address = key.getAddress();
+        byte[] address = block.getForgerAddress();
         BigInteger forgingPower = repo.getforgePower(address);
         logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
 
@@ -688,11 +664,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         if (!verifyOption(block.getOption())) {
             logger.error("Block version is invalid, block number {}, version {}",
                     block.getNumber(), block.getOption());
-            return false;
-        }
-
-        if (!verifyBlockSignature(block)) {
-            logger.error("Block signature is invalid, block number {}", block.getNumber());
             return false;
         }
 
@@ -800,18 +771,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         Repository cacheTrack;
         boolean isValid = true;
-        ECKey key = null;
-        try {
-            key = ECKey.signatureToKey(block.getRawHash(), block.getblockSignature().toBase64());
-        }catch (SignatureException e){
-            return false;
-        }
         for (Transaction tx : block.getTransactionsList()) {
             stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), tx.toString());
 
             cacheTrack = repo.startTracking();
             TransactionExecutor executor = new TransactionExecutor(tx, cacheTrack,this);
-
             //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
             if (!executor.init()) {
                 isValid = false;
@@ -819,7 +783,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 logger.error("Transaction [{}] is invalid.", tx.getHash());
                 break;
             }
-            executor.setCoinbase(key.getAddress());
+            executor.setCoinbase(block.getForgerAddress());
             executor.executeFinal();
 
             cacheTrack.commit();
@@ -831,7 +795,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         for (Transaction tx : block.getTransactionsList()) {
             StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
-                    new StakeHolderIdentityUpdate(tx, repo, key.getAddress(), block.getNumber());
+                    new StakeHolderIdentityUpdate(tx, repo, block.getForgerAddress(), block.getNumber());
             stakeHolderIdentityUpdate.updateStakeHolderIdentity();
         }
 
