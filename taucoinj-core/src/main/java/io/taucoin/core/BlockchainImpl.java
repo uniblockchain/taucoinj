@@ -224,15 +224,16 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 logger.info("Try to disconnect block, block number: {}, hash: {}",
                         undoBlock.getNumber(), Hex.toHexString(undoBlock.getHash()));
 
+                //roll back
                 List<Transaction> txs = undoBlock.getTransactionsList();
-                for (int i = txs.size() - 1; i >= 0; i--) {
+                int size = txs.size();
+                for (int i = size - 1; i >= 0; i--) {
                     StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
                             new StakeHolderIdentityUpdate(txs.get(i), cacheTrack, undoBlock.getForgerAddress(), undoBlock.getNumber());
                     stakeHolderIdentityUpdate.rollbackStakeHolderIdentity();
                 }
 
-                for (int i = txs.size() - 1; i >= 0; i--) {
-                    //roll back
+                for (int i = size - 1; i >= 0; i--) {
                     TransactionExecutor executor = new TransactionExecutor(txs.get(i), cacheTrack,this);
                     executor.setCoinbase(undoBlock.getForgerAddress());
                     executor.undoTransaction();
@@ -242,7 +243,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
             boolean isValid = true;
             Repository cacheTrack;
-            for (int i = newBlocks.size() - 1; i >= 0; i--) {
+            int size = newBlocks.size();
+            for (int i = size - 1; i >= 0; i--) {
                 cacheTrack = track.startTracking();
 
                 Block newBlock = newBlocks.get(i);
@@ -427,8 +429,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 txs);
 
         BigInteger curTotalfee = parent.getCumulativeFee();
-        for(Transaction tr: txs){
-            curTotalfee = curTotalfee.add(new BigInteger(tr.getFee()));
+        if (txs != null) {
+            for (Transaction tr : txs) {
+                curTotalfee = curTotalfee.add(new BigInteger(tr.getFee()));
+            }
         }
 
         block.setNumber(parent.getNumber() + 1);
@@ -743,9 +747,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 }
 
                 tx.setIsCompositeTx(true);
-//                if (senderWitnessAddress != null || senderAssociateAddress != null) {
-//                    tx.setIsCompositeTx(true);
-//                }
             }
         }
     }
