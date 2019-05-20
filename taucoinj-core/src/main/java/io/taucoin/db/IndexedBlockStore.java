@@ -137,6 +137,8 @@ public class IndexedBlockStore implements BlockStore{
         Block block = new Block(blockRlp);
 
         List<BlockInfo> blockInfos = index.get(block.getNumber());
+        if (blockInfos == null)
+            return;
         for (BlockInfo blockInfo : blockInfos) {
             if (areEqual(blockInfo.getHash(), hash)) {
                 if (blockInfo.mainChain) {
@@ -175,6 +177,8 @@ public class IndexedBlockStore implements BlockStore{
         }
 
         List<BlockInfo> blockInfos = index.get(number);
+        if (blockInfos == null)
+            return;
         List<BlockInfo> newBlockInfos = new ArrayList<>();
         for (BlockInfo blockInfo : blockInfos) {
             if (blockInfo.mainChain) {
@@ -275,9 +279,11 @@ public class IndexedBlockStore implements BlockStore{
 
         Long level  =  block.getNumber();
         List<BlockInfo> blockInfos =  index.get(level);
-        for (BlockInfo blockInfo : blockInfos) {
-            if (areEqual(blockInfo.getHash(), hash)) {
-                 return blockInfo.cummDifficulty;
+        if (blockInfos != null) {
+            for (BlockInfo blockInfo : blockInfos) {
+                if (areEqual(blockInfo.getHash(), hash)) {
+                    return blockInfo.cummDifficulty;
+                }
             }
         }
 
@@ -326,9 +332,11 @@ public class IndexedBlockStore implements BlockStore{
         }
 
         List<BlockInfo> blockInfos = index.get(maxNumber);
-        for (BlockInfo blockInfo : blockInfos){
-            if (blockInfo.isMainChain()){
-                return blockInfo.getCummDifficulty();
+        if (blockInfos != null) {
+            for (BlockInfo blockInfo : blockInfos) {
+                if (blockInfo.isMainChain()) {
+                    return blockInfo.getCummDifficulty();
+                }
             }
         }
 
@@ -469,21 +477,25 @@ public class IndexedBlockStore implements BlockStore{
 
     @Override
     public void reBranchBlocks(List<Block> undoBlocks, List<Block> newBlocks) {
-        for (Block block : undoBlocks) {
-            List<BlockInfo> blocks =  getBlockInfoForLevel(block.getNumber());
-            BlockInfo blockInfo = getBlockInfoForHash(blocks, block.getHash());
-            if (blockInfo != null) {
-                blockInfo.setMainChain(false);
-                updateBlockInfoForLevel(block.getNumber(), blocks);
+        if (undoBlocks != null) {
+            for (Block block : undoBlocks) {
+                List<BlockInfo> blocks = getBlockInfoForLevel(block.getNumber());
+                BlockInfo blockInfo = getBlockInfoForHash(blocks, block.getHash());
+                if (blockInfo != null) {
+                    blockInfo.setMainChain(false);
+                    updateBlockInfoForLevel(block.getNumber(), blocks);
+                }
             }
         }
 
-        for (Block block : newBlocks) {
-            List<BlockInfo> blocks =  getBlockInfoForLevel(block.getNumber());
-            BlockInfo blockInfo = getBlockInfoForHash(blocks, block.getHash());
-            if (blockInfo != null) {
-                blockInfo.setMainChain(true);
-                updateBlockInfoForLevel(block.getNumber(), blocks);
+        if (newBlocks != null) {
+            for (Block block : newBlocks) {
+                List<BlockInfo> blocks = getBlockInfoForLevel(block.getNumber());
+                BlockInfo blockInfo = getBlockInfoForHash(blocks, block.getHash());
+                if (blockInfo != null) {
+                    blockInfo.setMainChain(true);
+                    updateBlockInfoForLevel(block.getNumber(), blocks);
+                }
             }
         }
     }

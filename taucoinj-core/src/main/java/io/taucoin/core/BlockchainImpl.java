@@ -220,25 +220,31 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
             track = repository.startTracking();
 
             for (Block undoBlock : undoBlocks) {
+                Repository cacheTrack = track.startTracking();
                 logger.info("Try to disconnect block, block number: {}, hash: {}",
                         undoBlock.getNumber(), Hex.toHexString(undoBlock.getHash()));
-                ECKey key;
-                try {
-                    key = ECKey.signatureToKey(undoBlock.getRawHash(), undoBlock.getblockSignature().toBase64());
-                }catch (SignatureException e){
-                    return DISCONNECTED_FAILED;
+
+                //roll back
+                List<Transaction> txs = undoBlock.getTransactionsList();
+                int size = txs.size();
+                for (int i = size - 1; i >= 0; i--) {
+                    StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
+                            new StakeHolderIdentityUpdate(txs.get(i), cacheTrack, undoBlock.getForgerAddress(), undoBlock.getNumber());
+                    stakeHolderIdentityUpdate.rollbackStakeHolderIdentity();
                 }
-                for (Transaction tx : undoBlock.getTransactionsList()){
-                    //roll back
-                    TransactionExecutor executor = new TransactionExecutor(tx, track,this);
-                    executor.setCoinbase(key.getAddress());
+
+                for (int i = size - 1; i >= 0; i--) {
+                    TransactionExecutor executor = new TransactionExecutor(txs.get(i), cacheTrack,this);
+                    executor.setCoinbase(undoBlock.getForgerAddress());
                     executor.undoTransaction();
                 }
+                cacheTrack.commit();
             }
 
             boolean isValid = true;
             Repository cacheTrack;
-            for (int i = newBlocks.size() - 1; i >= 0; i--) {
+            int size = newBlocks.size();
+            for (int i = size - 1; i >= 0; i--) {
                 cacheTrack = track.startTracking();
 
                 Block newBlock = newBlocks.get(i);
@@ -308,20 +314,21 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                     Hex.toHexString(block.getHash()), Hex.toHexString(block.getPreviousHeaderHash()));
             return NO_PARENT;
         }
+
         //wrap the block
         if (block.isMsg()) {
             block.setNumber(preBlock.getNumber() + 1);
 
             BigInteger baseTarget = ProofOfTransaction.calculateRequiredBaseTarget(preBlock, blockStore);
             block.setBaseTarget(baseTarget);
-            ECKey key;
-            try {
-                key = ECKey.signatureToKey(block.getRawHash(), block.getblockSignature().toBase64());
-            }catch (SignatureException e){
+
+            if (!block.extractForgerPublicKey()) {
+                logger.error("Extract forger public key fail!!!");
                 return INVALID_BLOCK;
             }
+
             byte[] generationSignature = ProofOfTransaction.
-                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(),key.getCompressedPubKey());
+                    calculateNextBlockGenerationSignature(preBlock.getGenerationSignature(), block.getForgerPublicKey());
             block.setGenerationSignature(generationSignature);
 
             BigInteger lastCumulativeDifficulty = preBlock.getCumulativeDifficulty();
@@ -422,8 +429,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 txs);
 
         BigInteger curTotalfee = parent.getCumulativeFee();
-        for(Transaction tr: txs){
-            curTotalfee = curTotalfee.add(new BigInteger(tr.getFee()));
+        if (txs != null) {
+            for (Transaction tr : txs) {
+                curTotalfee = curTotalfee.add(new BigInteger(tr.getFee()));
+            }
         }
 
         block.setNumber(parent.getNumber() + 1);
@@ -452,12 +461,10 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         }
 
         track = repository.startTracking();
-        if (block == null)
-            return false;
 
         // keep chain continuity
-        if (!Arrays.equals(bestBlock.getHash(),
-                block.getPreviousHeaderHash())) return false;
+        if (!Arrays.equals(bestBlock.getHash(), block.getPreviousHeaderHash()))
+            return false;
 
         if (block.getNumber() >= config.traceStartBlock() && config.traceStartBlock() != -1) {
             AdvancedDeviceUtils.adjustDetailedTracing(block.getNumber());
@@ -569,14 +576,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         return true;
     }
-    /**
-     * verify block signature with public key and signature
-     * @param block
-     * @return
-     */
-    private boolean verifyBlockSignature(Block block) {
-        return block.verifyBlockSignature();
-    }
 
     /**
      * verify transaction time
@@ -630,18 +629,9 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 return false;
             }
         }
-        ECKey key = null;
-        try{
-            key = ECKey.signatureToKey(block.getRawHash(),block.getblockSignature().toBase64());
-        }catch (SignatureException e){
-        }
-        if( key == null ){
-            logger.error("miner pubkey is null .....");
-            key = new ECKey();
-        }
 
         //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
-        byte[] address = key.getAddress();
+        byte[] address = block.getForgerAddress();
         BigInteger forgingPower = repo.getforgePower(address);
         logger.info("Address: {}, forge power: {}", Hex.toHexString(address), forgingPower);
 
@@ -678,11 +668,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         if (!verifyOption(block.getOption())) {
             logger.error("Block version is invalid, block number {}, version {}",
                     block.getNumber(), block.getOption());
-            return false;
-        }
-
-        if (!verifyBlockSignature(block)) {
-            logger.error("Block signature is invalid, block number {}", block.getNumber());
             return false;
         }
 
@@ -736,9 +721,50 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         return true;
     }
 
+    private void wrapBlockTransactions(Block block, Repository repo) {
+        for (Transaction tx : block.getTransactionsList()) {
+
+            tx.setIsCompositeTx(false);
+
+            byte[] txSenderAdd= tx.getSender();
+            byte[] txReceiverAdd= tx.getReceiveAddress();
+            AccountState txSenderAccount= repo.getAccountState(txSenderAdd);
+            AccountState txReceiverAccount= repo.getAccountState(txReceiverAdd);
+
+            if(txSenderAdd != null) {
+                // logger.info("tx sender address is ====> {}",Hex.toHexString(txSenderAdd);
+                // logger.info("is sender account empty ====> {}",repo.getAccountState(txSenderAdd) == null);
+                byte[] senderWitnessAddress = txSenderAccount.getWitnessAddress();
+                ArrayList<byte[]> senderAssociateAddress = txSenderAccount.getAssociatedAddress();
+                byte[] receiverWitnessAddress = txReceiverAccount.getWitnessAddress();
+                ArrayList<byte[]> receiverAssociateAddress = txReceiverAccount.getAssociatedAddress();
+
+                if (senderWitnessAddress != null) {
+                    tx.setSenderWitnessAddress(senderWitnessAddress);
+                }
+
+                if (receiverWitnessAddress != null) {
+                    tx.setReceiverWitnessAddress(receiverWitnessAddress);
+                }
+
+                if (senderAssociateAddress != null && senderAssociateAddress.size() > 0) {
+                    tx.setSenderAssociatedAddress(senderAssociateAddress);
+                }
+
+                if (receiverAssociateAddress != null && receiverAssociateAddress.size() > 0) {
+                    tx.setReceiverAssociatedAddress(receiverAssociateAddress);
+                }
+
+                tx.setIsCompositeTx(true);
+            }
+        }
+    }
+
     private boolean processBlock(Block block, Repository repo) {
 
         if (!block.isGenesis()) {
+            wrapBlockTransactions(block, repo);
+
             if (!config.blockChainOnly()) {
 //                wallet.addTransactions(block.getTransactionsList());
                 return applyBlock(block, repo);
@@ -755,18 +781,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
         Repository cacheTrack;
         boolean isValid = true;
-        ECKey key = null;
-        try {
-            key = ECKey.signatureToKey(block.getRawHash(), block.getblockSignature().toBase64());
-        }catch (SignatureException e){
-            return false;
-        }
         for (Transaction tx : block.getTransactionsList()) {
             stateLogger.info("apply block: [{}] tx: [{}] ", block.getNumber(), tx.toString());
 
             cacheTrack = repo.startTracking();
             TransactionExecutor executor = new TransactionExecutor(tx, cacheTrack,this);
-
             //ECKey key = ECKey.fromPublicOnly(block.getGeneratorPublicKey());
             if (!executor.init()) {
                 isValid = false;
@@ -774,14 +793,20 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
                 logger.error("Transaction [{}] is invalid.", tx.getHash());
                 break;
             }
-            executor.setCoinbase(key.getAddress());
+            executor.setCoinbase(block.getForgerAddress());
             executor.executeFinal();
 
             cacheTrack.commit();
         }
-
+        
         if (!isValid) {
             return false;
+        }
+
+        for (Transaction tx : block.getTransactionsList()) {
+            StakeHolderIdentityUpdate stakeHolderIdentityUpdate =
+                    new StakeHolderIdentityUpdate(tx, repo, block.getForgerAddress(), block.getNumber());
+            stakeHolderIdentityUpdate.updateStakeHolderIdentity();
         }
 
         updateTotalDifficulty(block);

@@ -29,8 +29,26 @@ public class AccountState implements Serializable {
     */
     private BigInteger forgePower;
 
-    /* A scalar value equal to the number of iTau owned by this address */
+    /**
+     *A scalar value equal to the number of iTau owned by this address
+     */
     private BigInteger balance;
+
+    /**
+     *account address that forger who confirm this state change.
+     */
+    private byte[] witnessAddress;
+
+   /**
+    *account address that associated to newest account state change.
+    */
+   private ArrayList<byte[]> associatedAddress = new ArrayList<>();
+
+   /**
+    *indicate height where transactions occur to lead to this account state
+    *change.
+    */
+   private long stateHeight = 0;
 
     private boolean dirty = false;
     private boolean deleted = false;
@@ -60,9 +78,17 @@ public class AccountState implements Serializable {
                 : new BigInteger(1, items.get(0).getRLPData());
         this.balance = items.get(1).getRLPData() == null ? BigInteger.ZERO
                 : new BigInteger(1, items.get(1).getRLPData());
+        this.witnessAddress = items.get(2).getRLPData();
+        RLPList associateList = (RLPList) items.get(3);
+        for(int i=0;i < associateList.size();++i) {
+            this.associatedAddress.add(associateList.get(i).getRLPData());
+        }
 
-        if(items.size() > 2) {
-            for (int i = 2; i < items.size(); ++i) {
+        this.stateHeight = items.get(4).getRLPData() == null ? 0
+                : ByteUtil.byteArrayToLong(items.get(4).getRLPData());
+
+        if(items.size() > 5) {
+            for (int i = 5; i < items.size(); ++i) {
                 byte[] transactionHis = items.get(i).getRLPData();
                 TransactionInfo trinfo = new TransactionInfo(transactionHis);
                 this.tranHistory.put(trinfo.gettrTime(),trinfo.gettrHashcode());
@@ -74,9 +100,58 @@ public class AccountState implements Serializable {
         return forgePower;
     }
 
+    public long getStateHeight() {
+        return stateHeight;
+    }
+
+    public void setStateHeight(long stateHeight) {
+        rlpEncoded = null;
+        this.stateHeight = stateHeight;
+    }
+
     public void setforgePower(BigInteger forgePower) {
         rlpEncoded = null;
         this.forgePower = forgePower;
+    }
+
+    public void setWitnessAddress(byte[] witnessAddress) {
+        rlpEncoded = null;
+        this.witnessAddress = witnessAddress;
+    }
+
+    public byte[] getWitnessAddress() {
+        return witnessAddress;
+    }
+
+    public void updateAssociatedAddress(byte[] associatedAddress,long stateHeight) {
+        rlpEncoded = null;
+        if (this.stateHeight == stateHeight) {
+            this.associatedAddress.add(associatedAddress);
+        } else {
+            this.associatedAddress.clear();
+            this.associatedAddress.add(associatedAddress);
+            this.stateHeight = stateHeight;
+        }
+        for (int i=0; i <this.associatedAddress.size();++i) {
+//            log.info("At state height {} address {} index {}",
+//                    this.stateHeight,Hex.toHexString(this.associatedAddress.get(i)),i);
+        }
+    }
+
+    public void updateAssociatedAddress(List<byte[]> associatedAddressList,long stateHeight) {
+        rlpEncoded = null;
+        this.stateHeight = stateHeight;
+        this.associatedAddress.clear();
+        this.associatedAddress.addAll(associatedAddressList);
+    }
+
+    public void setAssociatedAddress(ArrayList<byte[]> associatedAddress) {
+        rlpEncoded = null;
+        this.associatedAddress = associatedAddress;
+    }
+
+    public ArrayList<byte[]> getAssociatedAddress() {
+        return associatedAddress;
     }
 
     public void setTranHistory(TreeMap<Long,byte[]> tranHistory) {
@@ -116,13 +191,23 @@ public class AccountState implements Serializable {
 
     public byte[] getEncoded() {
         if (rlpEncoded == null) {
-            byte[][] trHisEncoded = new byte[tranHistory.size() + 2][];
+            byte[][] trHisEncoded = new byte[tranHistory.size() + 5][];
             byte[] forgePower = RLP.encodeBigInteger(this.forgePower);
             byte[] balance = RLP.encodeBigInteger(this.balance);
+            byte[] witnessAddress = RLP.encodeElement(this.witnessAddress);
+            byte[][] tempAssociate = new byte[this.associatedAddress.size()][];
+            for (int i=0; i< this.associatedAddress.size();++i) {
+                tempAssociate[i] = RLP.encodeElement(this.associatedAddress.get(i));
+            }
+            byte[] associatedAddress = RLP.encodeList(tempAssociate);
+            byte[] stateHeight = RLP.encodeElement(ByteUtil.longToBytes(this.stateHeight));
 
             trHisEncoded[0] = forgePower;
             trHisEncoded[1] = balance;
-            int i = 2;
+            trHisEncoded[2] = witnessAddress;
+            trHisEncoded[3] = associatedAddress;
+            trHisEncoded[4] = stateHeight;
+            int i = 5;
             for (long txTime : tranHistory.keySet()) {
               TransactionInfo txf = new TransactionInfo(txTime,tranHistory.get(txTime));
               trHisEncoded[i] = txf.getEncoded();
@@ -153,6 +238,9 @@ public class AccountState implements Serializable {
         AccountState accountState = new AccountState();
         accountState.addToBalance(this.getBalance());
         accountState.setforgePower(this.getforgePower());
+        accountState.setWitnessAddress(this.getWitnessAddress());
+        accountState.setAssociatedAddress(this.getAssociatedAddress());
+        accountState.setStateHeight(this.getStateHeight());
         accountState.setTranHistory(this.getTranHistory());
         accountState.setDirty(false);
 

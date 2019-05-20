@@ -46,6 +46,15 @@ public class tau_getAccountDetails extends JsonRpcServerMethod {
 
             AccountState ac = repo.getAccountState(address);
             Iterator iterator = ac.getTranHistory().entrySet().iterator();
+            ArrayList<byte[]> associateAddress = ac.getAssociatedAddress();
+            byte[] witenessAddress = ac.getWitnessAddress();
+            result.add("state height: "+ac.getStateHeight());
+            result.add("recently witness: "+Hex.toHexString(witenessAddress));
+            for (byte[] it: associateAddress
+                 ) {
+                result.add("associate address: "+Hex.toHexString(it)+"//");
+            }
+
             int i=0;
             while(iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();

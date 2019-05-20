@@ -53,7 +53,8 @@ public class Block {
     private byte[] generationSignature;
     private BigInteger cumulativeDifficulty = BigInteger.ZERO; //this is total chain difficulty
     private BigInteger cumulativeFee = BigInteger.ZERO;
-    private byte[] forgerPubkey;
+    private byte[] forgerPubkey = null;
+    private byte[] forgerAddress = null;
 
     protected byte[] rlpEncoded;
     private byte[] rlpEncodedMsg;
@@ -91,10 +92,6 @@ public class Block {
 
     public Block(byte version, byte[] timestamp, byte[] previousHeaderHash,
                  byte option, List<Transaction> transactionsList) {
-        /*
-         * TODO: calculate GenerationSignature
-         *
-         */
         this.version = version;
         this.timeStamp = timestamp;
         this.previousHeaderHash = previousHeaderHash;
@@ -111,10 +108,6 @@ public class Block {
     public Block(byte version, byte[] timestamp, byte[] previousHeaderHash, byte v,
                  byte[] r, byte[] s, byte option,
                  List<Transaction> transactionsList) {
-        /*
-        * TODO: calculate GenerationSignature
-        *
-         */
         this.version = version;
         this.timeStamp = timestamp;
         this.previousHeaderHash = previousHeaderHash;
@@ -172,7 +165,7 @@ public class Block {
             if(block.size() > 11) {
                 // Parse Transactions
                 RLPList txTransactions = (RLPList) block.get(11);
-                this.parseTxs(txTransactions);
+                this.parseTxs(txTransactions, true);
             }
         } else {
             RLPList params = RLP.decode2(rlpEncodedMsg);
@@ -196,22 +189,11 @@ public class Block {
             // Parse Transactions
             if(block.size() > 5){
                 RLPList txTransactions = (RLPList) block.get(5);
-                this.parseTxs(txTransactions);
+                this.parseTxs(txTransactions, false);
             }
         }
 
         this.parsed = true;
-        if(isMsg){
-            ECKey key;
-            try{
-                key = ECKey.signatureToKey(this.getRawHash(),blockSignature.toBase64());
-                if(key != null){
-                    forgerPubkey = key.getCompressedPubKey();
-                }
-            }catch (SignatureException e){
-                forgerPubkey = ByteUtil.intToBytes(0);
-            }
-        }
     }
 
 
@@ -249,9 +231,36 @@ public class Block {
         return this.timeStamp;
     }
 
-    public byte[] getGeneratorPublicKey() {
-        if (!parsed) parseRLP();
+    public boolean extractForgerPublicKey() {
+        ECKey key;
+        try{
+            key = ECKey.signatureToKey(this.getRawHash(), blockSignature.toBase64());
+            if(key != null){
+                forgerPubkey = key.getCompressedPubKey();
+            } else {
+                return false;
+            }
+        }catch (SignatureException e){
+            logger.error(e.getMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
+    public byte[] getForgerPublicKey() {
+        if (forgerPubkey == null) {
+            if (!parsed) parseRLP();
+            extractForgerPublicKey();
+        }
         return forgerPubkey;
+    }
+
+    public byte[] getForgerAddress() {
+        if (forgerAddress == null) {
+            ECKey key = ECKey.fromPublicOnly(getForgerPublicKey());
+            forgerAddress = key.getAddress();
+        }
+        return forgerAddress;
     }
 
     public byte getVersion() {
@@ -355,7 +364,7 @@ public class Block {
         toStringBuff.append("hash=").append(ByteUtil.toHexString(this.getHash()));
 //        toStringBuff.append(header.toFlatString());
 //        toStringBuff.append("blocksig=" + ByteUtil.toHexString(this.blockSignature));
-        //toStringBuff.append("option=" + ByteUtil.toHexString(this.option));
+//        toStringBuff.append("option=" + ByteUtil.toHexString(this.option));
 
         for (Transaction tx : getTransactionsList()) {
             toStringBuff.append("\n");
@@ -366,11 +375,11 @@ public class Block {
         return toStringBuff.toString();
     }
 
-    private void parseTxs(RLPList txTransactions) {
+    private void parseTxs(RLPList txTransactions, boolean isComposite) {
 
         for (int i = 0; i < txTransactions.size(); i++) {
             RLPElement transactionRaw = txTransactions.get(i);
-            this.transactionsList.add(new Transaction(transactionRaw.getRLPData()));
+            this.transactionsList.add(new Transaction(transactionRaw.getRLPData(), isComposite));
         }
     }
 
@@ -405,6 +414,17 @@ public class Block {
         return option;
     }
 
+    private byte[] getFullTransactionsEncoded() {
+
+        byte[][] transactionsEncoded = new byte[transactionsList.size()][];
+        int i = 0;
+        for (Transaction tx : transactionsList) {
+            transactionsEncoded[i] = tx.getEncodedComposite();
+            ++i;
+        }
+        return RLP.encodeList(transactionsEncoded);
+    }
+
     private byte[] getTransactionsEncoded() {
 
         byte[][] transactionsEncoded = new byte[transactionsList.size()][];
@@ -433,23 +453,11 @@ public class Block {
             byte[] signature = getSignatureEncoded();
             byte[] previousHeaderHash = RLP.encodeElement(this.previousHeaderHash);
 
-            ECKey key;
-            try{
-                key = ECKey.signatureToKey(this.getRawHash(),blockSignature.toBase64());
-                if(key != null){
-                    forgerPubkey = key.getCompressedPubKey();
-                }
-            }catch (SignatureException e){
-                forgerPubkey = ByteUtil.intToBytes(0);
-            }
-
             List<byte[]> block = getFullBodyElements();
-            logger.info("size of encode element is {}",block.size());
             block.add(0, version);
             block.add(1,timestamp);
             block.add(2,signature);
             block.add(3,previousHeaderHash);
-            logger.info("size of encode element is {}",block.size());
             byte[][] elements = block.toArray(new byte[block.size()][]);
 
             this.rlpEncoded = RLP.encodeList(elements);
@@ -538,7 +546,7 @@ public class Block {
         byte[] cumulativeFee = RLP.encodeBigInteger(this.cumulativeFee == null ? BigInteger.ZERO: this.cumulativeFee);
         byte[] forgerpubkey = RLP.encodeElement(this.forgerPubkey);
         byte[] option = getOptionEncoded();
-        byte[] transactions = getTransactionsEncoded();
+        byte[] transactions = getFullTransactionsEncoded();
 
         List<byte[]> body = new ArrayList<>();
         body.add(number);
@@ -570,22 +578,6 @@ public class Block {
         this.blockSignature = key.sign(hash);
         this.rlpEncoded = null;
         this.rlpEncodedMsg = null;
-    }
-
-    /**
-     * verify block signature with readable message and signature
-     * @return
-     */
-    public boolean verifyBlockSignature() {
-        ECKey key;
-        try {
-            key = ECKey.signatureToKey(this.getRawHash(), this.getblockSignature().toBase64());
-        }catch (SignatureException e){
-            logger.error(e.getMessage());
-            return false;
-        }
-        byte[] forger = key.getAddress();
-        return true;
     }
 
     public String getShortDescr() {
@@ -632,7 +624,7 @@ public class Block {
                 if (transactions.size() == 0){
 
                 } else{
-                   block.parseTxs(transactions);
+                   block.parseTxs(transactions, false);
                 }
                //delete txState may be stupid....
                //we avoid trie,because we think block header doesn't have large capacity
