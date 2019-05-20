@@ -28,7 +28,7 @@ public class tau_newaccount extends JsonRpcServerMethod {
         tmp.add("priKey: "+Hex.toHexString(account.getEcKey().getPrivKey().toByteArray()));
         tmp.add("WiFKey: "+account.getEcKey().getPrivateKeyAsWiF(MainNetParams.get()));
         tmp.add("pubKey: "+ Hex.toHexString(account.getEcKey().getPubKey()));
-        tmp.add("oriAdd: " + account.getEcKey().getAddress());
+        tmp.add("oriAdd: " + Hex.toHexString(account.getEcKey().getAddress()));
         tmp.add("tauAdd: " + account.getEcKey().getAccountAddress().toBase58());
         JSONRPC2Response res = new JSONRPC2Response(tmp, req.getID());
         return res;
