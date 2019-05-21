@@ -106,7 +106,6 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     private long mutableRange = 288;
 
-    public boolean byTest = false;
     private boolean fork = false;
 
     public BlockchainImpl() {
@@ -279,11 +278,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
                 blockStore.reBranchBlocks(undoBlocks, newBlocks);
 
-//              if (!byTest && needFlush(block)) {
+              if (needFlush(block)) {
                 repository.flush();
                 blockStore.flush();
                 System.gc();
-//              }
+              }
 
                 return IMPORTED_BEST;
             } else {
@@ -420,8 +419,8 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         Long time = System.currentTimeMillis() / 1000;
         logger.info("create new block time {}", time);
         byte[] timeStamp = new BigInteger(time.toString()).toByteArray();
-        byte version = (byte)1;
-        byte option = (byte)1;
+        byte version = Constants.BLOCK_VERSION;
+        byte option = Constants.BLOCK_OPTION;
         Block block = new Block(version,
                 timeStamp,
                 parent.getHash(),
@@ -480,11 +479,11 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
         storeBlock(block);
 
 
-//        if (!byTest && needFlush(block)) {
+        if (needFlush(block)) {
             repository.flush();
             blockStore.flush();
             System.gc();
-//        }
+        }
 
         // Remove all wallet transactions as they already approved by the net
         wallet.removeTransactions(block.getTransactionsList());
@@ -538,7 +537,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
      * @return
      */
     private boolean verifyVersion(byte version) {
-        return version == (byte) 1;
+        return version == Constants.BLOCK_VERSION;
     }
 
     /**
@@ -547,7 +546,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
      * @return
      */
     private boolean verifyOption(byte option) {
-        return option == (byte) 1;
+        return option == Constants.BLOCK_OPTION;
     }
 
     private boolean verifyBlockTime(Block block) {
@@ -867,6 +866,7 @@ public class BlockchainImpl implements io.taucoin.facade.Blockchain {
 
     @Override
     public void close() {
+        blockStore.flush();
     }
 
     @Override
